@@ -1,0 +1,68 @@
+diff --git a/prisma/seed-more.ts b/prisma/seed-more.ts
+index 92cbc57..a8c3deb 100755
+--- a/prisma/seed-more.ts
++++ b/prisma/seed-more.ts
+@@ -146,7 +146,8 @@ async function main() {
+     })
+   }
+ 
+-  // add vendors
++  // add vendors (clear old ones first so re-running the build doesn't duplicate them)
++  await prisma.vendor.deleteMany({})
+   let vendorCount = 0
+   for (const v of newVendors) {
+     const product = await prisma.product.findUnique({ where: { slug: v.productSlug } })
+diff --git a/prisma/seed-reviews-v2.ts b/prisma/seed-reviews-v2.ts
+index cb84f0d..f8d0d90 100755
+--- a/prisma/seed-reviews-v2.ts
++++ b/prisma/seed-reviews-v2.ts
+@@ -33,6 +33,10 @@ async function main() {
+     }
+   }
+ 
++  // clear any reviews previously added by this script for these products,
++  // so re-running it doesn't create duplicates
++  await prisma.review.deleteMany({ where: { productId: { in: Array.from(newProductIds) } } })
++
+   let count = 0
+   for (const productId of newProductIds) {
+     // ۲ تا ۳ نظر جدید برای هر محصول جدید، با ترکیبی از مثبت/منفی
+diff --git a/src/app/category/[slug]/page.tsx b/src/app/category/[slug]/page.tsx
+index 17b071e..fe76670 100755
+--- a/src/app/category/[slug]/page.tsx
++++ b/src/app/category/[slug]/page.tsx
+@@ -3,6 +3,8 @@ import type { Metadata } from "next";
+ import { prisma } from "@/lib/prisma";
+ import ProductCard from "@/components/ProductCard";
+ 
++export const revalidate = 60;
++
+ type Props = {
+   params: Promise<{ slug: string }>;
+ };
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 8e79224..a5a4f5e 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -5,6 +5,8 @@ import HeroSlider from "@/components/HeroSlider";
+ import ArticleCard from "@/components/ArticleCard";
+ import { ARTICLES } from "@/lib/articles";
+ 
++export const revalidate = 60;
++
+ const SERVICES = [
+   { icon: "🚚", label: "تحویل اکسپرس" },
+   { icon: "💵", label: "پرداخت در محل" },
+diff --git a/src/app/product/[slug]/page.tsx b/src/app/product/[slug]/page.tsx
+index 6f7df42..387cfe0 100755
+--- a/src/app/product/[slug]/page.tsx
++++ b/src/app/product/[slug]/page.tsx
+@@ -10,6 +10,8 @@ import ProductCard from "@/components/ProductCard";
+ import Reviews from "@/components/Reviews";
+ import Vendors from "@/components/Vendors";
+ 
++export const revalidate = 60;
++
+ type Props = {
+   params: Promise<{ slug: string }>;
+ };

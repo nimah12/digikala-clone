@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "npx tsx prisma/seed.ts && npx tsx prisma/seed-more.ts && next build",
+    "build": "npx tsx prisma/seed.ts && npx tsx prisma/seed-more.ts && npx tsx prisma/seed-reviews.ts && next build",
     "start": "next start",
     "lint": "eslint"
   },

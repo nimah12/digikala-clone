@@ -50,37 +50,8 @@ async function main() {
     })
   }
 
-  // ۳) امتیازهای منحصربه‌فرد برای همه‌ی محصولات
-  // هر محصول امتیاز متفاوتی از ۳.۶ تا ۵.۰ با تعداد امتیاز متنوع
-  const products = await prisma.product.findMany({
-    select: { id: true, slug: true },
-    orderBy: { id: 'asc' },
-  })
-
-  // امتیازهای متنوع و چرخشی — هیچ دو محصولی امتیاز یکسان ندارند
-  const ratings = [
-    4.9, 4.7, 4.6, 4.8, 4.5, 4.4, 4.3, 4.2, 4.1, 4.0,
-    3.9, 3.8, 3.7, 3.6, 4.85, 4.65, 4.55, 4.35, 4.25, 4.15,
-    3.95, 3.85, 3.75, 3.65, 4.95, 4.75, 4.45, 4.05, 3.55, 3.45,
-    4.9, 4.7, 4.6, 4.8, 4.5, 4.4, 4.3, 4.2, 4.1, 4.0,
-    3.9, 3.8, 3.7, 3.6, 4.85, 4.65, 4.55, 4.35, 4.25, 4.15,
-  ]
-  const counts = [1280, 854, 2310, 2105, 623, 342, 1456, 410, 1180, 745, 1670, 532, 528, 890, 2450, 1820, 980, 640, 430, 350, 280, 610, 720, 240, 380, 190, 320, 210, 95, 150, 88, 2400, 1200, 1800, 950, 3100, 850, 320, 280, 540, 120, 480, 260, 180, 90, 140, 210, 150, 620, 220, 410]
-
-  let updated = 0
-  for (let i = 0; i < products.length; i++) {
-    const p = products[i]
-    const rating = ratings[i % ratings.length]
-    const count = counts[i % counts.length]
-    await prisma.product.update({
-      where: { id: p.id },
-      data: { rating, ratingCount: count },
-    })
-    updated++
-  }
-
   const total = await prisma.product.count()
-  console.log(`✅ پوشاک: ${FASHION_PRODUCTS.length} محصول اضافه شد؛ امتیاز ${updated} محصول به‌روزرسانی شد (کل: ${total} محصول)`)
+  console.log(`✅ پوشاک: ${FASHION_PRODUCTS.length} محصول اضافه شد (کل: ${total} محصول)`)
 }
 
 main()

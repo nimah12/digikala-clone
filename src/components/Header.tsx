@@ -17,25 +17,12 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
   const pathname = usePathname();
   const megaRef = useRef<HTMLDivElement>(null);
 
-  // Cart count sync from localStorage
+  // Keep cart count in sync with the server-computed value.
+  // (addToCart/removeFromCart call revalidatePath, which re-runs the layout
+  // and passes a fresh initialCartCount down — this effect picks that up.)
   useEffect(() => {
-    const sync = () => {
-      try {
-        const raw = localStorage.getItem("dk-cart");
-        if (raw) {
-          const ids: string[] = JSON.parse(raw);
-          setCartCount(ids.length);
-        }
-      } catch {}
-    };
-    sync();
-    window.addEventListener("dk-cart-changed", sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener("dk-cart-changed", sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
+    setCartCount(initialCartCount);
+  }, [initialCartCount]);
 
   // Close mega menu on outside click / Escape
   useEffect(() => {

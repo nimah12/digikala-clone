@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 
+export const revalidate = 60;
+
 type Props = {
   params: Promise<{ slug: string }>;
 };

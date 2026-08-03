@@ -10,6 +10,8 @@ import ProductCard from "@/components/ProductCard";
 import Reviews from "@/components/Reviews";
 import Vendors from "@/components/Vendors";
 
+export const revalidate = 60;
+
 type Props = {
   params: Promise<{ slug: string }>;
 };

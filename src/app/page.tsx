@@ -5,6 +5,8 @@ import HeroSlider from "@/components/HeroSlider";
 import ArticleCard from "@/components/ArticleCard";
 import { ARTICLES } from "@/lib/articles";
 
+export const revalidate = 60;
+
 const SERVICES = [
   { icon: "🚚", label: "تحویل اکسپرس" },
   { icon: "💵", label: "پرداخت در محل" },

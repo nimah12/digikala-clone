@@ -146,7 +146,8 @@ async function main() {
     })
   }
 
-  // add vendors
+  // add vendors (clear old ones first so re-running the build doesn't duplicate them)
+  await prisma.vendor.deleteMany({})
   let vendorCount = 0
   for (const v of newVendors) {
     const product = await prisma.product.findUnique({ where: { slug: v.productSlug } })

@@ -33,6 +33,10 @@ async function main() {
     }
   }
 
+  // clear any reviews previously added by this script for these products,
+  // so re-running it doesn't create duplicates
+  await prisma.review.deleteMany({ where: { productId: { in: Array.from(newProductIds) } } })
+
   let count = 0
   for (const productId of newProductIds) {
     // ۲ تا ۳ نظر جدید برای هر محصول جدید، با ترکیبی از مثبت/منفی

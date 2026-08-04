@@ -17,12 +17,25 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
   const pathname = usePathname();
   const megaRef = useRef<HTMLDivElement>(null);
 
-  // Keep cart count in sync with the server-computed value.
-  // (addToCart/removeFromCart call revalidatePath, which re-runs the layout
-  // and passes a fresh initialCartCount down — this effect picks that up.)
+  // Cart count sync from localStorage
   useEffect(() => {
-    setCartCount(initialCartCount);
-  }, [initialCartCount]);
+    const sync = () => {
+      try {
+        const raw = localStorage.getItem("dk-cart");
+        if (raw) {
+          const ids: string[] = JSON.parse(raw);
+          setCartCount(ids.length);
+        }
+      } catch {}
+    };
+    sync();
+    window.addEventListener("dk-cart-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("dk-cart-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   // Close mega menu on outside click / Escape
   useEffect(() => {
@@ -52,21 +65,6 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
 
   return (
     <header className="sticky top-0 z-40" style={{ background: "var(--panel)", color: "var(--text)" }}>
-      {/* Red top promo bar linking to jayar project */}
-      <a
-        href="https://jayar-nine.vercel.app/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block bg-gradient-to-l from-dk-red to-[#e05a2e] text-white text-center text-xs py-2 px-4 hover:from-dk-red-dark transition-all duration-300"
-      >
-        <span className="inline-flex items-center gap-2 flex-wrap justify-center">
-          <span className="text-sm">🏨</span>
-          <span className="font-bold">جایا</span>
-          <span>— سامانه رزرواسیون هتل و اقامتگاه؛</span>
-          <span className="font-bold underline underline-offset-2 decoration-2 decoration-white/50 hover:decoration-white">برای رزرو اقامتگاه کلیک کنید ←</span>
-        </span>
-      </a>
-
       {/* Top row: logo, search, actions */}
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-7xl mx-auto px-4">

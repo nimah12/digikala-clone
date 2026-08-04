@@ -1,31 +1,52 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import ProductCard from "@/components/ProductCard";
+import ProductCard, { type ProductWithCategory } from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import ArticleCard from "@/components/ArticleCard";
 import ServiceStrip from "@/components/ServiceStrip";
 import CategoryCircles from "@/components/CategoryCircles";
 import PromoBanners from "@/components/PromoBanners";
 import PopularBrands from "@/components/PopularBrands";
+import ProductRow from "@/components/ProductRow";
 import { ARTICLES } from "@/lib/articles";
 
+type RowProduct = ProductWithCategory;
+
 export default async function Home() {
-  const [deals, bestSellers, newest] = await Promise.all([
+  const [deals, bestSellers, newest, gpu, clothing, gold] = await Promise.all([
     prisma.product.findMany({
       where: { discountPercent: { gt: 0 } },
       include: { category: true },
       orderBy: { discountPercent: "desc" },
-      take: 12,
+      take: 14,
     }),
     prisma.product.findMany({
       include: { category: true },
       orderBy: { salesCount: "desc" },
-      take: 8,
+      take: 14,
     }),
     prisma.product.findMany({
       include: { category: true },
       orderBy: { createdAt: "desc" },
-      take: 8,
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "gpu" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "clothing" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "gold-silver" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
     }),
   ]);
 
@@ -49,49 +70,27 @@ export default async function Home() {
       <PopularBrands />
 
       {/* شگفت‌انگیزها: discounted products */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-extrabold flex items-center gap-2">
-            <span className="text-dk-red text-2xl">⚡</span>
-            شگفت‌انگیزها
-          </h2>
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            {deals.length.toLocaleString("fa-IR")} کالا با تخفیف ویژه
-          </span>
-        </div>
-        <div className="scroll-row flex gap-3">
-          {deals.map((product) => (
-            <div key={product.id} className="w-44 shrink-0">
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-      </section>
+      <ProductRow title="⚡ شگفت‌انگیزها" subtitle="کالاهای منتخب با تخفیف ویژه" products={deals as RowProduct[]} />
 
       {/* پرفروش‌ترین‌ها */}
-      <section className="mb-10">
-        <h2 className="text-lg font-extrabold mb-4">پرفروش‌ترین‌ها</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      <ProductRow title="🔥 پرفروش‌ترین‌ها" subtitle="محبوب‌ترین کالاهای دیجی‌کلون" products={bestSellers as RowProduct[]} />
+
+      {/* کارت گرافیک و گیمینگ */}
+      <ProductRow title="🎮 کارت گرافیک و گیمینگ" subtitle="قدرت برای بازی و رندرینگ" products={gpu as RowProduct[]} />
+
+      {/* پوشاک */}
+      <ProductRow title="🧥 پوشاک" subtitle="نایک، لی، اسکچرز و بیشتر" products={clothing as RowProduct[]} />
+
+      {/* طلا و نقره */}
+      <ProductRow title="🥇 طلا و نقره" subtitle="با عیار تضمینی و کد اصالت" products={gold as RowProduct[]} />
 
       {/* جدیدترین‌ها */}
-      <section className="mb-10">
-        <h2 className="text-lg font-extrabold mb-4">جدیدترین‌ها</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {newest.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      <ProductRow title="🆕 جدیدترین‌ها" subtitle="تازه‌های فروشگاه" products={newest as RowProduct[]} />
 
       {/* مقالات و اخبار */}
-      <section>
+      <section className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-extrabold">مقالات و اخبار دنیای تکنولوژی</h2>
+          <h2 className="text-lg font-extrabold">📰 مقالات و اخبار دنیای تکنولوژی</h2>
           <Link
             href="/articles"
             className="text-xs font-bold text-dk-red hover:underline"

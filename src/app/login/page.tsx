@@ -2,21 +2,47 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!identifier.trim() || !password) {
       setError("لطفاً ایمیل/شماره موبایل و رمز عبور را وارد کنید.");
       return;
     }
-    // در دمو، ورود به سادگی انجام می‌شود
     setError("");
-    alert("ورود موفق! (نسخه دمو)");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.user) {
+        // ذخیره نام کاربر برای نمایش در هدر
+        try {
+          localStorage.setItem("dk-user", JSON.stringify({ name: data.user.name || "کاربر" }));
+          window.dispatchEvent(new Event("dk-user-changed"));
+        } catch {}
+        router.push("/");
+      } else {
+        setError(data.error || "اطلاعات وارد شده صحیح نیست.");
+      }
+    } catch {
+      setError("خطا در اتصال به سرور. دوباره تلاش کنید.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -64,9 +90,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors"
+            disabled={loading}
+            className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            ورود
+            {loading ? "در حال ورود..." : "ورود"}
           </button>
         </form>
 

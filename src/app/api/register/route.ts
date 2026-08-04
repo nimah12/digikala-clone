@@ -20,16 +20,15 @@ export async function POST(request: NextRequest) {
         return Response.json({ success: false, error: "این ایمیل قبلاً ثبت شده است" }, { status: 409 });
       }
       await prisma.user.create({
-        data: { name: name.trim(), email, phone: null },
+        data: { name: name.trim(), email, phone: null, password },
       });
     } else if (phone) {
-      // phone-only: store as email placeholder is not possible (email unique) — store as phone
       const exists = await prisma.user.findFirst({ where: { phone } });
       if (exists) {
         return Response.json({ success: false, error: "این شماره قبلاً ثبت شده است" }, { status: 409 });
       }
       await prisma.user.create({
-        data: { name: name.trim(), email: `${phone}@phone.local`, phone },
+        data: { name: name.trim(), email: `${phone}@phone.local`, phone, password },
       });
     } else {
       return Response.json({ success: false, error: "ایمیل یا شماره موبایل الزامی است" }, { status: 400 });

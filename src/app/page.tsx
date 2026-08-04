@@ -3,7 +3,25 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import ArticleCard from "@/components/ArticleCard";
+import ProductRow from "@/components/ProductRow";
 import { ARTICLES } from "@/lib/articles";
+
+// دسته‌بندی‌هایی که به‌صورت ردیف جداگانه در هوم‌پیج نمایش داده می‌شوند
+const HOME_CATEGORY_ROWS = [
+  { slug: "mobile", name: "موبایل" },
+  { slug: "laptop", name: "لپ‌تاپ" },
+  { slug: "tablet", name: "تبلت" },
+  { slug: "smartwatch", name: "ساعت هوشمند" },
+  { slug: "audio", name: "صوتی و تصویری" },
+  { slug: "gpu", name: "کارت گرافیک" },
+  { slug: "gold-silver", name: "طلا و نقره" },
+  { slug: "supermarket", name: "سوپرمارکت" },
+  { slug: "fashion", name: "لباس و مد" },
+  { slug: "beauty", name: "زیبایی و سلامت" },
+  { slug: "sports", name: "ورزش و سفر" },
+  { slug: "tools", name: "ابزارآلات" },
+  { slug: "home", name: "خانه و آشپزخانه" },
+];
 
 export const revalidate = 60;
 
@@ -102,6 +120,11 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* ردیف محصولات هر دسته‌بندی */}
+      {HOME_CATEGORY_ROWS.map((cat) => (
+        <ProductRow key={cat.slug} categorySlug={cat.slug} categoryName={cat.name} />
+      ))}
 
       {/* مقالات و اخبار */}
       <section>

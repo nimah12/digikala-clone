@@ -56,6 +56,11 @@ export default function RegisterPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
+          // ذخیره نام کاربر برای نمایش در هدر
+          try {
+            localStorage.setItem("dk-user", JSON.stringify({ name: name.trim() }));
+            window.dispatchEvent(new Event("dk-user-changed"));
+          } catch {}
           setSuccess(true);
         } else {
           setError(data.error || "خطا در ثبت‌نام. دوباره تلاش کنید.");

@@ -11,11 +11,32 @@ import Logo from "./Logo";
 
 export default function Header({ initialCartCount }: { initialCartCount: number }) {
   const [cartCount, setCartCount] = useState(initialCartCount);
+  const [userName, setUserName] = useState<string | null>(null);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const megaRef = useRef<HTMLDivElement>(null);
+
+  // Load logged-in user name from localStorage
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const stored = localStorage.getItem("dk-user");
+        if (stored) {
+          const user = JSON.parse(stored);
+          setUserName(user?.name || null);
+        }
+      } catch {}
+    };
+    syncUser();
+    window.addEventListener("dk-user-changed", syncUser);
+    window.addEventListener("storage", syncUser);
+    return () => {
+      window.removeEventListener("dk-user-changed", syncUser);
+      window.removeEventListener("storage", syncUser);
+    };
+  }, []);
 
   // Cart count sync from localStorage
   useEffect(() => {
@@ -108,19 +129,35 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
               )}
             </button>
 
-            {/* Register / Login */}
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:gap-1.5 rounded-lg text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark transition-colors"
-              aria-label="ورود / ثبت‌نام"
-              title="ورود / ثبت‌نام"
-            >
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className="hidden sm:inline">ورود / ثبت‌نام</span>
-            </Link>
+            {/* Register / Login / User */}
+            {userName ? (
+              <div
+                className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-bold"
+                style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)" }}
+                title={userName}
+              >
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                  style={{ background: "#ef4050" }}
+                >
+                  {userName[0]}
+                </span>
+                <span className="hidden sm:inline max-w-[120px] truncate">{userName}</span>
+              </div>
+            ) : (
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:gap-1.5 rounded-lg text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark transition-colors"
+                aria-label="ورود / ثبت‌نام"
+                title="ورود / ثبت‌نام"
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span className="hidden sm:inline">ورود / ثبت‌نام</span>
+              </Link>
+            )}
 
             {/* Cart */}
             <Link

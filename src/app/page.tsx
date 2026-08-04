@@ -82,9 +82,11 @@ export default async function Home() {
       {/* پرفروش‌ترین‌ها */}
       <section className="mb-10">
         <h2 className="text-lg font-extrabold mb-4">پرفروش‌ترین‌ها</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="scroll-row flex gap-3">
           {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <div key={product.id} className="w-44 shrink-0">
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       </section>
@@ -92,9 +94,11 @@ export default async function Home() {
       {/* جدیدترین‌ها */}
       <section className="mb-10">
         <h2 className="text-lg font-extrabold mb-4">جدیدترین‌ها</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="scroll-row flex gap-3">
           {newest.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <div key={product.id} className="w-44 shrink-0">
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       </section>

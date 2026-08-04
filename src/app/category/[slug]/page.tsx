@@ -42,9 +42,11 @@ export default async function CategoryPage({ params }: Props) {
           هنوز کالایی در این دسته‌بندی ثبت نشده است.
         </p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="scroll-row flex gap-3">
           {category.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <div key={product.id} className="w-44 shrink-0">
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       )}

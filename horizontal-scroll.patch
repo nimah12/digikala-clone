@@ -1,0 +1,50 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index a5a4f5e..dafdafb 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -82,9 +82,11 @@ export default async function Home() {
+       {/* پرفروش‌ترین‌ها */}
+       <section className="mb-10">
+         <h2 className="text-lg font-extrabold mb-4">پرفروش‌ترین‌ها</h2>
+-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
++        <div className="scroll-row flex gap-3">
+           {bestSellers.map((product) => (
+-            <ProductCard key={product.id} product={product} />
++            <div key={product.id} className="w-44 shrink-0">
++              <ProductCard product={product} />
++            </div>
+           ))}
+         </div>
+       </section>
+@@ -92,9 +94,11 @@ export default async function Home() {
+       {/* جدیدترین‌ها */}
+       <section className="mb-10">
+         <h2 className="text-lg font-extrabold mb-4">جدیدترین‌ها</h2>
+-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
++        <div className="scroll-row flex gap-3">
+           {newest.map((product) => (
+-            <ProductCard key={product.id} product={product} />
++            <div key={product.id} className="w-44 shrink-0">
++              <ProductCard product={product} />
++            </div>
+           ))}
+         </div>
+       </section>
+diff --git a/src/app/category/[slug]/page.tsx b/src/app/category/[slug]/page.tsx
+index fe76670..db3756c 100644
+--- a/src/app/category/[slug]/page.tsx
++++ b/src/app/category/[slug]/page.tsx
+@@ -42,9 +42,11 @@ export default async function CategoryPage({ params }: Props) {
+           هنوز کالایی در این دسته‌بندی ثبت نشده است.
+         </p>
+       ) : (
+-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
++        <div className="scroll-row flex gap-3">
+           {category.products.map((product) => (
+-            <ProductCard key={product.id} product={product} />
++            <div key={product.id} className="w-44 shrink-0">
++              <ProductCard product={product} />
++            </div>
+           ))}
+         </div>
+       )}

@@ -108,6 +108,20 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
               )}
             </button>
 
+            {/* Register / Login */}
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:gap-1.5 rounded-lg text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark transition-colors"
+              aria-label="ورود / ثبت‌نام"
+              title="ورود / ثبت‌نام"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span className="hidden sm:inline">ورود / ثبت‌نام</span>
+            </Link>
+
             {/* Cart */}
             <Link
               href="/cart"

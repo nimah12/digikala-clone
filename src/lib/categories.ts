@@ -12,6 +12,7 @@ export const MENU_CATEGORIES: Category[] = [
   { id: 0, name: "لباس و مد", slug: "fashion" },
   { id: 0, name: "ابزارآلات", slug: "tools" },
   { id: 0, name: "کارت گرافیک", slug: "gpu" },
+  { id: 0, name: "لوازم جانبی کامپیوتر", slug: "computer-accessories" },
 ] as unknown as Category[];
 
 // Mega menu sections with subcategories (digikala-style)
@@ -100,6 +101,12 @@ export const MEGA_MENU: MegaMenuSection[] = [
     name: "زیبایی و سلامت",
     icon: "💄",
     subcategories: ["لوازم آرایشی", "مراقبت پوست", "سشوار", "اصلاح"],
+  },
+  {
+    slug: "computer-accessories",
+    name: "لوازم جانبی کامپیوتر",
+    icon: "🖱️",
+    subcategories: ["ماوس", "کیبورد", "هدست", "هارد اکسترنال", "وب‌کم"],
   },
   {
     slug: "sports",

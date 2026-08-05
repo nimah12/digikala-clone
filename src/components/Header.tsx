@@ -253,52 +253,45 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
             })}
           </div>
 
-          {/* Mega menu panel: near-full width like before, but blurred */}
+          {/* Mega menu panel: opens downward, compact, no hover-lock */}
           {megaOpen && (
-            <>
-              {/* Blurred backdrop */}
-              <div
-                className="fixed inset-0 z-10"
-                style={{ background: "rgba(0,0,0,0.2)", backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)" }}
-                onClick={() => setMegaOpen(false)}
-                aria-hidden="true"
-              />
-              <div
-                className="mega-menu-panel absolute right-0 left-0 top-full z-20 shadow-2xl rounded-b-2xl border p-6"
-                style={{
-                  background: "color-mix(in srgb, var(--panel) 85%, transparent)",
-                  borderColor: "var(--border)",
-                }}
-                onMouseLeave={() => setMegaOpen(false)}
-              >
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
-                  {MEGA_MENU.map((section) => (
-                    <div key={section.slug}>
-                      <Link
-                        href={`/category/${section.slug}`}
-                        className="inline-flex items-center gap-2 text-sm font-bold hover:text-dk-red transition-colors mb-2.5"
-                      >
-                        <span className="text-lg">{section.icon}</span>
-                        {section.name}
-                      </Link>
-                      <ul className="space-y-1.5">
-                        {section.subcategories.slice(0, 4).map((sub) => (
-                          <li key={sub}>
-                            <Link
-                              href={`/search?q=${encodeURIComponent(sub)}`}
-                              className="text-xs hover:text-dk-red transition-colors"
-                              style={{ color: "var(--text-secondary)" }}
-                            >
-                              {sub}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
+            <div
+              className="mega-menu-panel absolute right-0 top-full z-30 shadow-2xl rounded-b-2xl border mt-0.5"
+              style={{
+                background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                borderColor: "var(--border)",
+                maxWidth: "760px",
+              }}
+              onMouseEnter={() => setMegaOpen(true)}
+              onMouseLeave={() => setMegaOpen(false)}
+            >
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4 p-5">
+                {MEGA_MENU.slice(0, 6).map((section) => (
+                  <div key={section.slug}>
+                    <Link
+                      href={`/category/${section.slug}`}
+                      className="inline-flex items-center gap-2 text-[13px] font-bold hover:text-dk-red transition-colors mb-1.5"
+                    >
+                      <span className="text-base">{section.icon}</span>
+                      {section.name}
+                    </Link>
+                    <ul className="space-y-1">
+                      {section.subcategories.slice(0, 3).map((sub) => (
+                        <li key={sub}>
+                          <Link
+                            href={`/search?q=${encodeURIComponent(sub)}`}
+                            className="text-[11px] hover:text-dk-red transition-colors"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            {sub}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

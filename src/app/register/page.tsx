@@ -13,6 +13,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [captcha, setCaptcha] = useState("");
+  const [captchaNum, setCaptchaNum] = useState(() => Math.floor(10 + Math.random() * 89));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,8 +39,25 @@ export default function RegisterPage() {
       }
     }
 
+    // اعتبارسنجی رمز عبور
     if (password.length < 6) {
       setError("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("رمز عبور باید حداقل یک حرف بزرگ (A-Z) داشته باشد.");
+      return;
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      setError("رمز عبور باید حداقل یک کاراکتر خاص (مثل @ یا !) داشته باشد.");
+      return;
+    }
+
+    // کپچا
+    if (parseInt(captcha) !== captchaNum) {
+      setError("پاسخ کپچا اشتباه است.");
+      setCaptchaNum(Math.floor(10 + Math.random() * 89));
+      setCaptcha("");
       return;
     }
 
@@ -49,14 +68,13 @@ export default function RegisterPage() {
       body: JSON.stringify({
         name,
         email: method === "email" ? email : null,
-        phone: method === "phone" ? phone.replace(/[^\d]/g, "") : null,
+        phone: method === "phone" ? phone : null,
         password,
       }),
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          // ذخیره نام کاربر برای نمایش در هدر
           try {
             localStorage.setItem("dk-user", JSON.stringify({ name: name.trim() }));
             window.dispatchEvent(new Event("dk-user-changed"));
@@ -151,23 +169,15 @@ export default function RegisterPage() {
           ) : (
             <div>
               <label className="block text-xs font-bold mb-1.5">شماره موبایل</label>
-              <div className="flex">
-                <span
-                  className="inline-flex items-center px-3 rounded-r-lg border border-l-0 text-sm"
-                  style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                >
-                  +98
-                </span>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="۹۱۲۳۴۵۶۷۸۹"
-                  dir="ltr"
-                  className="w-full h-11 px-3 rounded-l-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 text-left"
-                  style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
-                />
-              </div>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                dir="ltr"
+                className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 text-left"
+                style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+              />
             </div>
           )}
 
@@ -177,8 +187,31 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="حداقل ۶ کاراکتر"
+              placeholder="حداقل ۶ کاراکتر با @ و حرف بزرگ"
               className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
+              style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+            />
+            <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+              حداقل ۶ کاراکتر، شامل یک حرف بزرگ (A-Z) و یک کاراکتر خاص (مثل @ یا !)
+            </p>
+          </div>
+
+          {/* Simple anti-bot captcha */}
+          <div className="flex items-center gap-3">
+            <span
+              className="inline-flex items-center justify-center h-11 px-4 rounded-lg text-lg font-extrabold select-none"
+              style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", fontStyle: "italic", letterSpacing: "0.2em" }}
+            >
+              {captchaNum}
+            </span>
+            <input
+              type="text"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value)}
+              placeholder="عدد بالا را وارد کنید"
+              dir="ltr"
+              inputMode="numeric"
+              className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 text-left"
               style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
             />
           </div>

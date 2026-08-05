@@ -19,7 +19,8 @@ model User {
   password  String?
   createdAt DateTime @default(now())
 
-  cart Cart?
+  cart   Cart?
+  orders Order[]
 }
 
 model Category {
@@ -47,9 +48,10 @@ model Product {
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
 
-  cartItems CartItem[]
-  reviews   Review[]
-  vendors   Vendor[]
+  cartItems  CartItem[]
+  reviews    Review[]
+  vendors    Vendor[]
+  orderItems OrderItem[]
 }
 
 model Cart {
@@ -98,4 +100,31 @@ model Vendor {
   stock     Int     @default(0)
 
   @@index([productId])
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  status        String      @default("pending")
+  total         Int
+  shippingName  String
+  shippingPrice Int
+  receiverName  String
+  phone         String
+  address       String
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  price     Int
 }

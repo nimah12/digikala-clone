@@ -131,8 +131,9 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
 
             {/* Register / Login / User */}
             {userName ? (
-              <div
-                className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-bold"
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-bold hover:shadow-md transition-shadow"
                 style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)" }}
                 title={userName}
               >
@@ -143,7 +144,10 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
                   {userName[0]}
                 </span>
                 <span className="hidden sm:inline max-w-[120px] truncate">{userName}</span>
-              </div>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ color: "var(--text-muted)" }}>
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </Link>
             ) : (
               <Link
                 href="/register"

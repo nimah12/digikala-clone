@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/format";
+import { getCurrentUser } from "@/lib/user";
 
 export type ShippingMethod = {
   id: string;
@@ -31,6 +32,31 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim() || !form.address.trim()) return;
     setStep(3);
+  }
+
+  async function saveOrder() {
+    const user = getCurrentUser();
+    if (!user?.email) return;
+    try {
+      const cart = localStorage.getItem("dk-cart");
+      const ids: number[] = cart ? JSON.parse(cart) : [];
+      await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          total,
+          shippingName: shipping.name,
+          shippingPrice: shipping.price,
+          receiverName: form.name,
+          phone: form.phone,
+          address: `${form.city}، ${form.address}`,
+          productIds: ids,
+        }),
+      });
+      localStorage.removeItem("dk-cart");
+      window.dispatchEvent(new Event("dk-cart-changed"));
+    } catch {}
   }
 
   return (
@@ -208,10 +234,13 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
             </button>
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={async () => {
+                await saveOrder();
+                router.push("/orders");
+              }}
               className="flex-1 h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors"
             >
-              بازگشت به فروشگاه
+              تکمیل و مشاهده سفارش
             </button>
           </div>
         </div>

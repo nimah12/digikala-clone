@@ -38,14 +38,16 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
     };
   }, []);
 
-  // Cart count sync from localStorage
+  // Cart count sync from localStorage (sum of quantities)
   useEffect(() => {
     const sync = () => {
       try {
         const raw = localStorage.getItem("dk-cart");
         if (raw) {
-          const ids: string[] = JSON.parse(raw);
-          setCartCount(ids.length);
+          const items = JSON.parse(raw) as { id: number; qty?: number }[];
+          setCartCount(items.reduce((sum, i) => sum + (i.qty || 1), 0));
+        } else {
+          setCartCount(0);
         }
       } catch {}
     };
@@ -90,7 +92,12 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
       const stored = localStorage.getItem("dk-user");
       setUserName(stored ? (JSON.parse(stored)?.name ?? null) : null);
       const raw = localStorage.getItem("dk-cart");
-      setCartCount(raw ? (JSON.parse(raw) as string[]).length : 0);
+      if (raw) {
+        const items = JSON.parse(raw) as { id: number; qty?: number }[];
+        setCartCount(items.reduce((sum, i) => sum + (i.qty || 1), 0));
+      } else {
+        setCartCount(0);
+      }
     } catch {}
   }, [pathname]);
 

@@ -1,37 +1,40 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { addToCart } from "@/lib/actions";
+import { useState } from "react";
 
-export default function AddToCartButton({ productId, slug }: { productId: number; slug: string }) {
-  const [pending, startTransition] = useTransition();
+type CartItem = { id: number; qty: number };
+
+export default function AddToCartButton({ productId }: { productId: number }) {
   const [added, setAdded] = useState(false);
 
   function handleClick() {
-    startTransition(async () => {
-      await addToCart(productId);
+    try {
+      const raw = localStorage.getItem("dk-cart");
+      const items: CartItem[] = raw ? JSON.parse(raw) : [];
+      const existing = items.find((i) => i.id === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        items.push({ id: productId, qty: 1 });
+      }
+      localStorage.setItem("dk-cart", JSON.stringify(items));
+      window.dispatchEvent(new Event("dk-cart-changed"));
       setAdded(true);
       setTimeout(() => setAdded(false), 1500);
-    });
+    } catch {}
   }
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      disabled={pending}
-      className={`btn-press w-full h-10 rounded-lg text-sm font-bold shadow-sm ${
+      className={`btn-press w-full h-10 rounded-lg text-sm font-bold shadow-sm transition-colors ${
         added
           ? "bg-dk-green text-white"
-          : "bg-dk-red text-white hover:bg-dk-red-dark hover:shadow-md disabled:opacity-60"
+          : "bg-dk-red text-white hover:bg-dk-red-dark hover:shadow-md"
       }`}
     >
-      {pending ? (
-        <span className="inline-flex items-center gap-2">
-          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          در حال افزودن...
-        </span>
-      ) : added ? (
+      {added ? (
         <span className="pop-in inline-block">به سبد اضافه شد ✓</span>
       ) : (
         "افزودن به سبد خرید"

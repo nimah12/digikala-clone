@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, total, shippingName, shippingPrice, receiverName, phone, address, productIds } = body;
+    const { email, total, shippingName, shippingPrice, receiverName, phone, address, productIds, quantities } = body;
 
     if (!email || !Array.isArray(productIds) || productIds.length === 0) {
       return Response.json({ success: false, error: "اطلاعات ناقص است" }, { status: 400 });
@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: "محصولی یافت نشد" }, { status: 404 });
     }
 
+    const qtyMap = new Map<number, number>();
+    if (Array.isArray(quantities)) {
+      productIds.forEach((id: number, i: number) => qtyMap.set(id, quantities[i] || 1));
+    }
+
     const order = await prisma.order.create({
       data: {
         userId: user.id,
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest) {
         items: {
           create: products.map((p) => ({
             productId: p.id,
-            quantity: 1,
+            quantity: Math.min(qtyMap.get(p.id) || 1, p.stock || 1),
             price: p.price,
           })),
         },

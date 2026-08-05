@@ -10,8 +10,6 @@ import ProductCard from "@/components/ProductCard";
 import Reviews from "@/components/Reviews";
 import Vendors from "@/components/Vendors";
 
-export const revalidate = 60;
-
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -118,7 +116,7 @@ export default async function ProductPage({ params }: Props) {
                 </div>
                 <PriceBadge price={product.price} discountPercent={product.discountPercent} />
               </div>
-              <AddToCartButton productId={product.id} slug={product.slug} />
+              <AddToCartButton productId={product.id} />
               <div className="mt-3 flex items-center gap-4 text-[11px]" style={{ color: "var(--text-secondary)" }}>
                 <span>🚚 ارسال سریع به سراسر کشور</span>
                 <span>✅ ضمانت اصالت کالا</span>

@@ -39,7 +39,13 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
     if (!user?.email) return;
     try {
       const cart = localStorage.getItem("dk-cart");
-      const ids: number[] = cart ? JSON.parse(cart) : [];
+      const items: { id: number; qty: number }[] = cart ? JSON.parse(cart) : [];
+      const productIds: number[] = [];
+      const quantities: number[] = [];
+      for (const item of items) {
+        productIds.push(item.id);
+        quantities.push(item.qty || 1);
+      }
       await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,7 +57,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
           receiverName: form.name,
           phone: form.phone,
           address: `${form.city}، ${form.address}`,
-          productIds: ids,
+          productIds,
+          quantities,
         }),
       });
       localStorage.removeItem("dk-cart");

@@ -12,6 +12,11 @@ const CATEGORIES = [
   { icon: "🔧", label: "ابزارآلات", slug: "tools", color: "#fdf3e3" },
   { icon: "🎧", label: "صوتی و تصویری", slug: "audio", color: "#f2f2f7" },
   { icon: "🏠", label: "خانه و آشپزخانه", slug: "home", color: "#fdf6ec" },
+  { icon: "☕", label: "لوازم خانگی", slug: "home-appliances", color: "#f5edf9" },
+  { icon: "📚", label: "کتاب", slug: "books", color: "#f5f0e8" },
+  { icon: "🧴", label: "عطر و ادکلن", slug: "perfume", color: "#f9e8f4" },
+  { icon: "🧸", label: "اسباب‌بازی", slug: "toys", color: "#eef7ec" },
+  { icon: "🏺", label: "دکوراتیو", slug: "decor", color: "#f5f0e8" },
   { icon: "👕", label: "لباس و مد", slug: "fashion", color: "#f9e8f4" },
 ];
 

@@ -84,6 +84,16 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
     setMobileOpen(false);
   }, [pathname]);
 
+  // Re-sync user and cart on every navigation (logout, login, etc.)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("dk-user");
+      setUserName(stored ? (JSON.parse(stored)?.name ?? null) : null);
+      const raw = localStorage.getItem("dk-cart");
+      setCartCount(raw ? (JSON.parse(raw) as string[]).length : 0);
+    } catch {}
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 z-40" style={{ background: "var(--panel)", color: "var(--text)" }}>
       {/* Top row: logo, search, actions */}

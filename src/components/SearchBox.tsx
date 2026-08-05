@@ -68,7 +68,7 @@ export default function SearchBox() {
   }
 
   return (
-    <div className="flex-1 max-w-2xl mx-auto relative" ref={boxRef}>
+    <div className="flex-1 max-w-2xl mx-auto relative min-w-0" ref={boxRef}>
       <form
         action="/search"
         role="search"

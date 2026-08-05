@@ -13,7 +13,7 @@ import { ARTICLES } from "@/lib/articles";
 type RowProduct = ProductWithCategory;
 
 export default async function Home() {
-  const [deals, bestSellers, newest, gpu, clothing, gold] = await Promise.all([
+  const [deals, bestSellers, newest, gpu, clothing, gold, appliances, books, perfume] = await Promise.all([
     prisma.product.findMany({
       where: { discountPercent: { gt: 0 } },
       include: { category: true },
@@ -44,6 +44,24 @@ export default async function Home() {
     }),
     prisma.product.findMany({
       where: { category: { slug: "gold-silver" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "home-appliances" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "books" } },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 14,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "perfume" } },
       include: { category: true },
       orderBy: { salesCount: "desc" },
       take: 14,
@@ -83,6 +101,15 @@ export default async function Home() {
 
       {/* طلا و نقره */}
       <ProductRow title="🥇 طلا و نقره" subtitle="با عیار تضمینی و کد اصالت" products={gold as RowProduct[]} />
+
+      {/* لوازم خانگی */}
+      <ProductRow title="☕ لوازم خانگی" subtitle="قهوه‌ساز، سرخ‌کن و بیشتر" products={appliances as RowProduct[]} />
+
+      {/* کتاب */}
+      <ProductRow title="📚 کتاب و لوازم تحریر" subtitle="جدیدترین کتاب‌های پرفروش" products={books as RowProduct[]} />
+
+      {/* عطر */}
+      <ProductRow title="🧴 عطر و ادکلن" subtitle="رایحه‌های ماندگار" products={perfume as RowProduct[]} />
 
       {/* جدیدترین‌ها */}
       <ProductRow title="🆕 جدیدترین‌ها" subtitle="تازه‌های فروشگاه" products={newest as RowProduct[]} />

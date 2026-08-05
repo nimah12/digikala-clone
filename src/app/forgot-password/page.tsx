@@ -2,41 +2,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!identifier.trim() || !password) {
-      setError("لطفاً ایمیل/شماره موبایل و رمز عبور را وارد کنید.");
+    if (!identifier.trim()) {
+      setError("لطفاً ایمیل یا شماره موبایل خود را وارد کنید.");
       return;
     }
     setError("");
     setLoading(true);
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password }),
+        body: JSON.stringify({ identifier }),
       });
       const data = await res.json();
-
-      if (data.success && data.user) {
-        // ذخیره نام کاربر برای نمایش در هدر
-        try {
-          localStorage.setItem("dk-user", JSON.stringify({ name: data.user.name || "کاربر" }));
-          window.dispatchEvent(new Event("dk-user-changed"));
-        } catch {}
-        router.push("/");
+      if (data.success) {
+        setSent(true);
       } else {
-        setError(data.error || "اطلاعات وارد شده صحیح نیست.");
+        setError(data.error || "خطا در ارسال. دوباره تلاش کنید.");
       }
     } catch {
       setError("خطا در اتصال به سرور. دوباره تلاش کنید.");
@@ -45,14 +37,34 @@ export default function LoginPage() {
     }
   }
 
+  if (sent) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="text-6xl mb-4">📧</div>
+        <h1 className="text-xl font-extrabold mb-2">لینک بازیابی رمز ارسال شد</h1>
+        <p className="text-sm leading-7 mb-8" style={{ color: "var(--text-secondary)" }}>
+          اگر این ایمیل/شماره در سیستم ثبت شده باشد، لینک بازیابی رمز برای شما ارسال شده است.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center justify-center h-11 px-8 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors"
+        >
+          بازگشت به ورود
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto px-4 py-10">
       <div className="rounded-2xl border p-6 md:p-8" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
         <div className="text-center mb-6">
           <div className="text-4xl mb-2">🔑</div>
-          <h1 className="text-xl font-extrabold">ورود به دیجی‌کلون</h1>
-          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-            با ایمیل یا شماره موبایل وارد شوید
+          <h1 className="text-xl font-extrabold">فراموشی رمز عبور</h1>
+          <p className="text-xs mt-1 leading-5" style={{ color: "var(--text-secondary)" }}>
+            ایمیل یا شماره موبایل خود را وارد کنید تا
+            <br />
+            لینک بازیابی رمز برای شما ارسال شود.
           </p>
         </div>
 
@@ -70,18 +82,6 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold mb-1.5">رمز عبور</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="رمز عبور"
-              className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
-              style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
-            />
-          </div>
-
           {error && (
             <div className="p-3 rounded-lg text-xs" style={{ background: "rgba(239,64,80,0.1)", color: "#ef4050" }}>
               ⚠️ {error}
@@ -93,20 +93,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            {loading ? "در حال ورود..." : "ورود"}
+            {loading ? "در حال ارسال..." : "ارسال لینک بازیابی"}
           </button>
         </form>
 
-        <div className="text-center mt-3">
-          <Link href="/forgot-password" className="text-xs hover:underline" style={{ color: "var(--text-secondary)" }}>
-            رمز عبور را فراموش کرده‌اید؟
-          </Link>
-        </div>
-
         <p className="text-center text-xs mt-4" style={{ color: "var(--text-secondary)" }}>
-          حساب کاربری ندارید؟{" "}
-          <Link href="/register" className="text-dk-red font-bold hover:underline">
-            ثبت‌نام کنید
+          رمزتان را به یاد آوردید؟{" "}
+          <Link href="/login" className="text-dk-red font-bold hover:underline">
+            وارد شوید
           </Link>
         </p>
       </div>

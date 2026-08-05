@@ -12,7 +12,6 @@ export const MENU_CATEGORIES: Category[] = [
   { id: 0, name: "لباس و مد", slug: "fashion" },
   { id: 0, name: "ابزارآلات", slug: "tools" },
   { id: 0, name: "کارت گرافیک", slug: "gpu" },
-  { id: 0, name: "لوازم جانبی کامپیوتر", slug: "computer-accessories" },
 ] as unknown as Category[];
 
 // Mega menu sections with subcategories (digikala-style)
@@ -24,6 +23,36 @@ export type MegaMenuSection = {
 };
 
 export const MEGA_MENU: MegaMenuSection[] = [
+  {
+    slug: "home-appliances",
+    name: "لوازم خانگی",
+    icon: "☕",
+    subcategories: ["قهوه‌ساز", "سرخ‌کن بدون روغن", "اتو بخار", "کتری برقی", "مایکروویو"],
+  },
+  {
+    slug: "books",
+    name: "کتاب و لوازم تحریر",
+    icon: "📚",
+    subcategories: ["رمان", "شعر", "روانشناسی", "کودک", "کامپیوتر"],
+  },
+  {
+    slug: "perfume",
+    name: "عطر و ادکلن",
+    icon: "🧴",
+    subcategories: ["عطر مردانه", "عطر زنانه", "عطر یونیسکس"],
+  },
+  {
+    slug: "toys",
+    name: "اسباب‌بازی",
+    icon: "🧸",
+    subcategories: ["لگو", "عروسک", "پازل", "ماشین کنترلی"],
+  },
+  {
+    slug: "decor",
+    name: "دکوراتیو",
+    icon: "🏺",
+    subcategories: ["گلدان", "شمع", "قاب عکس", "ساعت دیواری"],
+  },
   {
     slug: "mobile",
     name: "موبایل",
@@ -101,12 +130,6 @@ export const MEGA_MENU: MegaMenuSection[] = [
     name: "زیبایی و سلامت",
     icon: "💄",
     subcategories: ["لوازم آرایشی", "مراقبت پوست", "سشوار", "اصلاح"],
-  },
-  {
-    slug: "computer-accessories",
-    name: "لوازم جانبی کامپیوتر",
-    icon: "🖱️",
-    subcategories: ["ماوس", "کیبورد", "هدست", "هارد اکسترنال", "وب‌کم"],
   },
   {
     slug: "sports",

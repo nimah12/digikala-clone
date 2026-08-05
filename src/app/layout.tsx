@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import SupportChat from "@/components/SupportChat";
 import { ThemeProvider } from "@/lib/theme";
 import { getCartCount } from "@/lib/cart";
+import { Analytics } from "@vercel/analytics/next";
 
 const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
@@ -39,6 +40,7 @@ export default async function RootLayout({
           <Footer />
           <SupportChat />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

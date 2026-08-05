@@ -1,4 +1,4 @@
 {
-  "buildCommand": "prisma migrate deploy && prisma generate && tsx prisma/seed-more.ts && tsx prisma/seed-reviews-v2.ts && tsx prisma/seed-unique-ratings.ts && next build",
+  "buildCommand": "prisma migrate deploy && prisma generate && tsx prisma/seed-more.ts && tsx prisma/seed-reviews-v2.ts && tsx prisma/seed-unique-ratings.ts && tsx prisma/seed-row-fill.ts && tsx prisma/seed-new-cats.ts && next build",
   "framework": "nextjs"
 }

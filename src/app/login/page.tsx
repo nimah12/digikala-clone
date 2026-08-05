@@ -32,6 +32,15 @@ export default function LoginPage() {
         // ذخیره نام کاربر برای نمایش در هدر
         try {
           localStorage.setItem("dk-user", JSON.stringify({ name: data.user.name || "کاربر" }));
+          // ثبت رویداد ورود
+          const events = JSON.parse(localStorage.getItem("dk-events") || "[]");
+          events.unshift({
+            type: "login",
+            time: new Date().toLocaleString("fa-IR", {
+              year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+            }),
+          });
+          localStorage.setItem("dk-events", JSON.stringify(events.slice(0, 20)));
           window.dispatchEvent(new Event("dk-user-changed"));
         } catch {}
         router.push("/");

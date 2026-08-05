@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type Method = "email" | "phone";
@@ -14,7 +14,14 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [captcha, setCaptcha] = useState("");
-  const [captchaNum, setCaptchaNum] = useState(() => Math.floor(10 + Math.random() * 89));
+  const [captchaNum, setCaptchaNum] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  // عدد کپچا فقط در کلاینت تولید می‌شود تا hydration مشکل نداشته باشد
+  useEffect(() => {
+    setMounted(true);
+    setCaptchaNum(Math.floor(10 + Math.random() * 89));
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -199,10 +206,10 @@ export default function RegisterPage() {
           {/* Simple anti-bot captcha */}
           <div className="flex items-center gap-3">
             <span
-              className="inline-flex items-center justify-center h-11 px-4 rounded-lg text-lg font-extrabold select-none"
+              className="inline-flex items-center justify-center h-11 px-4 rounded-lg text-lg font-extrabold select-none min-w-[60px]"
               style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", fontStyle: "italic", letterSpacing: "0.2em" }}
             >
-              {captchaNum}
+              {mounted ? captchaNum : "•"}
             </span>
             <input
               type="text"

@@ -33,6 +33,17 @@ export default function DashboardPage() {
   }
 
   function handleLogout() {
+    // ثبت رویداد خروج
+    try {
+      const events = JSON.parse(localStorage.getItem("dk-events") || "[]");
+      events.unshift({
+        type: "logout",
+        time: new Date().toLocaleString("fa-IR", {
+          year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+        }),
+      });
+      localStorage.setItem("dk-events", JSON.stringify(events.slice(0, 20)));
+    } catch {}
     clearCurrentUser();
     router.push("/");
   }

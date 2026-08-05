@@ -8,6 +8,7 @@ import { MENU_CATEGORIES, MEGA_MENU } from "@/lib/categories";
 import { useTheme } from "@/lib/theme";
 import SearchBox from "./SearchBox";
 import Logo from "./Logo";
+import NotificationBell from "./NotificationBell";
 
 export default function Header({ initialCartCount }: { initialCartCount: number }) {
   const [cartCount, setCartCount] = useState(initialCartCount);
@@ -145,6 +146,9 @@ export default function Header({ initialCartCount }: { initialCartCount: number 
                 </svg>
               )}
             </button>
+
+            {/* Notification bell */}
+            <NotificationBell />
 
             {/* Register / Login / User */}
             {userName ? (

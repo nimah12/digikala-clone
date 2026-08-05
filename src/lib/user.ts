@@ -6,6 +6,7 @@ export type CurrentUser = {
   id?: number;
   name: string;
   email?: string;
+  phone?: string;
 };
 
 export function getCurrentUser(): CurrentUser | null {

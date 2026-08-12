@@ -1,0 +1,34 @@
+path = "prisma/schema.prisma"
+with open(path, encoding="utf-8") as f:
+    content = f.read()
+old_user = "  cart Cart?"
+new_user = "  cart   Cart?\n  orders Order[]"
+content = content.replace(old_user, new_user)
+content += "\nmodel Order {\n"
+content += "  id           Int          @id @default(autoincrement())\n"
+content += "  userId       Int\n"
+content += "  user         User         @relation(fields: [userId], references: [id])\n"
+content += '  status       String       @default("pending")\n'
+content += "  total        Int\n"
+content += "  shippingName String\n"
+content += "  shippingPrice Int\n"
+content += "  receiverName String\n"
+content += "  phone        String\n"
+content += "  address      String\n"
+content += "  createdAt    DateTime     @default(now())\n"
+content += "  items        OrderItem[]\n"
+content += "\n"
+content += "  @@index([userId])\n"
+content += "}\n"
+content += "\nmodel OrderItem {\n"
+content += "  id        Int     @id @default(autoincrement())\n"
+content += "  orderId   Int\n"
+content += "  order     Order   @relation(fields: [orderId], references: [id])\n"
+content += "  productId Int\n"
+content += "  product   Product @relation(fields: [productId], references: [id])\n"
+content += "  quantity  Int     @default(1)\n"
+content += "  price     Int\n"
+content += "}\n"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+print("ORDERS_ADDED:", "model Order" in content, "orders Order[]" in content)

@@ -1,0 +1,306 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dk-red: #ef4050;
+  --color-dk-red-dark: #e02e3f;
+  --color-dk-bg: #f5f5f5;
+  --color-dk-panel: #ffffff;
+  --color-dk-text: #424750;
+  --color-dk-text-secondary: #81858b;
+  --color-dk-text-muted: #a1a3a8;
+  --color-dk-border: #e0e0e2;
+  --color-dk-amber: #f9a825;
+  --color-dk-green: #2ab57d;
+  --color-dk-dark: #23254e;
+  --color-dk-indigo: #7879f1;
+
+  --font-sans: var(--font-vazirmatn), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---- Daylight / Night light theme ---- */
+:root,
+html[data-theme="light"] {
+  --bg: #f5f5f5;
+  --panel: #ffffff;
+  --text: #424750;
+  --text-secondary: #81858b;
+  --text-muted: #a1a3a8;
+  --border: #e0e0e2;
+  --border-strong: #c8c8cc;
+  --hover: #f0f0f0;
+}
+
+html[data-theme="dark"] {
+  --bg: #101014;
+  --panel: #1a1a20;
+  --text: #e6e6e8;
+  --text-secondary: #a8a8b0;
+  --text-muted: #7a7a84;
+  --border: #2a2a32;
+  --border-strong: #3a3a44;
+  --hover: #24242c;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* ---- Horizontal scroll sections with visible scrollbar ---- */
+.scroll-row {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.5rem;
+}
+.scroll-row::-webkit-scrollbar {
+  height: 8px;
+}
+.scroll-row::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 9999px;
+}
+.scroll-row::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 9999px;
+}
+.scroll-row::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+.scroll-row > * {
+  scroll-snap-align: start;
+}
+
+/* ---- Mega menu ---- */
+.mega-menu-panel {
+  animation: mega-in 0.18s ease-out;
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+.mega-menu-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-muted) transparent;
+}
+.mega-menu-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.mega-menu-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mega-menu-scroll::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 9999px;
+}
+.mega-menu-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+@keyframes mega-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Mobile drawer ---- */
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ---- Sub-header animated underline ---- */
+.sub-header-link {
+  position: relative;
+}
+.sub-header-link::after {
+  content: "";
+  position: absolute;
+  right: 0.75rem;
+  left: 0.75rem;
+  bottom: 0.4rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: #23254e;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sub-header-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* ---- Smooth animations & micro-interactions ---- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.pop-in {
+  animation: pop-in 0.25s ease-out both;
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 4px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Button micro-interaction */
+.btn-press {
+  transition: transform 0.12s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Cart badge bounce */
+@keyframes badge-bounce {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.badge-bounce {
+  animation: badge-bounce 0.3s ease-out;
+}
+
+/* ---- Loading screen ---- */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading-spinner {
+  animation: spin-slow 0.8s linear infinite;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.shimmer-bg {
+  background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ---- Popular brands ---- */
+/* Staggered pop-in entrance (delay set inline per item) */
+.brand-item {
+  animation: brand-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes brand-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.8);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Square tile: lift, brand-tinted glow + shine sweep on hover */
+.brand-tile {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+  will-change: transform;
+}
+
+.brand-tile:hover {
+  transform: translateY(-7px) scale(1.06) rotate(2deg);
+  box-shadow: 0 18px 34px -10px color-mix(in srgb, var(--glow, #ef4050) 45%, transparent);
+  border-color: color-mix(in srgb, var(--glow, #ef4050) 60%, transparent);
+}
+
+.brand-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+  transform: translateX(130%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.brand-tile:hover::after {
+  animation: brand-shine 0.75s ease forwards;
+}
+
+@keyframes brand-shine {
+  from {
+    transform: translateX(130%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+}
+
+/* Icon inside the tile */
+.brand-tile .brand-icon {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brand-tile:hover .brand-icon {
+  transform: scale(1.2) rotate(-8deg);
+}

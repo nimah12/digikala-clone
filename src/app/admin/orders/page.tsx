@@ -1,0 +1,346 @@
+"use client";
+
+import { Fragment, useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+
+type OrderItem = {
+  id: number;
+  quantity: number;
+  price: number;
+  colorName: string | null;
+  product: { id: number; name: string; slug: string; imageUrl: string | null };
+};
+
+type Order = {
+  id: number;
+  status: string;
+  total: number;
+  shippingName: string;
+  shippingPrice: number;
+  receiverName: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+  user: { id: number; name: string | null; email: string } | null;
+  items: OrderItem[];
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "در انتظار پرداخت",
+  processing: "در حال آماده‌سازی",
+  shipped: "تحویل به پست",
+  delivered: "تحویل شده",
+  cancelled: "لغو شده",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: "#b8860b",
+  processing: "#2563eb",
+  shipped: "#7c3aed",
+  delivered: "#16a34a",
+  cancelled: "#dc2626",
+};
+
+const STATUS_FLOW = ["pending", "processing", "shipped", "delivered"];
+
+export default function AdminOrdersPage() {
+  const [status, setStatus] = useState<"loading" | "denied" | "ready">("loading");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filter, setFilter] = useState("all");
+  const [q, setQ] = useState("");
+  const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  function authHeaders(): HeadersInit {
+    const token = localStorage.getItem("dk-token") || "";
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  const loadOrders = useCallback(async (statusFilter: string, query: string) => {
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (query.trim()) params.set("q", query.trim());
+      const res = await fetch(`/api/admin/orders?${params}`, {
+        headers: authHeaders(),
+      });
+      if (res.status === 401 || res.status === 403) {
+        setStatus("denied");
+        return;
+      }
+      const data = await res.json();
+      setOrders(data.orders || []);
+      setStatus("ready");
+    } catch {
+      setError("خطا در دریافت سفارش‌ها");
+      setStatus("ready");
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("dk-token");
+    if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatus("denied");
+      return;
+    }
+    fetch("/api/admin/me", { headers: authHeaders() }).then(async (res) => {
+      if (!res.ok) {
+        setStatus("denied");
+        return;
+      }
+      await loadOrders("all", "");
+    });
+  }, [loadOrders]);
+
+  async function handleStatusChange(orderId: number, next: string) {
+    setError("");
+    setSavingId(orderId);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, status: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "به‌روزرسانی وضعیت ناموفق بود");
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: next } : o)),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "خطای نامشخص");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  function formatPrice(n: number): string {
+    return `${n.toLocaleString("fa-IR")} تومان`;
+  }
+
+  function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString("fa-IR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  if (status === "loading") {
+    return <p className="text-sm py-16 text-center">در حال بارگذاری...</p>;
+  }
+
+  if (status === "denied") {
+    return (
+      <div className="py-16 text-center">
+        <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+          برای ورود به پنل مدیریت باید با حساب ادمین وارد شوید.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-dk-red rounded-xl px-5 py-2.5 transition-colors"
+        >
+          ورود به حساب
+        </Link>
+      </div>
+    );
+  }
+
+  const inputStyle: React.CSSProperties = {
+    padding: "6px 10px",
+    borderRadius: 8,
+    border: "1px solid var(--border)",
+    background: "var(--bg)",
+    color: "var(--text)",
+    fontSize: 13,
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h1 className="text-lg font-extrabold">سفارش‌ها</h1>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+            مدیریت و به‌روزرسانی وضعیت سفارش‌های فروشگاه
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mb-4 text-sm px-4 py-3 rounded-xl bg-dk-red/10 text-dk-red border border-dk-red/30">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        <input
+          type="text"
+          dir="ltr"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") loadOrders(filter, q);
+          }}
+          placeholder="جستجو با شماره سفارش، نام گیرنده یا تلفن..."
+          style={{ ...inputStyle, width: 260 }}
+        />
+        <button
+          type="button"
+          onClick={() => loadOrders(filter, q)}
+          className="text-sm font-bold rounded-xl px-4 py-2 border transition-colors hover:border-dk-red hover:text-dk-red"
+          style={{ borderColor: "var(--border)" }}
+        >
+          جستجو
+        </button>
+        <span className="w-px bg-[var(--border)]" />
+        {["all", ...Object.keys(STATUS_LABELS)].map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => {
+              setFilter(s);
+              loadOrders(s, q);
+            }}
+            className={`text-xs font-bold rounded-xl px-3 py-2 border transition-colors ${
+              filter === s ? "bg-dk-red text-white border-dk-red" : "hover:border-dk-red hover:text-dk-red"
+            }`}
+            style={{ borderColor: "var(--border)", color: filter === s ? undefined : "var(--text-secondary)" }}
+          >
+            {s === "all" ? "همه" : STATUS_LABELS[s]}
+          </button>
+        ))}
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="rounded-2xl border p-16 text-center text-sm" style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+          سفارشی پیدا نشد.
+        </div>
+      ) : (
+        <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-xs" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+                  <th className="text-right px-4 py-2 font-bold">شماره</th>
+                  <th className="text-right px-4 py-2 font-bold">تاریخ</th>
+                  <th className="text-right px-4 py-2 font-bold">گیرنده</th>
+                  <th className="text-right px-4 py-2 font-bold">تلفن</th>
+                  <th className="text-right px-4 py-2 font-bold">اقلام</th>
+                  <th className="text-right px-4 py-2 font-bold">مبلغ</th>
+                  <th className="text-right px-4 py-2 font-bold">وضعیت</th>
+                  <th className="text-left px-4 py-2 font-bold">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => (
+                  <Fragment key={o.id}>
+                  <tr className="border-b last:border-b-0 align-top" style={{ borderColor: "var(--border)" }}>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(expandedId === o.id ? null : o.id)}
+                          className="font-extrabold hover:text-dk-red transition-colors"
+                          dir="ltr"
+                        >
+                          #{o.id.toLocaleString("fa-IR")}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-secondary)" }}>
+                        {formatDate(o.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 font-bold">
+                        {o.receiverName}
+                        <div className="text-[11px] font-normal" style={{ color: "var(--text-secondary)" }}>
+                          {o.user?.name ?? o.user?.email ?? "—"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-xs" dir="ltr">{o.phone}</td>
+                      <td className="px-4 py-3">
+                        {o.items.reduce((s, it) => s + it.quantity, 0).toLocaleString("fa-IR")}
+                      </td>
+                      <td className="px-4 py-3 font-bold text-dk-red">{formatPrice(o.total)}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-lg text-white"
+                          style={{ background: STATUS_COLORS[o.status] ?? "#6b7280" }}
+                        >
+                          {STATUS_LABELS[o.status] ?? o.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-1.5">
+                          {STATUS_FLOW.includes(o.status) &&
+                            STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1] && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleStatusChange(
+                                    o.id,
+                                    STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1],
+                                  )
+                                }
+                                disabled={savingId === o.id}
+                                className="text-[11px] font-bold rounded-lg px-2.5 py-1 border transition-colors hover:border-dk-red hover:text-dk-red disabled:opacity-50"
+                                style={{ borderColor: "var(--border)" }}
+                              >
+                                {savingId === o.id
+                                  ? "..."
+                                  : STATUS_LABELS[STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1]]}
+                              </button>
+                            )}
+                          {o.status !== "cancelled" && (
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(o.id, "cancelled")}
+                              disabled={savingId === o.id}
+                              className="text-[11px] font-bold rounded-lg px-2.5 py-1 text-dk-red border border-dk-red/40 hover:bg-dk-red/10 transition-colors disabled:opacity-50"
+                            >
+                              لغو
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedId === o.id && (
+                      <tr key={`${o.id}-items`} style={{ background: "color-mix(in srgb, var(--bg) 55%, transparent)" }}>
+                        <td colSpan={8} className="px-4 py-4">
+                          <div className="grid gap-2">
+                            {o.items.length === 0 && (
+                              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>اقلامی ندارد.</p>
+                            )}
+                            {o.items.map((it) => (
+                              <div key={it.id} className="flex items-center gap-3 rounded-xl border px-3 py-2" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={it.product.imageUrl ?? ""} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                <Link href={`/product/${it.product.slug}`} target="_blank" className="text-xs font-bold hover:text-dk-red transition-colors flex-1 min-w-0 truncate">
+                                  {it.product.name}
+                                </Link>
+                                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                                  {it.colorName ? `${it.colorName} • ` : ""}
+                                  {it.quantity.toLocaleString("fa-IR")} عدد
+                                </span>
+                                <span className="text-xs font-bold">{formatPrice(it.price)}</span>
+                              </div>
+                            ))}
+                            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs pt-1" style={{ color: "var(--text-secondary)" }}>
+                              <span>روش ارسال: {o.shippingName}</span>
+                              <span>هزینه ارسال: {formatPrice(o.shippingPrice)}</span>
+                              <span className="w-full truncate">آدرس: {o.address}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

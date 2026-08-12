@@ -1,0 +1,200 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  phone     String?  @unique
+  name      String?
+  password  String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+
+  cart   Cart?
+  orders Order[]
+}
+
+// گروه‌های مگامنو (نوار راستِ منوی دسته‌بندی‌ها)، مثال: «کالای دیجیتال»
+model MenuGroup {
+  id         Int        @id @default(autoincrement())
+  title      String     @unique
+  icon       String?    @default("tag")
+  order      Int        @default(0)
+  categories Category[]
+  createdAt  DateTime   @default(now())
+}
+
+// دسته‌بندی‌ها: ریشه (parentId = null) نماینده‌ی «دسته‌ی اصلیِ» مگامنو است و
+// به یک MenuGroup متصل می‌شود؛ فرزندان هر دسته، «ساب‌کتگوری»های همان دسته‌اند.
+model Category {
+  id            Int            @id @default(autoincrement())
+  name          String
+  slug          String         @unique
+  icon          String?        @default("tag")
+  order         Int            @default(0)
+  groupId       Int?
+  group         MenuGroup?     @relation(fields: [groupId], references: [id])
+  products      Product[]
+  subcategories Subcategory[]
+
+  parentId Int?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+
+  @@index([groupId])
+  @@index([parentId])
+  @@unique([parentId, name])
+}
+
+model Subcategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  imageUrl   String?
+  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [id])
+  products   Product[]
+
+  @@unique([categoryId, name])
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Int // به تومان/ریال، به‌صورت عدد صحیح (نه اعشاری) برای دقت
+  stock       Int      @default(0)
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  discountPercent Int   @default(0) // تخفیف درصدی، برای نمایش «٪۱۷» روی کارت
+  rating          Float @default(0) // میانگین امتیاز (۰ تا ۵)
+  ratingCount     Int   @default(0) // تعداد امتیازدهندگان
+  salesCount      Int   @default(0) // تعداد فروش، برای مرتب‌سازی پرفروش‌ترین‌ها
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  subcategoryId Int?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+
+  cartItems  CartItem[]
+  reviews    Review[]
+  vendors    Vendor[]
+  orderItems OrderItem[]
+  media      ProductMedia[]
+  colors     ProductColor[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@unique([cartId, productId]) // هر محصول فقط یه بار تو هر سبد، تعدادش تو quantity زیاد میشه
+}
+
+model Review {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  author    String
+  date      String
+  rating    Int
+  title     String
+  text      String
+  verified  Boolean @default(true)
+
+  @@index([productId])
+}
+
+model Vendor {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  city      String
+  address   String
+  phone     String
+  rating    Float   @default(0)
+  price     Int
+  stock     Int     @default(0)
+
+  @@index([productId])
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  status        String      @default("pending")
+  total         Int
+  shippingName  String
+  shippingPrice Int
+  receiverName  String
+  phone         String
+  address       String
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  price     Int
+  colorName String?
+  colorHex  String?
+}
+
+model ProductMedia {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  url       String
+  type      String // "image" یا "video"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductColor {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  name      String // مثلاً "مشکی"
+  hex       String // مثلاً "#000000"
+  stock     Int      @default(0)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}

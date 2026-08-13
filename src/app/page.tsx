@@ -94,93 +94,55 @@ export default async function Home() {
     }),
   ]);
 
-  // ---- هیرو: محصولات واقعی (با عکس واقعی) برای هر اسلاید ----
-  const realImage = { not: { contains: "/images/" } } as const;
-  const [heroDeals, heroLaptop, heroWatch, heroAudio, heroGold] = await Promise.all([
-    prisma.product.findMany({
-      where: { discountPercent: { gt: 0 }, imageUrl: realImage },
-      include: { category: true },
-      orderBy: { discountPercent: "desc" },
-      take: 12,
-    }),
-    prisma.product.findMany({
-      where: { category: { slug: "laptop" }, imageUrl: realImage },
-      include: { category: true },
-      orderBy: { salesCount: "desc" },
-      take: 6,
-    }),
-    prisma.product.findMany({
-      where: { category: { slug: "smartwatch" }, imageUrl: realImage },
-      include: { category: true },
-      orderBy: { salesCount: "desc" },
-      take: 6,
-    }),
-    prisma.product.findMany({
-      where: { category: { slug: "audio" }, imageUrl: realImage },
-      include: { category: true },
-      orderBy: { salesCount: "desc" },
-      take: 6,
-    }),
-    prisma.product.findMany({
-      where: { category: { slug: "gold-silver" }, imageUrl: realImage },
-      include: { category: true },
-      orderBy: { salesCount: "desc" },
-      take: 6,
-    }),
-  ]);
+  // ---- هیرو: اسلایدهای داینامیک از محصولات واقعی با تخفیف ----
+  const heroDeals = await prisma.product.findMany({
+    where: { discountPercent: { gt: 0 }, imageUrl: { not: { contains: "/images/" } } },
+    include: { category: true },
+    orderBy: { discountPercent: "desc" },
+    take: 6,
+  });
 
-  const heroSlides: HeroSlide[] = [
-    {
-      id: "deals",
-      badge: `تا ٪${(heroDeals[0]?.discountPercent ?? 40).toLocaleString("fa-IR")} تخفیف`,
-      title: "تخفیف‌های شگفت‌انگیز",
-      subtitle: "کالای دیجیتال و مد با تخفیف‌های ویژه، فقط برای مدت محدود",
-      stats: `${heroDeals.length.toLocaleString("fa-IR")} کالای منتخب با تخفیف ویژه`,
-      href: "/deals",
-      theme: "deals",
-      product: heroDeals[0] ? toHeroProduct(heroDeals[0]) : null,
-    },
-    {
-      id: "laptop",
-      badge: "ضمانت اصالت",
-      title: "لپ‌تاپ‌های حرفه‌ای",
-      subtitle: "مک‌بوک و ویندوزی با ضمانت اصالت کالا و ارسال سریع",
-      stats: "مک‌بوک ایر M3 از ۷۲ میلیون تومان",
-      href: "/category/laptop",
-      theme: "laptop",
-      product: heroLaptop[0] ? toHeroProduct(heroLaptop[0]) : null,
-    },
-    {
-      id: "smartwatch",
-      badge: "جدیدترین مدل‌ها",
-      title: "ساعت‌های هوشمند",
-      subtitle: "اپل واچ و گلکسی واچ با بهترین قیمت و ضمانت اصالت",
-      stats: "اپل واچ سری ۹ و گلکسی واچ ۶",
-      href: "/category/smartwatch",
-      theme: "smartwatch",
-      product: heroWatch[0] ? toHeroProduct(heroWatch[0]) : null,
-    },
-    {
-      id: "audio",
-      badge: "ارسال رایگان",
-      title: "هدفون و اسپیکر",
-      subtitle: "تجربه صدای بی‌نظیر با جدیدترین محصولات صوتی",
-      stats: "سونی XM5 و ایرپادز پرو ۲",
-      href: "/category/audio",
-      theme: "audio",
-      product: heroAudio[0] ? toHeroProduct(heroAudio[0]) : null,
-    },
-    {
-      id: "gold",
-      badge: "عیار تضمینی",
-      title: "طلا و نقره اصل",
-      subtitle: "خرید مطمئن طلا با ضمانت اصالت و عیار تضمینی",
-      stats: "قیمت روز طلا و سکه",
-      href: "/category/gold-silver",
-      theme: "gold",
-      product: heroGold[0] ? toHeroProduct(heroGold[0]) : null,
-    },
+  const heroProducts = heroDeals.length
+    ? heroDeals
+    : await prisma.product.findMany({
+        where: { discountPercent: { gt: 0 } },
+        include: { category: true },
+        orderBy: { discountPercent: "desc" },
+        take: 6,
+      });
+
+  const heroThemes: HeroSlide["theme"][] = [
+    "deals",
+    "laptop",
+    "smartwatch",
+    "audio",
+    "gold",
   ];
+
+  const heroSlides: HeroSlide[] = heroProducts.map((product, idx) => {
+    const catSlug = product.category?.slug ?? "";
+    const catTheme: HeroSlide["theme"] =
+      catSlug === "laptop"
+        ? "laptop"
+        : catSlug === "smartwatch"
+          ? "smartwatch"
+          : catSlug === "audio"
+            ? "audio"
+            : catSlug === "gold-silver"
+              ? "gold"
+              : "deals";
+    const theme = heroProducts.length === 1 ? catTheme : heroThemes[idx % heroThemes.length];
+    return {
+      id: String(product.id),
+      badge: `تا ٪${product.discountPercent.toLocaleString("fa-IR")} تخفیف`,
+      title: product.name,
+      subtitle: `${product.category?.name ?? "کالای منتخب"} با ضمانت اصالت و ارسال سریع`,
+      stats: `${heroProducts.length.toLocaleString("fa-IR")} کالای منتخب با تخفیف ویژه`,
+      href: `/product/${product.slug}`,
+      theme,
+      product: toHeroProduct(product),
+    };
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">

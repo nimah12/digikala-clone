@@ -135,7 +135,7 @@ export async function buildHeroSlides(): Promise<HeroSlide[]> {
     badge: "قیمت لحظه‌ای",
     title: "طلا و سکه",
     subtitle: "قیمت روز طلا، سکه و ارز با ضمانت اصالت و عیار تضمینی",
-    stats: "بروزرسانی هر ۸ ساعت",
+    stats: "قیمت لحظه‌ای بازار",
     href: "/category/gold-silver",
     secondaryHref: "/gold-price",
     theme: "gold",

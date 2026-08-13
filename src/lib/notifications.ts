@@ -100,6 +100,9 @@ function subscribeNotifications(cb: () => void) {
   };
 }
 
+// ثابت ماژول‌سطح تا getServerSnapshot هر بار یک مرجع یکسان برگرداند (بدون وارنینگ React)
+const EMPTY_EVENTS: NotificationEvent[] = [];
+
 export function useNotificationEvents(): NotificationEvent[] {
-  return useSyncExternalStore(subscribeNotifications, getSnapshot, () => []);
+  return useSyncExternalStore(subscribeNotifications, getSnapshot, () => EMPTY_EVENTS);
 }

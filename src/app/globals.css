@@ -178,9 +178,10 @@ body {
   animation: pop-in 0.25s ease-out both;
 }
 
-/* Card hover lift */
+/* Card hover lift — فقط transform انیمیت می‌شود (box-shadow باعث repaint سنگین می‌شود) */
 .card-lift {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s ease;
+  will-change: transform;
 }
 .card-lift:hover {
   transform: translateY(-3px);
@@ -474,4 +475,28 @@ html[data-theme="dark"] .cat-tile {
 }
 .hero-shine {
   animation: hero-shine 1.1s ease forwards;
+}
+
+/* نوار پیشرفت اسلایدر — با CSS اجرا می‌شود تا رندر مکرر React حذف شود */
+@keyframes hero-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ---- کاهش حرکت برای کاربرانی که آن را غیرفعال کرده‌اند ---- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

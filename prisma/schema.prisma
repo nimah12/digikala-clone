@@ -221,3 +221,10 @@ model ProductSize {
 
   @@index([productId])
 }
+
+// کش قیمت لحظه‌ای طلا و سکه (ناواسان) — هر ۸ ساعت یک بار بروزرسانی می‌شود
+model GoldPriceCache {
+  key       String   @id
+  data      Json
+  updatedAt DateTime @default(now())
+}

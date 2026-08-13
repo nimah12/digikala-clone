@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { type ProductWithCategory } from "@/components/ProductCard";
-import HeroSlider, { type HeroSlide, type HeroProduct } from "@/components/HeroSlider";
+import HeroSlider from "@/components/HeroSlider";
+import { buildHeroSlides } from "@/lib/hero-slides";
 import ArticleCard from "@/components/ArticleCard";
 import ServiceStrip from "@/components/ServiceStrip";
 import CategoryCircles from "@/components/CategoryCircles";
@@ -15,17 +16,44 @@ export const dynamic = "force-dynamic";
 
 type RowProduct = ProductWithCategory;
 
-function toHeroProduct(
-  p: { name: string; imageUrl: string | null; price: number; originalPrice: number | null; discountPercent: number; category: { name: string } | null },
-): HeroProduct {
-  return {
-    name: p.name,
-    imageUrl: p.imageUrl,
-    price: p.price,
-    originalPrice: p.originalPrice,
-    discountPercent: p.discountPercent,
-    categoryName: p.category?.name ?? "",
-  };
+// ---- پوشاک تابستانی: حذف آیتم‌های زمستانی و اولویت با آیتم‌های تابستانی ----
+const WINTER_CLOTHING = [
+  "هودی",
+  "سویشرت",
+  "ژاکت",
+  "پالتو",
+  "کاپشن",
+  "بادگیر",
+  "پلیور",
+  "پشمی",
+  "بافت",
+  "دستکش",
+  "شال",
+  "حرارتی",
+  "کت اسپرت",
+];
+const SUMMER_CLOTHING = [
+  "تیشرت",
+  "تی‌شرت",
+  "شلوارک",
+  "پیراهن",
+  "مانتو",
+  "کاپری",
+  "دامن",
+  "پولو",
+  "کفش",
+  "جوراب",
+  "جین",
+  "کتان",
+  "اسلش",
+];
+
+function isSummerClothing(name: string): boolean {
+  return !WINTER_CLOTHING.some((t) => name.includes(t));
+}
+
+function summerBoost(name: string): number {
+  return SUMMER_CLOTHING.some((t) => name.includes(t)) ? 1 : 0;
 }
 
 export default async function Home() {
@@ -66,7 +94,7 @@ export default async function Home() {
       where: { category: { slug: "clothing" } },
       include: { category: true },
       orderBy: { salesCount: "desc" },
-      take: 14,
+      take: 40,
     }),
     prisma.product.findMany({
       where: { category: { slug: "gold-silver" } },
@@ -94,56 +122,8 @@ export default async function Home() {
     }),
   ]);
 
-  // ---- هیرو: اسلایدهای داینامیک از محصولات واقعی با تخفیف ----
-  const heroDeals = await prisma.product.findMany({
-    where: { discountPercent: { gt: 0 }, imageUrl: { not: { contains: "/images/" } } },
-    include: { category: true },
-    orderBy: { discountPercent: "desc" },
-    take: 6,
-  });
-
-  const heroProducts = heroDeals.length
-    ? heroDeals
-    : await prisma.product.findMany({
-        where: { discountPercent: { gt: 0 } },
-        include: { category: true },
-        orderBy: { discountPercent: "desc" },
-        take: 6,
-      });
-
-  const heroThemes: HeroSlide["theme"][] = [
-    "deals",
-    "laptop",
-    "smartwatch",
-    "audio",
-    "gold",
-  ];
-
-  const heroSlides: HeroSlide[] = heroProducts.map((product, idx) => {
-    const catSlug = product.category?.slug ?? "";
-    const catTheme: HeroSlide["theme"] =
-      catSlug === "laptop"
-        ? "laptop"
-        : catSlug === "smartwatch"
-          ? "smartwatch"
-          : catSlug === "audio"
-            ? "audio"
-            : catSlug === "gold-silver"
-              ? "gold"
-              : "deals";
-    const theme = heroProducts.length === 1 ? catTheme : heroThemes[idx % heroThemes.length];
-    return {
-      id: String(product.id),
-      badge: `تا ٪${product.discountPercent.toLocaleString("fa-IR")} تخفیف`,
-      title: product.name,
-      subtitle: `${product.category?.name ?? "کالای منتخب"} با ضمانت اصالت و ارسال سریع`,
-      stats: `${heroProducts.length.toLocaleString("fa-IR")} کالای منتخب با تخفیف ویژه`,
-      href: `/product/${product.slug}`,
-      theme,
-      product: toHeroProduct(product),
-    };
-  });
-
+  // ---- هیرو: اسلایدهای داینامیک (محصولات تخفیف‌دار چرخشی + قیمت لحظه‌ای طلا) ----
+  const heroSlides = await buildHeroSlides();
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Hero slider */}
@@ -191,12 +171,21 @@ export default async function Home() {
         products={gpu as RowProduct[]}
       />
 
-      {/* پوشاک */}
+      {/* پوشاک — فقط آیتم‌های تابستانی */}
       <ProductRow
         icon="shirt"
-        title="پوشاک"
-        subtitle="نایک، لی، اسکچرز و بیشتر"
-        products={clothing as RowProduct[]}
+        title="پوشاک تابستانی"
+        subtitle="تی‌شرت، پیراهن، شلوارک و کفش‌های فصل"
+        products={(
+          [...clothing]
+            .filter((p) => isSummerClothing(p.name))
+            .sort(
+              (a, b) =>
+                summerBoost(b.name) - summerBoost(a.name) ||
+                b.salesCount - a.salesCount,
+            )
+            .slice(0, 14) as RowProduct[]
+        )}
       />
 
       {/* طلا و نقره */}

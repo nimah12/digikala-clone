@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { type ProductWithCategory } from "@/components/ProductCard";
-import HeroSlider from "@/components/HeroSlider";
+import HeroSlider, { type HeroSlide, type HeroProduct } from "@/components/HeroSlider";
 import ArticleCard from "@/components/ArticleCard";
 import ServiceStrip from "@/components/ServiceStrip";
 import CategoryCircles from "@/components/CategoryCircles";
@@ -14,6 +14,19 @@ import { ARTICLES } from "@/lib/articles";
 export const dynamic = "force-dynamic";
 
 type RowProduct = ProductWithCategory;
+
+function toHeroProduct(
+  p: { name: string; imageUrl: string | null; price: number; originalPrice: number | null; discountPercent: number; category: { name: string } | null },
+): HeroProduct {
+  return {
+    name: p.name,
+    imageUrl: p.imageUrl,
+    price: p.price,
+    originalPrice: p.originalPrice,
+    discountPercent: p.discountPercent,
+    categoryName: p.category?.name ?? "",
+  };
+}
 
 export default async function Home() {
   const [
@@ -81,11 +94,99 @@ export default async function Home() {
     }),
   ]);
 
+  // ---- هیرو: محصولات واقعی (با عکس واقعی) برای هر اسلاید ----
+  const realImage = { not: { contains: "/images/" } } as const;
+  const [heroDeals, heroLaptop, heroWatch, heroAudio, heroGold] = await Promise.all([
+    prisma.product.findMany({
+      where: { discountPercent: { gt: 0 }, imageUrl: realImage },
+      include: { category: true },
+      orderBy: { discountPercent: "desc" },
+      take: 12,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "laptop" }, imageUrl: realImage },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 6,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "smartwatch" }, imageUrl: realImage },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 6,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "audio" }, imageUrl: realImage },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 6,
+    }),
+    prisma.product.findMany({
+      where: { category: { slug: "gold-silver" }, imageUrl: realImage },
+      include: { category: true },
+      orderBy: { salesCount: "desc" },
+      take: 6,
+    }),
+  ]);
+
+  const heroSlides: HeroSlide[] = [
+    {
+      id: "deals",
+      badge: `تا ٪${(heroDeals[0]?.discountPercent ?? 40).toLocaleString("fa-IR")} تخفیف`,
+      title: "تخفیف‌های شگفت‌انگیز",
+      subtitle: "کالای دیجیتال و مد با تخفیف‌های ویژه، فقط برای مدت محدود",
+      stats: `${heroDeals.length.toLocaleString("fa-IR")} کالای منتخب با تخفیف ویژه`,
+      href: "/deals",
+      theme: "deals",
+      product: heroDeals[0] ? toHeroProduct(heroDeals[0]) : null,
+    },
+    {
+      id: "laptop",
+      badge: "ضمانت اصالت",
+      title: "لپ‌تاپ‌های حرفه‌ای",
+      subtitle: "مک‌بوک و ویندوزی با ضمانت اصالت کالا و ارسال سریع",
+      stats: "مک‌بوک ایر M3 از ۷۲ میلیون تومان",
+      href: "/category/laptop",
+      theme: "laptop",
+      product: heroLaptop[0] ? toHeroProduct(heroLaptop[0]) : null,
+    },
+    {
+      id: "smartwatch",
+      badge: "جدیدترین مدل‌ها",
+      title: "ساعت‌های هوشمند",
+      subtitle: "اپل واچ و گلکسی واچ با بهترین قیمت و ضمانت اصالت",
+      stats: "اپل واچ سری ۹ و گلکسی واچ ۶",
+      href: "/category/smartwatch",
+      theme: "smartwatch",
+      product: heroWatch[0] ? toHeroProduct(heroWatch[0]) : null,
+    },
+    {
+      id: "audio",
+      badge: "ارسال رایگان",
+      title: "هدفون و اسپیکر",
+      subtitle: "تجربه صدای بی‌نظیر با جدیدترین محصولات صوتی",
+      stats: "سونی XM5 و ایرپادز پرو ۲",
+      href: "/category/audio",
+      theme: "audio",
+      product: heroAudio[0] ? toHeroProduct(heroAudio[0]) : null,
+    },
+    {
+      id: "gold",
+      badge: "عیار تضمینی",
+      title: "طلا و نقره اصل",
+      subtitle: "خرید مطمئن طلا با ضمانت اصالت و عیار تضمینی",
+      stats: "قیمت روز طلا و سکه",
+      href: "/category/gold-silver",
+      theme: "gold",
+      product: heroGold[0] ? toHeroProduct(heroGold[0]) : null,
+    },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Hero slider */}
       <section className="mb-8">
-        <HeroSlider />
+        <HeroSlider slides={heroSlides} />
       </section>
 
       {/* Service icons strip */}

@@ -24,7 +24,7 @@ const CATEGORIES = [
 
 export default function CategoryCircles() {
   return (
-    <section className="mb-8">
+    <section className="mb-8 cv-auto">
       <div
         className="rounded-2xl border p-4"
         style={{ background: "var(--panel)", borderColor: "var(--border)" }}

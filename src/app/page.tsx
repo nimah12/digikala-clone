@@ -190,7 +190,7 @@ export default async function Home() {
       />
 
       {/* مقالات و اخبار */}
-      <section className="mb-8">
+      <section className="mb-8 cv-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-extrabold flex items-center gap-2">
             <Icon name="newspaper" size={20} className="text-dk-red" />

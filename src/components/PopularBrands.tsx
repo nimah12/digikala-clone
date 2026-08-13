@@ -29,7 +29,7 @@ export default function PopularBrands() {
   }
 
   return (
-    <section className="mb-10">
+    <section className="mb-10 cv-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--text) 8%, transparent)", color: "var(--text)" }}>

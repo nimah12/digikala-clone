@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCartItems } from "@/lib/cart-client";
 import { useHydrated } from "@/lib/hydration";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatSizeName } from "@/lib/format";
 import Icon from "./Icon";
 
 type CartProduct = {
@@ -168,7 +168,9 @@ export default function CartClient() {
                       />
                     )}
                     <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-                      {[colorName, sizeName].filter(Boolean).join(" • ")}
+                      {[colorName, sizeName ? formatSizeName(sizeName) : null]
+                        .filter(Boolean)
+                        .join(" • ")}
                     </span>
                   </div>
                 )}

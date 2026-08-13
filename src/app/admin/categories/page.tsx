@@ -115,6 +115,12 @@ export default function AdminCategoriesPage() {
   const [prodImage, setProdImage] = useState("");
   const [prodDescription, setProdDescription] = useState("");
   const [prodSizes, setProdSizes] = useState<{ name: string; stock: string }[]>([]);
+  // افزودن بازه‌ای سایزهای عددی (کفش و ...)
+  const [prodSizeFrom, setProdSizeFrom] = useState("36");
+  const [prodSizeTo, setProdSizeTo] = useState("45");
+  const [prodSizeStep, setProdSizeStep] = useState("1");
+  const [prodSizeStock, setProdSizeStock] = useState("3");
+  const [prodSizeRangeError, setProdSizeRangeError] = useState("");
   const [prodSaving, setProdSaving] = useState(false);
   const [prodError, setProdError] = useState("");
 
@@ -284,6 +290,11 @@ export default function AdminCategoriesPage() {
     setProdImage("");
     setProdDescription("");
     setProdSizes([]);
+    setProdSizeFrom("36");
+    setProdSizeTo("45");
+    setProdSizeStep("1");
+    setProdSizeStock("3");
+    setProdSizeRangeError("");
     setProdError("");
   }
 
@@ -291,6 +302,37 @@ export default function AdminCategoriesPage() {
     setProdSizes((prev) =>
       prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
     );
+  }
+
+  function addProdSizeRange() {
+    setProdSizeRangeError("");
+    const from = Number(prodSizeFrom);
+    const to = Number(prodSizeTo);
+    const step = Number(prodSizeStep);
+    const stockVal = Number(prodSizeStock);
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from > to) {
+      setProdSizeRangeError("بازه‌ی سایز نامعتبره (از باید کوچک‌تر یا مساوی تا باشه)");
+      return;
+    }
+    if (!Number.isFinite(step) || step <= 0) {
+      setProdSizeRangeError("گام باید عددی مثبت باشه (مثلاً ۱ یا ۰٫۵)");
+      return;
+    }
+    const rows: { name: string; stock: string }[] = [];
+    for (let v = from; v <= to + 1e-9; v += step) {
+      rows.push({
+        name: Number(v.toFixed(2)).toString(),
+        stock: Number.isFinite(stockVal) && stockVal > 0 ? String(Math.floor(stockVal)) : "0",
+      });
+      if (rows.length > 60) break;
+    }
+    if (rows.length === 0) {
+      setProdSizeRangeError("هیچ سایزی در این بازه تولید نشد");
+      return;
+    }
+    setProdSizes((prev) => [...prev, ...rows]);
+    setProdSizeFrom("");
+    setProdSizeTo("");
   }
 
   async function handleAddProduct(category: CategoryNode) {
@@ -511,7 +553,75 @@ export default function AdminCategoriesPage() {
           />
         </div>
         <div className="mt-3">
-          <div className="text-xs mb-1">سایزها (اختیاری — مثلاً S/M/L یا ۳۸/۴۰/۴۲)</div>
+          <div className="text-xs mb-1">سایزها (اختیاری — متنی مثل S/M/L یا عددی مثل ۳۸/۴۰/۴۲)</div>
+          <div
+            className="flex flex-wrap items-center gap-2 mb-2 rounded-lg border p-2"
+            style={{ borderColor: "#e0e0e0", background: "var(--bg)" }}
+          >
+            <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+              افزودن بازه‌ی عددی:
+            </span>
+            <input
+              type="number"
+              step={0.5}
+              value={prodSizeFrom}
+              onChange={(e) => setProdSizeFrom(e.target.value)}
+              style={{ ...inputStyle, width: 64 }}
+              aria-label="سایز شروع"
+            />
+            <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>تا</span>
+            <input
+              type="number"
+              step={0.5}
+              value={prodSizeTo}
+              onChange={(e) => setProdSizeTo(e.target.value)}
+              style={{ ...inputStyle, width: 64 }}
+              aria-label="سایز پایان"
+            />
+            <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>گام</span>
+            <input
+              type="number"
+              step={0.5}
+              min={0.5}
+              value={prodSizeStep}
+              onChange={(e) => setProdSizeStep(e.target.value)}
+              style={{ ...inputStyle, width: 56 }}
+              aria-label="گام"
+            />
+            <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>موجودی هر کدوم</span>
+            <input
+              type="number"
+              min={0}
+              value={prodSizeStock}
+              onChange={(e) => setProdSizeStock(e.target.value)}
+              style={{ ...inputStyle, width: 56 }}
+              aria-label="موجودی هر سایز"
+            />
+            <button
+              type="button"
+              onClick={addProdSizeRange}
+              className="text-xs font-bold rounded-lg px-3 py-1.5 transition-colors"
+              style={{ border: "1px solid #23254e", color: "#23254e", background: "#fff" }}
+            >
+              + افزودن بازه (۳۶ تا ۴۵)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setProdSizeFrom("36");
+                setProdSizeTo("45");
+                setProdSizeStep("1");
+                setProdSizeStock("3");
+              }}
+              className="text-[11px] font-bold rounded-lg px-2 py-1 transition-colors"
+              style={{ border: "none", background: "#eee", color: "#555" }}
+            >
+              پیش‌فرض کفش
+            </button>
+          </div>
+          {prodSizeRangeError && (
+            <p className="text-xs text-dk-red mb-1">{prodSizeRangeError}</p>
+          )}
           {prodSizes.length > 0 && (
             <div className="flex flex-col gap-2 mb-2">
               {prodSizes.map((row, i) => (

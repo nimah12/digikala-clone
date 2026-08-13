@@ -5,6 +5,7 @@ import Rating from "./Rating";
 import PriceBadge from "./PriceBadge";
 import Icon from "./Icon";
 import { addToCart } from "@/lib/cart-client";
+import { formatSizeName } from "@/lib/format";
 
 type ColorOption = {
   id: number;
@@ -162,7 +163,7 @@ export default function ProductInfoColumn({
           <div className="flex items-center gap-2 mb-2 text-sm">
             <span style={{ color: "var(--text-secondary)" }}>سایز:</span>
             <span className="font-bold">
-              {selectedSize ? selectedSize.name : "انتخاب نشده"}
+              {selectedSize ? formatSizeName(selectedSize.name) : "انتخاب نشده"}
             </span>
             {selectedSize && selectedSize.stock === 0 && (
               <span className="text-xs text-dk-red">(ناموجود)</span>
@@ -177,8 +178,8 @@ export default function ProductInfoColumn({
                   setSelectedSizeId(s.id);
                   setSizeError("");
                 }}
-                title={`${s.name}${s.stock === 0 ? " (ناموجود)" : ""}`}
-                aria-label={s.name}
+                title={`${formatSizeName(s.name)}${s.stock === 0 ? " (ناموجود)" : ""}`}
+                aria-label={formatSizeName(s.name)}
                 aria-pressed={s.id === selectedSizeId}
                 className="min-w-10 h-10 px-3 rounded-lg text-sm font-bold transition flex items-center justify-center"
                 style={{
@@ -193,7 +194,7 @@ export default function ProductInfoColumn({
                 }}
                 disabled={s.stock === 0}
               >
-                {s.name}
+                {formatSizeName(s.name)}
               </button>
             ))}
           </div>

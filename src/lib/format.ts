@@ -32,3 +32,14 @@ export function formatRating(rating: number): string {
 export function formatSales(sales: number): string {
   return `${sales.toLocaleString("fa-IR")} فروش`;
 }
+
+// نام سایزهای عددی (مثل 38 یا 38.5) با رقم فارسی نمایش داده می‌شوند؛
+// نام‌های متنی (S, XL, ...) دست‌نخورده می‌مانند.
+export function formatSizeName(name: string | null | undefined): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    return Number(trimmed).toLocaleString("fa-IR");
+  }
+  return name;
+}

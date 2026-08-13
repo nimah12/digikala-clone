@@ -96,6 +96,7 @@ model Product {
   orderItems OrderItem[]
   media      ProductMedia[]
   colors     ProductColor[]
+  sizes      ProductSize[]
 }
 
 model Cart {
@@ -177,6 +178,7 @@ model OrderItem {
   productImageUrl  String?
   colorName String?
   colorHex  String?
+  sizeName String?
 }
 
 model ProductMedia {
@@ -197,6 +199,18 @@ model ProductColor {
   product   Product  @relation(fields: [productId], references: [id])
   name      String // مثلاً "مشکی"
   hex       String // مثلاً "#000000"
+  stock     Int      @default(0)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductSize {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  name      String // مثلاً "S" یا "XL" یا "۳۸"
   stock     Int      @default(0)
   order     Int      @default(0)
   createdAt DateTime @default(now())

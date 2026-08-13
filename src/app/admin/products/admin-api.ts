@@ -4,6 +4,7 @@ import type {
   Product,
   ProductDetail,
   ReviewItem,
+  SizeItem,
   TreeCategory,
   VendorItem,
 } from "./types";
@@ -135,6 +136,39 @@ export async function deleteColor(productId: number, colorId: number) {
   if (!res.ok) throw new Error("حذف رنگ ناموفق بود");
 }
 
+// ---------- سایزها ----------
+
+export async function fetchSizes(productId: number): Promise<SizeItem[]> {
+  const res = await fetch(`/api/admin/products/${productId}/sizes`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("خطا در دریافت سایزها");
+  const data = await res.json();
+  return data.sizes || [];
+}
+
+export async function addSize(
+  productId: number,
+  input: { name: string; stock: number },
+): Promise<SizeItem> {
+  const res = await fetch(`/api/admin/products/${productId}/sizes`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify(input),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "افزودن سایز ناموفق بود");
+  return data.size as SizeItem;
+}
+
+export async function deleteSize(productId: number, sizeId: number) {
+  const res = await fetch(
+    `/api/admin/products/${productId}/sizes?sizeId=${sizeId}`,
+    { method: "DELETE", headers: authHeaders() },
+  );
+  if (!res.ok) throw new Error("حذف سایز ناموفق بود");
+}
+
 // ---------- حذف محصول ----------
 
 export async function deleteProduct(productId: number) {
@@ -249,3 +283,4 @@ export async function deleteReview(productId: number, reviewId: number) {
 }
 
 export { errorMessage };
+

@@ -32,6 +32,7 @@ export default async function ProductPage({ params }: Props) {
       category: true,
       media: { orderBy: { order: "asc" } },
       colors: { orderBy: { order: "asc" } },
+      sizes: { orderBy: { order: "asc" } },
     },
   });
 
@@ -94,6 +95,7 @@ export default async function ProductPage({ params }: Props) {
             originalPrice={product.originalPrice}
             stock={product.stock}
             colors={product.colors}
+            sizes={product.sizes}
           />
         </div>
       </div>

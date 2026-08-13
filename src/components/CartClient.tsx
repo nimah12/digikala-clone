@@ -24,10 +24,16 @@ type CartItem = {
   colorId?: number;
   colorName?: string;
   colorHex?: string;
+  sizeId?: number;
+  sizeName?: string;
 };
 
-function lineKey(item: { id: number; colorId?: number }): string {
-  return `${item.id}-${item.colorId ?? "none"}`;
+function lineKey(item: {
+  id: number;
+  colorId?: number;
+  sizeId?: number;
+}): string {
+  return `${item.id}-${item.colorId ?? "none"}-${item.sizeId ?? "none"}`;
 }
 
 function writeCart(items: CartItem[]) {
@@ -126,8 +132,8 @@ export default function CartClient() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Items */}
         <div className="lg:col-span-2 space-y-3">
-          {enriched.map(({ id, qty, colorId, colorName, colorHex, product }) => {
-            const key = lineKey({ id, colorId });
+          {enriched.map(({ id, qty, colorId, colorName, colorHex, sizeId, sizeName, product }) => {
+            const key = lineKey({ id, colorId, sizeId });
             return (
             <div
               key={key}
@@ -153,14 +159,16 @@ export default function CartClient() {
                 <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                   {product!.category.name}
                 </span>
-                {colorName && (
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span
-                      className="w-3 h-3 rounded-full inline-block"
-                      style={{ background: colorHex, border: "1px solid var(--border)" }}
-                    />
+                {(colorName || sizeName) && (
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    {colorName && (
+                      <span
+                        className="w-3 h-3 rounded-full inline-block"
+                        style={{ background: colorHex, border: "1px solid var(--border)" }}
+                      />
+                    )}
                     <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-                      {colorName}
+                      {[colorName, sizeName].filter(Boolean).join(" • ")}
                     </span>
                   </div>
                 )}

@@ -27,6 +27,7 @@ export type HeroSlide = {
   subtitle: string;
   stats: string;
   href: string;
+  secondaryHref?: string;
   theme: "deals" | "laptop" | "smartwatch" | "audio" | "gold";
   product: HeroProduct | null;
   goldItems?: GoldItem[];
@@ -152,10 +153,10 @@ function LiveGoldPanel({ items, updatedAt }: { items: GoldItem[]; updatedAt?: st
             <p className="text-white/50 text-[9px]">آخرین بروزرسانی: {updatedAt}</p>
           )}
           <Link
-            href="/category/gold-silver"
+            href="/gold-price"
             className="group flex items-center justify-between bg-white/15 hover:bg-white/25 transition-colors rounded-xl px-3 py-2 text-white text-[11px] md:text-xs font-bold"
           >
-            مشاهده همه محصولات طلا و سکه
+            مشاهده همه قیمت‌ها
             <svg
               className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1"
               fill="none"
@@ -324,7 +325,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                       </svg>
                     </Link>
                     <Link
-                      href={s.href}
+                      href={s.secondaryHref ?? s.href}
                       className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-white text-sm font-bold px-5 py-3 rounded-full border border-white/25 hover:bg-white/20 transition-all hover:scale-[1.04] active:scale-95"
                     >
                       جزئیات بیشتر

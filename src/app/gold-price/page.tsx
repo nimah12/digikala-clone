@@ -1,0 +1,138 @@
+import Link from "next/link";
+import { getGoldPrices } from "@/lib/gold-prices";
+import { formatPrice } from "@/lib/format";
+import Icon from "@/components/Icon";
+
+export const dynamic = "force-dynamic";
+
+type Row = {
+  name: string;
+  icon: string;
+  price: number | null;
+  change: number;
+  changePercent: number;
+};
+
+function buildRows(g: Awaited<ReturnType<typeof getGoldPrices>>): Row[] {
+  const rows: Row[] = [];
+  const push = (name: string, icon: string, price: number | null, key: string) => {
+    const change = g.change[key] ?? 0;
+    const changePercent = price && price - change > 0 ? (change / (price - change)) * 100 : 0;
+    rows.push({ name, icon, price, change, changePercent });
+  };
+  push("طلای ۱۸ عیار (گرم)", "coins", g.gold18k, "gold18k");
+  push("سکه امامی", "coins", g.sekkeh, "sekkeh");
+  push("سکه بهار آزادی", "coins", g.bahar, "bahar");
+  push("نیم سکه", "coins", g.nim, "nim");
+  push("ربع سکه", "coins", g.rob, "rob");
+  push("سکه گرمی", "coins", g.gerami, "gerami");
+  push("دلار آمریکا", "banknote", g.usd, "usd");
+  return rows;
+}
+
+export default async function GoldPricePage() {
+  const gold = await getGoldPrices();
+  const rows = buildRows(gold);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <span className="inline-flex items-center gap-2 bg-dk-red/10 text-dk-red text-xs font-bold px-3 py-1.5 rounded-full mb-3">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-dk-red opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-dk-red" />
+          </span>
+          بروزرسانی هر ۸ ساعت
+        </span>
+        <h1 className="text-2xl md:text-3xl font-black flex items-center justify-center gap-2">
+          <Icon name="coins" size={26} className="text-dk-red" />
+          قیمت روز طلا و سکه
+        </h1>
+        <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>
+          نرخ لحظه‌ای از وب‌سرویس نوسان (ناواسان) — روزی ۳ بار
+        </p>
+      </div>
+
+      {/* جدول قیمت‌ها */}
+      <div
+        className="rounded-2xl border shadow-sm overflow-hidden"
+        style={{ background: "var(--panel)", borderColor: "var(--border)" }}
+      >
+        <div
+          className="px-5 py-3 text-sm font-bold border-b flex items-center justify-between"
+          style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+        >
+          <span>آخرین بروزرسانی: {gold.date ?? "—"}</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>واحد: تومان</span>
+        </div>
+
+        {rows.map((row) => (
+          <div
+            key={row.name}
+            className="flex items-center justify-between gap-3 px-5 py-4 border-b last:border-0"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "color-mix(in srgb, var(--text) 8%, transparent)" }}
+              >
+                <Icon name={row.icon} size={18} className="text-dk-red" />
+              </span>
+              <span className="text-sm font-bold truncate">{row.name}</span>
+            </div>
+
+            <div className="text-left shrink-0">
+              {row.price !== null ? (
+                <>
+                  <p className="text-sm md:text-base font-black digits">
+                    {formatPrice(row.price)}
+                    <span className="text-[10px] font-medium mr-1" style={{ color: "var(--text-secondary)" }}>
+                      تومان
+                    </span>
+                  </p>
+                  <p
+                    className={`text-[11px] font-bold flex items-center justify-end gap-1 ${
+                      row.change >= 0 ? "text-dk-green" : "text-dk-red"
+                    }`}
+                  >
+                    <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      {row.change >= 0 ? <path d="M7 14l5-5 5 5" /> : <path d="M7 10l5 5 5-5" />}
+                    </svg>
+                    {row.change === 0
+                      ? "بدون تغییر"
+                      : `${Math.abs(row.changePercent).toLocaleString("fa-IR", { maximumFractionDigits: 2 })}٪`}
+                  </p>
+                </>
+              ) : (
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>در دسترس نیست</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* لینک‌ها */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        <Link
+          href="/category/gold-silver"
+          className="inline-flex items-center gap-2 bg-dk-red text-white text-sm font-bold px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+        >
+          مشاهده محصولات طلا و سکه
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full border"
+          style={{ borderColor: "var(--border)", color: "var(--text)" }}
+        >
+          بازگشت به خانه
+        </Link>
+      </div>
+
+      <p className="text-center text-xs mt-6" style={{ color: "var(--text-muted)" }}>
+        قیمت‌ها به‌صورت خودکار هر ۸ ساعت از ناواسان دریافت می‌شوند (روزی ۳ درخواست).
+      </p>
+    </div>
+  );
+}

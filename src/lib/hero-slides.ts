@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getGoldPrices } from "@/lib/gold-prices";
+import { isWinterClothing, summerBoost } from "@/lib/clothing";
 import type { HeroSlide, HeroProduct, GoldItem } from "@/components/HeroSlider";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -67,7 +68,16 @@ export async function buildHeroSlides(): Promise<HeroSlide[]> {
 
   const dayNum = Math.floor(Date.now() / DAY_MS);
 
-  let heroProducts = rotateWindow(pool, dayNum, HERO_WINDOW);
+  // حذف پوشاک زمستانی (هودی و...) از هیرو + اولویت با آیتم‌های تابستانی
+  const summerPool = [...pool]
+    .filter((p) => !isWinterClothing(p.name))
+    .sort(
+      (a, b) =>
+        summerBoost(b.name) - summerBoost(a.name) ||
+        b.discountPercent - a.discountPercent,
+    );
+
+  let heroProducts = rotateWindow(summerPool, dayNum, HERO_WINDOW);
   if (!heroProducts.length) {
     const fallback = await prisma.product.findMany({
       where: { discountPercent: { gt: 0 } },
@@ -101,6 +111,7 @@ export async function buildHeroSlides(): Promise<HeroSlide[]> {
       price - change > 0 ? (change / (price - change)) * 100 : 0;
     goldItems.push({ name, price, change, changePercent });
   };
+  // پنل هیرو فشرده: ۵ آیتم اصلی (بقیه در صفحه قیمت روز طلا)
   push("طلای ۱۸ عیار (گرم)", gold.gold18k, "gold18k");
   push("سکه امامی", gold.sekkeh, "sekkeh");
   push("ربع سکه", gold.rob, "rob");
@@ -126,6 +137,7 @@ export async function buildHeroSlides(): Promise<HeroSlide[]> {
     subtitle: "قیمت روز طلا، سکه و ارز با ضمانت اصالت و عیار تضمینی",
     stats: "بروزرسانی هر ۸ ساعت",
     href: "/category/gold-silver",
+    secondaryHref: "/gold-price",
     theme: "gold",
     product: null,
     goldItems,

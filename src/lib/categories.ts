@@ -244,5 +244,6 @@ export const SUB_HEADER_LINKS: SubHeaderLink[] = [
   { label: "بیشترین تخفیفات", icon: "bolt", href: "/deals" },
   { label: "پرفروش‌ترین محصولات", icon: "flame", href: "/bestsellers" },
   { label: "جدیدترین محصولات", icon: "sparkles", href: "/newest" },
+  { label: "قیمت روز طلا", icon: "coins", href: "/gold-price" },
   { label: "پیشنهادهای ویژه", icon: "gift", href: "/deals" },
 ];

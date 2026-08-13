@@ -69,12 +69,12 @@ export default function Header({ menuGroups }: HeaderProps) {
       {/* Top row: logo, search (desktop), actions */}
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-3 py-3">
+          <div className="flex items-center gap-2 sm:gap-3 py-3">
             {/* Mobile hamburger */}
             <button
               type="button"
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="md:hidden flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
               aria-label="منو"
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
@@ -84,19 +84,21 @@ export default function Header({ menuGroups }: HeaderProps) {
               </svg>
             </button>
 
-            <Logo />
+            {/* لوگو: کوچیک روی موبایل تا هدر بیرون نزنه */}
+            <span className="md:hidden"><Logo size="sm" /></span>
+            <span className="hidden md:inline"><Logo /></span>
 
             {/* Desktop search */}
             <div className="hidden md:block flex-1 max-w-2xl mx-auto">
               <SearchBox />
             </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             {/* Theme toggle */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
               aria-label={theme === "dark" ? "حالت روز" : "حالت شب"}
               title={theme === "dark" ? "حالت روز" : "حالت شب"}
             >
@@ -121,7 +123,7 @@ export default function Header({ menuGroups }: HeaderProps) {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen((o) => !o)}
-                  className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-bold hover:shadow-md transition-shadow"
+                  className="inline-flex items-center gap-1 h-8 sm:h-10 px-1.5 sm:px-3 rounded-lg text-sm font-bold hover:shadow-md transition-shadow"
                   style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)" }}
                   title={userName}
                 >
@@ -132,7 +134,7 @@ export default function Header({ menuGroups }: HeaderProps) {
                     {userName[0]}
                   </span>
                   <span className="hidden sm:inline max-w-[120px] truncate">{userName}</span>
-                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ color: "var(--text-muted)" }}>
+                  <svg className="hidden sm:block" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ color: "var(--text-muted)" }}>
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
@@ -196,10 +198,21 @@ export default function Header({ menuGroups }: HeaderProps) {
               </Link>
             )}
 
+            {/* قیمت روز طلا — لینک مستقیم در هدر */}
+            <Link
+              href="/gold-price"
+              className="inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-10 sm:px-3 rounded-lg hover:bg-dk-bg transition-colors shrink-0"
+              aria-label="قیمت روز طلا و سکه"
+              title="قیمت روز طلا و سکه"
+            >
+              <Icon name="coins" size={18} className="text-dk-amber" />
+              <span className="hidden sm:inline text-sm font-bold">قیمت طلا</span>
+            </Link>
+
             {/* Cart */}
             <Link
               href="/cart"
-              className="relative flex items-center justify-center w-10 h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
               aria-label="سبد خرید"
               title="سبد خرید"
             >

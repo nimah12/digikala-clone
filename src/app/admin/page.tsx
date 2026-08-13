@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 
 type Stats = {
   productCount: number;
@@ -26,6 +27,43 @@ export default function AdminDashboardPage() {
     "loading",
   );
   const [stats, setStats] = useState<Stats | null>(null);
+
+  // همگام‌سازی دستی قیمت طلا
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{
+    synced: number;
+    updatedAt: string | null;
+    gold18k: number | null;
+    sekkeh: number | null;
+    rob: number | null;
+    nim: number | null;
+    usd: number | null;
+  } | null>(null);
+  const [syncError, setSyncError] = useState("");
+
+  async function handleGoldSync() {
+    setSyncing(true);
+    setSyncError("");
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/admin/gold-sync", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("dk-token") ?? ""}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncError(data.error || "خطا در همگام‌سازی قیمت طلا");
+        return;
+      }
+      setSyncResult(data);
+    } catch {
+      setSyncError("خطا در ارتباط با سرور");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("dk-token");
@@ -119,6 +157,63 @@ export default function AdminDashboardPage() {
           </div>
           <div className="text-xs text-dk-red font-bold">پیش‌نمایش زنده مگامنو ←</div>
         </Link>
+      </div>
+
+      {/* همگام‌سازی دستی قیمت طلا */}
+      <div className="mt-6 rounded-2xl border p-5" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="font-extrabold mb-1 flex items-center gap-2">
+              <Icon name="coins" size={18} className="text-dk-amber" />
+              قیمت لحظه‌ای طلا و سکه
+            </h2>
+            <p className="text-xs leading-6" style={{ color: "var(--text-secondary)" }}>
+              قیمت‌ها به‌صورت خودکار هر ۸ ساعت از ناواسان بروزرسانی می‌شوند.
+              با این دکمه می‌توانی بدون انتظار، همین الان همگام‌سازی کنی.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleGoldSync}
+            disabled={syncing}
+            className="inline-flex items-center gap-2 bg-dk-red text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-dk-red-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+          >
+            {syncing ? (
+              <>
+                <span className="loading-spinner inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full" />
+                در حال همگام‌سازی...
+              </>
+            ) : (
+              <>همگام‌سازی دستی قیمت طلا</>
+            )}
+          </button>
+        </div>
+
+        {syncError && <p className="text-xs mt-3 text-dk-red font-bold">{syncError}</p>}
+
+        {syncResult && (
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {[
+              { label: "طلای ۱۸ عیار", value: syncResult.gold18k },
+              { label: "سکه امامی", value: syncResult.sekkeh },
+              { label: "ربع سکه", value: syncResult.rob },
+              { label: "نیم سکه", value: syncResult.nim },
+              { label: "دلار", value: syncResult.usd },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl border p-3" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+                <div className="text-[10px] font-bold mb-0.5" style={{ color: "var(--text-secondary)" }}>{item.label}</div>
+                <div className="text-xs font-extrabold digits">{item.value ? formatPrice(item.value) : "—"}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {syncResult && (
+          <p className="text-xs mt-3 font-bold text-dk-green">
+            ✓ {syncResult.synced.toLocaleString("fa-IR")} محصول به‌روزرسانی شد
+            {syncResult.updatedAt ? ` — آخرین بروزرسانی: ${syncResult.updatedAt}` : ""}
+          </p>
+        )}
       </div>
 
       <div className="mt-6 rounded-2xl border p-5 text-sm leading-7"

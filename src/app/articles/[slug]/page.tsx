@@ -3,22 +3,18 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ARTICLES } from "@/lib/articles";
+import { getArticle, getArticles } from "@/lib/articles";
 import ProductCard from "@/components/ProductCard";
 
-export const revalidate = 21600;
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return ARTICLES.map((a) => ({ slug: a.id }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = ARTICLES.find((a) => a.id === slug);
+  const article = await getArticle(slug);
   return { title: article?.title ?? "مقاله یافت نشد" };
 }
 
@@ -55,10 +51,12 @@ const BODY: Record<string, string[]> = {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
-  const article = ARTICLES.find((a) => a.id === slug);
+  const article = await getArticle(slug);
   if (!article) notFound();
 
-  const body = BODY[slug] ?? ["متن کامل این مقاله به‌زودی منتشر می‌شود."];
+  const body = article.content
+    ? article.content.split(/\n\s*\n/).filter(Boolean)
+    : BODY[slug] ?? ["متن کامل این مقاله به‌زودی منتشر می‌شود."];
   const relatedProducts =
     article.productSlugs.length > 0
       ? await prisma.product.findMany({
@@ -145,7 +143,10 @@ export default async function ArticlePage({ params }: Props) {
       <div className="mt-8">
         <h2 className="text-lg font-extrabold mb-4">مقالات مرتبط</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {ARTICLES.filter((a) => a.id !== slug)
+          {(
+            await getArticles()
+          )
+            .filter((a) => a.id !== slug)
             .slice(0, 3)
             .map((a) => (
               <Link

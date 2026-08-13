@@ -11,7 +11,7 @@ import PromoBanners from "@/components/PromoBanners";
 import PopularBrands from "@/components/PopularBrands";
 import ProductRow from "@/components/ProductRow";
 import Icon from "@/components/Icon";
-import { ARTICLES } from "@/lib/articles";
+import { getArticles } from "@/lib/articles";
 
 export const dynamic = "force-dynamic";
 
@@ -204,7 +204,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {ARTICLES.map((article) => (
+          {(await getArticles()).map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
         </div>

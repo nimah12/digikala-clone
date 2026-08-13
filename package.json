@@ -23,6 +23,7 @@
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "resend": "^6.19.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

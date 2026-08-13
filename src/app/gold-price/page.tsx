@@ -12,14 +12,15 @@ type Row = {
   price: number | null;
   change: number;
   changePercent: number;
+  kind: "coin" | "fx"; // ارز (دلار) جدا از طلا و سکه
 };
 
 function buildRows(g: Awaited<ReturnType<typeof getGoldPrices>>): Row[] {
   const rows: Row[] = [];
-  const push = (name: string, icon: string, price: number | null, key: string) => {
+  const push = (name: string, icon: string, price: number | null, key: string, kind: "coin" | "fx" = "coin") => {
     const change = g.change[key] ?? 0;
     const changePercent = price && price - change > 0 ? (change / (price - change)) * 100 : 0;
-    rows.push({ name, icon, price, change, changePercent });
+    rows.push({ name, icon, price, change, changePercent, kind });
   };
   push("طلای ۱۸ عیار (گرم)", "coins", g.gold18k, "gold18k");
   push("سکه امامی", "coins", g.sekkeh, "sekkeh");
@@ -27,7 +28,7 @@ function buildRows(g: Awaited<ReturnType<typeof getGoldPrices>>): Row[] {
   push("نیم سکه", "coins", g.nim, "nim");
   push("ربع سکه", "coins", g.rob, "rob");
   push("سکه گرمی", "coins", g.gerami, "gerami");
-  push("دلار آمریکا", "banknote", g.usd, "usd");
+  push("دلار آمریکا", "banknote", g.usd, "usd", "fx");
   return rows;
 }
 
@@ -39,19 +40,12 @@ export default async function GoldPricePage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <span className="inline-flex items-center gap-2 bg-dk-red/10 text-dk-red text-xs font-bold px-3 py-1.5 rounded-full mb-3">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-dk-red opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-dk-red" />
-          </span>
-          بروزرسانی هر ۸ ساعت
-        </span>
         <h1 className="text-2xl md:text-3xl font-black flex items-center justify-center gap-2">
           <Icon name="coins" size={26} className="text-dk-red" />
           قیمت روز طلا و سکه
         </h1>
         <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>
-          نرخ لحظه‌ای از وب‌سرویس نوسان (ناواسان) — روزی ۳ بار
+          نرخ لحظه‌ای طلا، سکه و ارز
         </p>
       </div>
 
@@ -77,20 +71,40 @@ export default async function GoldPricePage() {
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>واحد: تومان</span>
         </div>
 
-        {rows.map((row) => (
+        {rows.map((row) => {
+          const isFx = row.kind === "fx";
+          return (
           <div
             key={row.name}
             className="flex items-center justify-between gap-3 px-5 py-4 border-b last:border-0"
-            style={{ borderColor: "var(--border)" }}
+            style={{
+              borderColor: "var(--border)",
+              background: isFx ? "color-mix(in srgb, #22a7f0 7%, transparent)" : undefined,
+              boxShadow: isFx ? "inset 3px 0 0 #22a7f0" : undefined,
+            }}
           >
             <div className="flex items-center gap-3 min-w-0">
               <span
                 className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: "color-mix(in srgb, var(--text) 8%, transparent)" }}
+                style={{
+                  background: isFx
+                    ? "color-mix(in srgb, #22a7f0 15%, transparent)"
+                    : "color-mix(in srgb, var(--text) 8%, transparent)",
+                }}
               >
-                <Icon name={row.icon} size={18} className="text-dk-red" />
+                <Icon name={row.icon} size={18} className={isFx ? "text-[#22a7f0]" : "text-dk-red"} />
               </span>
-              <span className="text-sm font-bold truncate">{row.name}</span>
+              <span className="text-sm font-bold truncate">
+                {row.name}
+                {isFx && (
+                  <span
+                    className="inline-block mr-2 text-[10px] font-black px-2 py-0.5 rounded-full text-white align-middle"
+                    style={{ background: "#22a7f0" }}
+                  >
+                    ارز
+                  </span>
+                )}
+              </span>
             </div>
 
             <div className="text-left shrink-0">
@@ -120,7 +134,8 @@ export default async function GoldPricePage() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* لینک‌ها */}
@@ -140,9 +155,6 @@ export default async function GoldPricePage() {
         </Link>
       </div>
 
-      <p className="text-center text-xs mt-6" style={{ color: "var(--text-muted)" }}>
-        قیمت‌ها به‌صورت خودکار هر ۸ ساعت از ناواسان دریافت می‌شوند (روزی ۳ درخواست).
-      </p>
     </div>
   );
 }

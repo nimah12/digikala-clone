@@ -5,12 +5,20 @@ import type { GoldHistoryPoint } from "@/lib/gold-prices";
 
 type SeriesKey = "gold18k" | "sekkeh" | "nim" | "rob" | "usd";
 
+type RangeKey = "7d" | "30d" | "90d";
+
 type Series = {
   key: SeriesKey;
   label: string;
   color: string;
   unit: "m" | "k"; // میلیون تومان / هزار تومان
 };
+
+const RANGES: { key: RangeKey; label: string; days: number }[] = [
+  { key: "7d", label: "۷ روز", days: 7 },
+  { key: "30d", label: "۳۰ روز", days: 30 },
+  { key: "90d", label: "۹۰ روز", days: 90 },
+];
 
 const SERIES: Series[] = [
   { key: "gold18k", label: "طلای ۱۸ عیار", color: "#f9a825", unit: "m" },
@@ -32,6 +40,15 @@ const faNum = (n: number, maxFrac = 0) =>
 const faDate = (t: number) =>
   new Intl.DateTimeFormat("fa-IR", { month: "short", day: "numeric" }).format(new Date(t));
 
+const faDateTime = (t: number) =>
+  new Intl.DateTimeFormat("fa-IR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(t));
+
 function niceStep(raw: number): number {
   if (raw <= 0) return 1;
   const pow = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -46,9 +63,11 @@ export default function GoldPriceChart({
   history: GoldHistoryPoint[];
 }) {
   const [activeKey, setActiveKey] = useState<SeriesKey>("gold18k");
+  const [rangeKey, setRangeKey] = useState<RangeKey>("30d");
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   const series = SERIES.find((s) => s.key === activeKey)!;
+  const range = RANGES.find((r) => r.key === rangeKey)!;
 
   const data = useMemo(() => {
     const pts: { t: number; v: number }[] = [];
@@ -56,8 +75,13 @@ export default function GoldPriceChart({
       const v = p[activeKey];
       if (typeof v === "number" && Number.isFinite(v)) pts.push({ t: p.t, v });
     }
-    return pts;
-  }, [history, activeKey]);
+    if (pts.length < 2) return pts;
+    // پنجره زمانی: از آخرین نقطه به عقب
+    const lastT = pts[pts.length - 1].t;
+    const from = lastT - range.days * 86400000;
+    const filtered = pts.filter((p) => p.t >= from);
+    return filtered.length >= 2 ? filtered : pts.slice(-2);
+  }, [history, activeKey, range]);
 
   const { yMin, yMax, ticks, xs } = useMemo(() => {
     if (data.length < 2) {
@@ -121,6 +145,41 @@ export default function GoldPriceChart({
   const minV = Math.min(...data.map((d) => d.v));
   const unitLabel = series.unit === "m" ? "میلیون تومان" : "هزار تومان";
 
+  const downloadCsv = () => {
+    if (!data.length) return;
+    // همان پنجره زمانی انتخاب‌شده را خروجی می‌گیرد (با همه ستون‌ها)
+    const from = data[0].t;
+    const visible = history.filter((p) => p.t >= from);
+    // هر فیلد داخل گیومه — چون تاریخ شمسی خودش کاما دارد
+    const q = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`;
+    const header = ["تاریخ", "طلای ۱۸ عیار", "سکه امامی", "نیم سکه", "ربع سکه", "دلار"]
+      .map(q)
+      .join(",");
+    const lines = visible.map((p) =>
+      [
+        faDateTime(p.t),
+        p.gold18k ?? "",
+        p.sekkeh ?? "",
+        p.nim ?? "",
+        p.rob ?? "",
+        p.usd ?? "",
+      ]
+        .map(q)
+        .join(","),
+    );
+    // BOM تا اکسل فارسی را درست تشخیص دهد
+    const csv = "\uFEFF" + [header, ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gold-price-${rangeKey}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = (e.clientX - rect.left) / rect.width;
@@ -132,6 +191,38 @@ export default function GoldPriceChart({
 
   return (
     <div>
+      {/* انتخاب بازه زمانی */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-[11px] font-bold" style={{ color: "var(--text-secondary)" }}>
+          بازه زمانی
+        </span>
+        <div
+          className="inline-flex rounded-full border p-0.5"
+          style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+        >
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => {
+                setRangeKey(r.key);
+                setHoverIdx(null);
+              }}
+              className={`shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors ${
+                r.key === rangeKey ? "text-white" : ""
+              }`}
+              style={
+                r.key === rangeKey
+                  ? { background: "var(--color-dk-amber, #f9a825)" }
+                  : { color: "var(--text-secondary)" }
+              }
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* تب‌های انتخاب سری */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" dir="rtl">
         {SERIES.map((s) => (
@@ -164,7 +255,7 @@ export default function GoldPriceChart({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
         <StatCard label="قیمت فعلی" value={`${faNum(last)} تومان`} />
         <StatCard
-          label="تغییر ۳۰ روز"
+          label={`تغییر ${range.label}`}
           value={`${faNum(Math.abs(changePct), 2)}٪`}
           tone={up ? "up" : "down"}
           icon={up ? "▲" : "▼"}
@@ -191,11 +282,36 @@ export default function GoldPriceChart({
               </span>
             ) : (
               <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                (نمودار ۳۰ روزه)
+                (نمودار {range.label})
               </span>
             )}
           </span>
-          <span className="text-[11px]">واحد: {unitLabel}</span>
+          <span className="inline-flex items-center gap-2">
+            <span className="text-[11px]">واحد: {unitLabel}</span>
+            <button
+              type="button"
+              onClick={downloadCsv}
+              title="دانلود CSV تاریخچه"
+              className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-colors hover:border-dk-amber hover:text-dk-amber"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3v12" />
+                <path d="M7 10l5 5 5-5" />
+                <path d="M5 21h14" />
+              </svg>
+              دانلود CSV
+            </button>
+          </span>
         </div>
 
         <svg

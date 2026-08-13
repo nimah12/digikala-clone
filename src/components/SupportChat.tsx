@@ -116,6 +116,14 @@ export default function SupportChat() {
             <div className="flex-1">
               <div className="text-sm font-bold">پشتیبانی دیجی‌کلون</div>
               <div className="text-[11px] text-white/80">پاسخگویی ۲۴ ساعته، ۷ روز هفته</div>
+              <Link
+                href="/support"
+                onClick={() => setOpen(false)}
+                className="inline-flex items-center gap-1 text-[10px] font-bold bg-white/20 hover:bg-white/30 rounded-lg px-2 py-0.5 mt-1 transition-colors"
+              >
+                <Icon name="mail" size={11} />
+                ثبت تیکت
+              </Link>
             </div>
             <div className="text-left">
               <div className="flex items-center gap-1 text-[11px] font-bold digits" dir="ltr">

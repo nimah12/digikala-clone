@@ -23,6 +23,7 @@ model User {
   cart   Cart?
   orders Order[]
   reviews Review[]
+  tickets SupportTicket[]
 }
 
 // گروه‌های مگامنو (نوار راستِ منوی دسته‌بندی‌ها)، مثال: «کالای دیجیتال»
@@ -227,4 +228,36 @@ model GoldPriceCache {
   key       String   @id
   data      Json
   updatedAt DateTime @default(now())
+}
+
+// مقالات و اخبار دنیای تکنولوژی — قابل مدیریت از پنل ادمین
+model Article {
+  id           String   @id // slug
+  title        String
+  excerpt      String
+  category     String
+  date         String
+  image        String
+  readTime     String
+  productSlugs Json
+  content      String   @default("") // پاراگراف‌ها با خط خالی جدا می‌شوند
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// تیکت‌های پشتیبانی کاربران — با اعلان ایمیلی به ادمین
+model SupportTicket {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("open") // open | answered | closed
+  reply     String?
+  userId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
 }

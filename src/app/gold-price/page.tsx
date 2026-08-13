@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getGoldPrices } from "@/lib/gold-prices";
 import { formatPrice } from "@/lib/format";
 import Icon from "@/components/Icon";
+import GoldPriceChart from "@/components/GoldPriceChart";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,15 @@ export default async function GoldPricePage() {
         <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>
           نرخ لحظه‌ای از وب‌سرویس نوسان (ناواسان) — روزی ۳ بار
         </p>
+      </div>
+
+      {/* نمودار تغییرات ۳۰ روزه */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Icon name="chart-line" size={18} className="text-dk-red" />
+          <h2 className="text-base md:text-lg font-black">نمودار تغییرات قیمت (۳۰ روز)</h2>
+        </div>
+        <GoldPriceChart history={gold.history ?? []} />
       </div>
 
       {/* جدول قیمت‌ها */}

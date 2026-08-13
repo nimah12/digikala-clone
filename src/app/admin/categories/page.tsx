@@ -572,7 +572,7 @@ export default function AdminCategoriesPage() {
               type="button"
               onClick={addProdSizeRange}
               className="text-xs font-bold rounded-lg px-3 py-1.5 transition-colors"
-              style={{ border: "1px solid #23254e", color: "#23254e", background: "#fff" }}
+              style={{ border: "1px solid #23254e", color: "#23254e", background: "var(--panel)" }}
             >
               + افزودن بازه (۳۶ تا ۴۵)
             </button>

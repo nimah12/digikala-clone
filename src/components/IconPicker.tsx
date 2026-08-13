@@ -116,8 +116,8 @@ export default function IconPicker({ value, onChange }: Props) {
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 6,
-                border: isActive ? "2px solid #ef4050" : "1px solid #e0e0e0",
-                background: isActive ? "rgba(239,64,80,0.08)" : "#fff",
+                border: isActive ? "2px solid #ef4050" : "1px solid var(--border)",
+                background: isActive ? "rgba(239,64,80,0.08)" : "var(--panel)",
                 cursor: "pointer",
               }}
             >

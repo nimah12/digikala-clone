@@ -146,7 +146,7 @@ export default function ProductListRow({
                   padding: "6px 12px",
                   borderRadius: 6,
                   border: "1px solid #c0392b",
-                  background: "#fff",
+                  background: "var(--panel)",
                   color: "#c0392b",
                   cursor: "pointer",
                 }}
@@ -161,8 +161,8 @@ export default function ProductListRow({
                 fontSize: 13,
                 padding: "6px 12px",
                 borderRadius: 6,
-                border: "1px solid #ccc",
-                background: galleryOpen ? "#eee" : "#fff",
+                border: "1px solid var(--border)",
+                background: galleryOpen ? "var(--hover)" : "var(--panel)",
                 cursor: "pointer",
               }}
             >
@@ -175,8 +175,8 @@ export default function ProductListRow({
                 fontSize: 13,
                 padding: "6px 12px",
                 borderRadius: 6,
-                border: "1px solid #ccc",
-                background: colorOpen ? "#eee" : "#fff",
+                border: "1px solid var(--border)",
+                background: colorOpen ? "var(--hover)" : "var(--panel)",
                 cursor: "pointer",
               }}
             >
@@ -189,8 +189,8 @@ export default function ProductListRow({
                 fontSize: 13,
                 padding: "6px 12px",
                 borderRadius: 6,
-                border: "1px solid #ccc",
-                background: editOpen ? "#eee" : "#fff",
+                border: "1px solid var(--border)",
+                background: editOpen ? "var(--hover)" : "var(--panel)",
                 cursor: "pointer",
               }}
             >

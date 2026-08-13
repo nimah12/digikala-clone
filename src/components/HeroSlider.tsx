@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 
@@ -73,7 +73,7 @@ const THEMES: Record<
 const SLIDE_MS = 6000;
 
 /** زمان باقی‌مانده تا پایان امروز (برای اسلاید تخفیف‌ها) */
-function useTimeToMidnight() {
+function useTimeToMidnight(enabled = true) {
   const calc = () => {
     const now = new Date();
     const end = new Date(now);
@@ -87,9 +87,10 @@ function useTimeToMidnight() {
   };
   const [left, setLeft] = useState(calc);
   useEffect(() => {
+    if (!enabled) return;
     const t = setInterval(() => setLeft(calc()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [enabled]);
   return left;
 }
 
@@ -175,14 +176,24 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
   const [slides, setSlides] = useState(initialSlides);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [prevCurrent, setPrevCurrent] = useState(current);
-  const countdown = useTimeToMidnight();
+  const [inView, setInView] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+  const countdown = useTimeToMidnight(inView);
 
-  if (prevCurrent !== current) {
-    setPrevCurrent(current);
-    setProgress(0);
-  }
+  // وقتی هیرو در دید نیست، تایمرها و انیمیشن‌ها متوقف می‌شوند (صرفه‌جویی CPU)
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (e) setInView(e.isIntersecting);
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const goTo = useCallback((i: number) => {
     setCurrent((i + slides.length) % slides.length);
@@ -203,24 +214,18 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
       .catch(() => {});
   }, [countdown]);
 
-  // پیشرفت + تغییر خودکار اسلاید
+  // تغییر خودکار اسلاید — نوار پیشرفت با CSS animation اجرا می‌شود تا رندر مکرر React نداشته باشیم
   useEffect(() => {
-    if (paused) return;
-    const start = performance.now();
-    const interval = setInterval(() => {
-      setProgress(Math.min(100, ((performance.now() - start) / SLIDE_MS) * 100));
-    }, 50);
+    if (paused || !inView) return;
     const timer = setInterval(() => {
       setCurrent((c) => (c + 1) % slides.length);
     }, SLIDE_MS);
-    return () => {
-      clearInterval(interval);
-      clearInterval(timer);
-    };
-  }, [paused, slides.length]);
+    return () => clearInterval(timer);
+  }, [paused, inView, slides.length]);
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden rounded-3xl shadow-2xl"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -479,8 +484,12 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
           >
             {i === current && (
               <span
+                key={current}
                 className="absolute inset-y-0 right-0 bg-white rounded-full"
-                style={{ width: `${progress}%`, transition: "width 0.05s linear" }}
+                style={{
+                  animation: `hero-progress ${SLIDE_MS}ms linear forwards`,
+                  animationPlayState: paused ? "paused" : "running",
+                }}
               />
             )}
           </button>

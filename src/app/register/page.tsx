@@ -149,7 +149,7 @@ export default function RegisterPage() {
             }`}
             style={
               method === "email"
-                ? { color: "#ef4050" }
+                ? { color: "#ef4050", background: "var(--panel)" }
                 : { color: "var(--text-secondary)" }
             }
           >
@@ -163,7 +163,7 @@ export default function RegisterPage() {
             }`}
             style={
               method === "phone"
-                ? { color: "#ef4050" }
+                ? { color: "#ef4050", background: "var(--panel)" }
                 : { color: "var(--text-secondary)" }
             }
           >

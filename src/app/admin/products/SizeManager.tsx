@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { addSize, deleteSize, errorMessage, fetchSizes } from "./admin-api";
 import type { SizeItem } from "./types";
 
@@ -11,6 +11,13 @@ export default function SizeManager({ productId }: { productId: number }) {
   const [error, setError] = useState("");
   const [name, setName] = useState("");
   const [stock, setStock] = useState(0);
+
+  // افزودن بازه‌ای سایزهای عددی (مثلاً کفش: ۳۶ تا ۴۵)
+  const [rangeFrom, setRangeFrom] = useState("36");
+  const [rangeTo, setRangeTo] = useState("45");
+  const [rangeStep, setRangeStep] = useState("1");
+  const [rangeStock, setRangeStock] = useState("3");
+  const [rangeSaving, setRangeSaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,11 +65,157 @@ export default function SizeManager({ productId }: { productId: number }) {
     }
   }
 
+  // تولید سایزهای عددی از بازه (مثلاً ۳۶ تا ۴۵ با گام ۱) و ثبت همه
+  async function handleAddRange() {
+    setError("");
+    const from = Number(rangeFrom);
+    const to = Number(rangeTo);
+    const step = Number(rangeStep);
+    const stockVal = Number(rangeStock);
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from > to) {
+      setError("بازه‌ی سایز نامعتبره (از باید کوچک‌تر یا مساوی تا باشه)");
+      return;
+    }
+    if (!Number.isFinite(step) || step <= 0) {
+      setError("گام باید عددی مثبت باشه (مثلاً ۱ یا ۰٫۵)");
+      return;
+    }
+    const names: string[] = [];
+    for (let v = from; v <= to + 1e-9; v += step) {
+      names.push(Number(v.toFixed(2)).toString());
+      if (names.length > 60) break;
+    }
+    if (names.length === 0) {
+      setError("هیچ سایزی در این بازه تولید نشد");
+      return;
+    }
+
+    setRangeSaving(true);
+    const added: SizeItem[] = [];
+    try {
+      for (const n of names) {
+        const size = await addSize(productId, {
+          name: n,
+          stock: Number.isFinite(stockVal) ? Math.max(0, stockVal) : 0,
+        });
+        added.push(size);
+      }
+      setSizes((prev) => [...prev, ...added]);
+      setRangeFrom("");
+      setRangeTo("");
+    } catch (err) {
+      setError(errorMessage(err, "خطای نامشخص"));
+      // آنچه تا این‌جا اضافه شده را نشان بده
+      if (added.length > 0) setSizes((prev) => [...prev, ...added]);
+    } finally {
+      setRangeSaving(false);
+    }
+  }
+
+  const inputSmall: CSSProperties = {
+    padding: "6px 8px",
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    fontSize: 13,
+    width: 70,
+  };
+
   return (
     <div style={{ marginBottom: 18 }}>
       <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
         سایزها
       </h3>
+
+      {/* افزودن بازه‌ای سایزهای عددی (کفش و ...) */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          marginBottom: 10,
+          padding: 10,
+          border: "1px solid #e6e6e6",
+          borderRadius: 8,
+          background: "#fafafa",
+        }}
+      >
+        <span style={{ fontSize: 12, color: "#666" }}>سایز عددی از</span>
+        <input
+          type="number"
+          step={0.5}
+          value={rangeFrom}
+          onChange={(e) => setRangeFrom(e.target.value)}
+          style={inputSmall}
+          aria-label="سایز شروع"
+        />
+        <span style={{ fontSize: 12, color: "#666" }}>تا</span>
+        <input
+          type="number"
+          step={0.5}
+          value={rangeTo}
+          onChange={(e) => setRangeTo(e.target.value)}
+          style={inputSmall}
+          aria-label="سایز پایان"
+        />
+        <span style={{ fontSize: 12, color: "#666" }}>گام</span>
+        <input
+          type="number"
+          step={0.5}
+          min={0.5}
+          value={rangeStep}
+          onChange={(e) => setRangeStep(e.target.value)}
+          style={{ ...inputSmall, width: 60 }}
+          aria-label="گام"
+        />
+        <span style={{ fontSize: 12, color: "#666" }}>موجودی هر کدوم</span>
+        <input
+          type="number"
+          min={0}
+          value={rangeStock}
+          onChange={(e) => setRangeStock(e.target.value)}
+          style={{ ...inputSmall, width: 60 }}
+          aria-label="موجودی هر سایز"
+        />
+        <button
+          type="button"
+          onClick={handleAddRange}
+          disabled={rangeSaving}
+          style={{
+            fontSize: 13,
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: "1px solid #23254e",
+            background: "#fff",
+            color: "#23254e",
+            cursor: "pointer",
+          }}
+        >
+          {rangeSaving ? "در حال افزودن..." : "افزودن بازه‌ای (۳۶ تا ۴۵)"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setRangeFrom("36");
+            setRangeTo("45");
+            setRangeStep("1");
+            setRangeStock("3");
+          }}
+          style={{
+            fontSize: 11,
+            padding: "4px 8px",
+            borderRadius: 6,
+            border: "none",
+            background: "#eee",
+            color: "#555",
+            cursor: "pointer",
+          }}
+          title="پیش‌فرض سایز کفش"
+        >
+          پیش‌فرض کفش
+        </button>
+      </div>
+
       <div
         style={{
           display: "flex",

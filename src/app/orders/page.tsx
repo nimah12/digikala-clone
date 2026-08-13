@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatSizeName } from "@/lib/format";
 import Icon from "@/components/Icon";
 import { getTimelineStatus, getElapsedMinutes, useNow } from "@/components/OrderTimeline";
 
@@ -130,7 +130,9 @@ export default function OrdersPage() {
                                 />
                               )}
                               <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                                ({[item.colorName, item.sizeName].filter(Boolean).join(" • ")})
+                                ({[item.colorName, item.sizeName ? formatSizeName(item.sizeName) : null]
+                                  .filter(Boolean)
+                                  .join(" • ")})
                               </span>
                             </span>
                           )}

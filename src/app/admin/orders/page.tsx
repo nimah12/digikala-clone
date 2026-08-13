@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { formatSizeName } from "@/lib/format";
 
 type OrderItem = {
   id: number;
@@ -357,7 +358,9 @@ export default function AdminOrdersPage() {
                                     </span>
                                   )}
                                   <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                    {[it.colorName, it.sizeName].filter(Boolean).join(" • ")}
+                                    {[it.colorName, it.sizeName ? formatSizeName(it.sizeName) : null]
+                                      .filter(Boolean)
+                                      .join(" • ")}
                                     {it.colorName || it.sizeName ? " • " : ""}
                                     {it.quantity.toLocaleString("fa-IR")} عدد
                                   </span>

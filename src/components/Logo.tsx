@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const sizes = {
-    sm: "h-8 px-3 text-sm",
+    sm: "h-8 px-2.5 text-sm",
     md: "h-10 px-4 text-lg",
     lg: "h-12 px-5 text-xl",
   };

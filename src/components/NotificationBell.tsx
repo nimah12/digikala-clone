@@ -51,7 +51,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={handleClick}
-        className="relative flex items-center justify-center w-10 h-10 rounded-lg hover:bg-dk-bg transition-colors"
+        className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
         aria-label="نوتیفیکیشن‌ها"
         title="نوتیفیکیشن‌ها"
       >

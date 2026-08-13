@@ -3,6 +3,7 @@ import Link from "next/link";
 import { type ProductWithCategory } from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import { buildHeroSlides } from "@/lib/hero-slides";
+import { isSummerClothing, summerBoost } from "@/lib/clothing";
 import ArticleCard from "@/components/ArticleCard";
 import ServiceStrip from "@/components/ServiceStrip";
 import CategoryCircles from "@/components/CategoryCircles";
@@ -15,46 +16,6 @@ import { ARTICLES } from "@/lib/articles";
 export const dynamic = "force-dynamic";
 
 type RowProduct = ProductWithCategory;
-
-// ---- پوشاک تابستانی: حذف آیتم‌های زمستانی و اولویت با آیتم‌های تابستانی ----
-const WINTER_CLOTHING = [
-  "هودی",
-  "سویشرت",
-  "ژاکت",
-  "پالتو",
-  "کاپشن",
-  "بادگیر",
-  "پلیور",
-  "پشمی",
-  "بافت",
-  "دستکش",
-  "شال",
-  "حرارتی",
-  "کت اسپرت",
-];
-const SUMMER_CLOTHING = [
-  "تیشرت",
-  "تی‌شرت",
-  "شلوارک",
-  "پیراهن",
-  "مانتو",
-  "کاپری",
-  "دامن",
-  "پولو",
-  "کفش",
-  "جوراب",
-  "جین",
-  "کتان",
-  "اسلش",
-];
-
-function isSummerClothing(name: string): boolean {
-  return !WINTER_CLOTHING.some((t) => name.includes(t));
-}
-
-function summerBoost(name: string): number {
-  return SUMMER_CLOTHING.some((t) => name.includes(t)) ? 1 : 0;
-}
 
 export default async function Home() {
   const [

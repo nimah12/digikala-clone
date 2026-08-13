@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import IconPicker from "@/components/IconPicker";
 
 type CategoryNode = {
   id: number;
@@ -22,32 +23,6 @@ type MenuGroup = {
   order: number;
 };
 
-const ICON_OPTIONS = [
-  "phone",
-  "laptop",
-  "tablet",
-  "watch",
-  "coins",
-  "basket",
-  "shirt",
-  "gamepad",
-  "wrench",
-  "headphones",
-  "home",
-  "coffee",
-  "book",
-  "spray",
-  "gift",
-  "lamp",
-  "camera",
-  "t-shirt",
-  "shoe",
-  "monitor",
-  "tag",
-  "box",
-  "heart",
-  "car",
-];
 
 // تبدیل ساده اسم فارسی به slug (فقط برای پیشنهاد خودکار؛ قابل ویرایش)
 function toSlug(input: string): string {
@@ -431,13 +406,9 @@ export default function AdminCategoriesPage() {
               style={inputStyle}
             />
           </div>
-          <div>
-            <div className="text-xs mb-1">آیکون</div>
-            <select value={newIcon} onChange={(e) => setNewIcon(e.target.value)} style={inputStyle}>
-              {ICON_OPTIONS.map((ic) => (
-                <option key={ic} value={ic}>{ic}</option>
-              ))}
-            </select>
+          <div style={{ width: 280 }}>
+            <div className="text-xs mb-1">آیکون (همه آیکون‌های Lucide)</div>
+            <IconPicker value={newIcon} onChange={setNewIcon} />
           </div>
           <div>
             <div className="text-xs mb-1">ترتیب</div>
@@ -884,19 +855,13 @@ export default function AdminCategoriesPage() {
                 <div className="text-xs font-bold mb-1">slug</div>
                 <input type="text" dir="ltr" value={editSlug} onChange={(e) => setEditSlug(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <div className="text-xs font-bold mb-1">آیکون</div>
-                  <select value={editIcon} onChange={(e) => setEditIcon(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
-                    {ICON_OPTIONS.map((ic) => (
-                      <option key={ic} value={ic}>{ic}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <div className="text-xs font-bold mb-1">ترتیب</div>
-                  <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
-                </div>
+              <div>
+                <div className="text-xs font-bold mb-1">آیکون (همه آیکون‌های Lucide)</div>
+                <IconPicker value={editIcon} onChange={setEditIcon} />
+              </div>
+              <div>
+                <div className="text-xs font-bold mb-1">ترتیب</div>
+                <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">گروه منو (فقط برای دسته‌ی اصلی)</div>

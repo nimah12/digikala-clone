@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import IconPicker from "@/components/IconPicker";
 
 type MenuGroup = {
   id: number;
@@ -10,33 +12,6 @@ type MenuGroup = {
   order: number;
   _count: { categories: number };
 };
-
-const ICON_OPTIONS = [
-  "phone",
-  "laptop",
-  "tablet",
-  "watch",
-  "coins",
-  "basket",
-  "shirt",
-  "gamepad",
-  "wrench",
-  "headphones",
-  "home",
-  "coffee",
-  "book",
-  "spray",
-  "gift",
-  "lamp",
-  "camera",
-  "t-shirt",
-  "shoe",
-  "monitor",
-  "tag",
-  "box",
-  "heart",
-  "car",
-];
 
 export default function AdminGroupsPage() {
   const [status, setStatus] = useState<"loading" | "denied" | "ready">("loading");
@@ -252,13 +227,9 @@ export default function AdminGroupsPage() {
               style={{ ...inputStyle, width: 200 }}
             />
           </div>
-          <div>
-            <div className="text-xs font-bold mb-1">آیکون</div>
-            <select value={newIcon} onChange={(e) => setNewIcon(e.target.value)} style={{ ...inputStyle, width: 130 }}>
-              {ICON_OPTIONS.map((ic) => (
-                <option key={ic} value={ic}>{ic}</option>
-              ))}
-            </select>
+          <div style={{ width: 300 }}>
+            <div className="text-xs font-bold mb-1">آیکون (همه آیکون‌های Lucide)</div>
+            <IconPicker value={newIcon} onChange={setNewIcon} />
           </div>
           <div>
             <div className="text-xs font-bold mb-1">ترتیب</div>
@@ -310,7 +281,7 @@ export default function AdminGroupsPage() {
                   <td className="px-4 py-3">{g.order}</td>
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-dk-red" style={{ background: "color-mix(in srgb, #ef4050 8%, transparent)" }}>
-                      {g.icon || "tag"}
+                      <Icon name={g.icon || "tag"} size={16} />
                     </span>
                   </td>
                   <td className="px-4 py-3 font-bold">{g.title}</td>
@@ -351,19 +322,13 @@ export default function AdminGroupsPage() {
                 <div className="text-xs font-bold mb-1">عنوان</div>
                 <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <div className="text-xs font-bold mb-1">آیکون</div>
-                  <select value={editIcon} onChange={(e) => setEditIcon(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
-                    {ICON_OPTIONS.map((ic) => (
-                      <option key={ic} value={ic}>{ic}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <div className="text-xs font-bold mb-1">ترتیب</div>
-                  <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
-                </div>
+              <div>
+                <div className="text-xs font-bold mb-1">آیکون (همه آیکون‌های Lucide)</div>
+                <IconPicker value={editIcon} onChange={setEditIcon} />
+              </div>
+              <div>
+                <div className="text-xs font-bold mb-1">ترتیب</div>
+                <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
               </div>
               {error && <p className="text-xs text-dk-red">{error}</p>}
               <div className="flex gap-2 pt-1">

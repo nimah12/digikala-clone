@@ -12,11 +12,20 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const categorySlug = searchParams.get("category");
+  const q = searchParams.get("q")?.trim();
 
+  // جستجو در همه محصولات (اسم یا slug)؛ در غیر این صورت فیلتر دسته
   const products = await prisma.product.findMany({
-    where: categorySlug
-      ? { category: { is: { slug: categorySlug } } }
-      : undefined,
+    where: q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { slug: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : categorySlug
+        ? { category: { is: { slug: categorySlug } } }
+        : undefined,
     select: {
       id: true,
       name: true,

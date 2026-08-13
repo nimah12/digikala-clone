@@ -27,11 +27,16 @@ function errorMessage(err: unknown, fallback: string): string {
 
 // ---------- لیست و دسته‌ها ----------
 
-export async function fetchProductList(category: string): Promise<Product[]> {
-  const res = await fetch(
-    `/api/admin/products?category=${encodeURIComponent(category)}`,
-    { headers: authHeaders() },
-  );
+export async function fetchProductList(
+  category: string,
+  search = "",
+): Promise<Product[]> {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (search) params.set("q", search);
+  const res = await fetch(`/api/admin/products?${params}`, {
+    headers: authHeaders(),
+  });
   if (res.status === 401 || res.status === 403) throw new Error(UNAUTHORIZED);
   const data = await res.json();
   return data.products || [];

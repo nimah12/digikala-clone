@@ -21,6 +21,7 @@ type Order = {
     price: number;
     colorName?: string | null;
     colorHex?: string | null;
+    sizeName?: string | null;
     productName?: string | null;
     productSlug?: string | null;
     productImageUrl?: string | null;
@@ -120,14 +121,16 @@ export default function OrdersPage() {
                         />
                         <span className="text-xs flex-1 flex items-center gap-1.5">
                           {name}
-                          {item.colorName && (
+                          {(item.colorName || item.sizeName) && (
                             <span className="inline-flex items-center gap-1">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full inline-block"
-                                style={{ background: item.colorHex ?? undefined, border: "1px solid var(--border)" }}
-                              />
+                              {item.colorName && (
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full inline-block"
+                                  style={{ background: item.colorHex ?? undefined, border: "1px solid var(--border)" }}
+                                />
+                              )}
                               <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                                ({item.colorName})
+                                ({[item.colorName, item.sizeName].filter(Boolean).join(" • ")})
                               </span>
                             </span>
                           )}

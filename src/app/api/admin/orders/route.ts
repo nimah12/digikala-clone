@@ -46,6 +46,7 @@ export async function GET(request: Request) {
           quantity: true,
           price: true,
           colorName: true,
+          sizeName: true,
           productName: true,
           productSlug: true,
           productImageUrl: true,
@@ -127,6 +128,12 @@ export async function PATCH(request: Request) {
               data: { stock: { decrement: item.quantity } },
             });
           }
+          if (item.sizeName) {
+            await tx.productSize.updateMany({
+              where: { productId: product.id, name: item.sizeName },
+              data: { stock: { decrement: item.quantity } },
+            });
+          }
         } else {
           await tx.product.update({
             where: { id: product.id },
@@ -138,6 +145,12 @@ export async function PATCH(request: Request) {
           if (item.colorName) {
             await tx.productColor.updateMany({
               where: { productId: product.id, name: item.colorName },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+          if (item.sizeName) {
+            await tx.productSize.updateMany({
+              where: { productId: product.id, name: item.sizeName },
               data: { stock: { increment: item.quantity } },
             });
           }

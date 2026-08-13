@@ -29,6 +29,14 @@ export type ColorItem = {
   order: number;
 };
 
+export type SizeItem = {
+  id: number;
+  productId: number;
+  name: string;
+  stock: number;
+  order: number;
+};
+
 export type VendorItem = {
   id: number;
   productId: number;

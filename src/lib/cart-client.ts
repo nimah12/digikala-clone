@@ -8,6 +8,8 @@ export type CartItem = {
   colorId?: number;
   colorName?: string;
   colorHex?: string;
+  sizeId?: number;
+  sizeName?: string;
 };
 
 const EMPTY_CART: CartItem[] = [];
@@ -49,15 +51,22 @@ export function useCartCount(initial = 0): number {
   return items.reduce((sum, i) => sum + (i.qty || 1), 0) || initial;
 }
 
+export type CartColor = { id: number; name: string; hex: string };
+export type CartSize = { id: number; name: string };
+
 export function addToCart(
   productId: number,
-  color?: { id: number; name: string; hex: string },
+  color?: CartColor,
+  size?: CartSize,
 ) {
   try {
     const raw = localStorage.getItem("dk-cart");
     const items: CartItem[] = raw ? JSON.parse(raw) : [];
     const existing = items.find(
-      (i) => i.id === productId && (i.colorId ?? null) === (color?.id ?? null),
+      (i) =>
+        i.id === productId &&
+        (i.colorId ?? null) === (color?.id ?? null) &&
+        (i.sizeId ?? null) === (size?.id ?? null),
     );
     if (existing) {
       existing.qty += 1;
@@ -68,6 +77,7 @@ export function addToCart(
         ...(color
           ? { colorId: color.id, colorName: color.name, colorHex: color.hex }
           : {}),
+        ...(size ? { sizeId: size.id, sizeName: size.name } : {}),
       });
     }
     localStorage.setItem("dk-cart", JSON.stringify(items));

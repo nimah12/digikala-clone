@@ -13,6 +13,12 @@ type ColorOption = {
   stock: number;
 };
 
+type SizeOption = {
+  id: number;
+  name: string;
+  stock: number;
+};
+
 type Props = {
   productId: number;
   categoryName: string;
@@ -26,6 +32,7 @@ type Props = {
   originalPrice?: number | null;
   stock: number;
   colors: ColorOption[];
+  sizes?: SizeOption[];
 };
 
 function isLight(hex: string): boolean {
@@ -51,24 +58,36 @@ export default function ProductInfoColumn({
   originalPrice,
   stock,
   colors,
+  sizes = [],
 }: Props) {
   const requiresColor = colors.length > 1;
-  const [selectedId, setSelectedId] = useState<number | null>(
+  const requiresSize = sizes.length > 1;
+  const [selectedColorId, setSelectedColorId] = useState<number | null>(
     colors.length === 1 ? colors[0].id : null,
   );
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(
+    sizes.length === 1 ? sizes[0].id : null,
+  );
   const [colorError, setColorError] = useState("");
+  const [sizeError, setSizeError] = useState("");
   const [added, setAdded] = useState(false);
 
   const inStock = stock > 0;
-  const selectedColor = colors.find((c) => c.id === selectedId) ?? null;
+  const selectedColor = colors.find((c) => c.id === selectedColorId) ?? null;
+  const selectedSize = sizes.find((s) => s.id === selectedSizeId) ?? null;
 
   function handleAddToCart() {
     if (requiresColor && !selectedColor) {
       setColorError("باید یک رنگ انتخاب کنی تا بتونی این محصول رو به سبدت اضافه کنی.");
       return;
     }
+    if (requiresSize && !selectedSize) {
+      setSizeError("باید یک سایز انتخاب کنی تا بتونی این محصول رو به سبدت اضافه کنی.");
+      return;
+    }
     setColorError("");
-    addToCart(productId, selectedColor ?? undefined);
+    setSizeError("");
+    addToCart(productId, selectedColor ?? undefined, selectedSize ?? undefined);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   }
@@ -101,24 +120,24 @@ export default function ProductInfoColumn({
                 key={c.id}
                 type="button"
                 onClick={() => {
-                  setSelectedId(c.id);
+                  setSelectedColorId(c.id);
                   setColorError("");
                 }}
                 title={c.name}
                 aria-label={c.name}
-                aria-pressed={c.id === selectedId}
+                aria-pressed={c.id === selectedColorId}
                 className="relative w-8 h-8 rounded-full flex items-center justify-center transition"
                 style={{
                   background: c.hex,
                   border:
-                    c.id === selectedId
+                    c.id === selectedColorId
                       ? "2px solid var(--dk-red, #ef4050)"
                       : "1px solid var(--border)",
-                  boxShadow: c.id === selectedId ? "0 0 0 2px rgba(239,64,80,0.15)" : "none",
+                  boxShadow: c.id === selectedColorId ? "0 0 0 2px rgba(239,64,80,0.15)" : "none",
                   opacity: c.stock === 0 ? 0.4 : 1,
                 }}
               >
-                {c.id === selectedId && (
+                {c.id === selectedColorId && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M5 13l4 4L19 7"
@@ -134,6 +153,52 @@ export default function ProductInfoColumn({
           </div>
           {colorError && (
             <p className="text-xs text-dk-red mt-2">{colorError}</p>
+          )}
+        </div>
+      )}
+
+      {sizes.length > 0 && (
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-2 text-sm">
+            <span style={{ color: "var(--text-secondary)" }}>سایز:</span>
+            <span className="font-bold">
+              {selectedSize ? selectedSize.name : "انتخاب نشده"}
+            </span>
+            {selectedSize && selectedSize.stock === 0 && (
+              <span className="text-xs text-dk-red">(ناموجود)</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {sizes.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setSelectedSizeId(s.id);
+                  setSizeError("");
+                }}
+                title={`${s.name}${s.stock === 0 ? " (ناموجود)" : ""}`}
+                aria-label={s.name}
+                aria-pressed={s.id === selectedSizeId}
+                className="min-w-10 h-10 px-3 rounded-lg text-sm font-bold transition flex items-center justify-center"
+                style={{
+                  background: s.id === selectedSizeId ? "var(--dk-red, #ef4050)" : "var(--bg)",
+                  color: s.id === selectedSizeId ? "#fff" : "var(--text)",
+                  border:
+                    s.id === selectedSizeId
+                      ? "1px solid var(--dk-red, #ef4050)"
+                      : "1px solid var(--border)",
+                  opacity: s.stock === 0 ? 0.4 : 1,
+                  cursor: s.stock === 0 ? "not-allowed" : "pointer",
+                }}
+                disabled={s.stock === 0}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+          {sizeError && (
+            <p className="text-xs text-dk-red mt-2">{sizeError}</p>
           )}
         </div>
       )}

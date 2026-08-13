@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       quantities,
       colorNames,
       colorHexes,
+      sizeNames,
       deliveryDay,
       deliverySlot,
     } = body;
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
           productImageUrl: p.imageUrl,
           colorName: Array.isArray(colorNames) ? colorNames[i] || null : null,
           colorHex: Array.isArray(colorHexes) ? colorHexes[i] || null : null,
+          sizeName: Array.isArray(sizeNames) ? sizeNames[i] || null : null,
         };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);

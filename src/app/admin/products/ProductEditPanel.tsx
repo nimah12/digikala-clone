@@ -6,6 +6,7 @@ import { findTreeCategory } from "./category-tree";
 import type { CategoryOption, TreeCategory } from "./types";
 import VendorsManager from "./VendorsManager";
 import ReviewsManager from "./ReviewsManager";
+import SizeManager from "./SizeManager";
 
 type Props = {
   productId: number;
@@ -225,6 +226,9 @@ export default function ProductEditPanel({
               <p style={{ color: "#c0392b", fontSize: 13 }}>{error}</p>
             )}
           </div>
+
+          {/* سایزها */}
+          <SizeManager productId={productId} />
 
           {/* فروشنده‌ها و امتیاز */}
           <VendorsManager productId={productId} />

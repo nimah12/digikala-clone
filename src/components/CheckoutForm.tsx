@@ -206,9 +206,13 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
     setSaving(true);
     try {
       const cart = localStorage.getItem("dk-cart");
-      const items: { id: number; qty: number; colorName?: string; colorHex?: string }[] = cart
-        ? JSON.parse(cart)
-        : [];
+      const items: {
+        id: number;
+        qty: number;
+        colorName?: string;
+        colorHex?: string;
+        sizeName?: string;
+      }[] = cart ? JSON.parse(cart) : [];
       if (items.length === 0) {
         setOrderError("سبد خرید شما خالی است.");
         return null;
@@ -217,11 +221,13 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
       const quantities: number[] = [];
       const colorNames: (string | null)[] = [];
       const colorHexes: (string | null)[] = [];
+      const sizeNames: (string | null)[] = [];
       for (const item of items) {
         productIds.push(item.id);
         quantities.push(item.qty || 1);
         colorNames.push(item.colorName ?? null);
         colorHexes.push(item.colorHex ?? null);
+        sizeNames.push(item.sizeName ?? null);
       }
       const token = localStorage.getItem("dk-token");
       const res = await fetch("/api/orders", {
@@ -244,6 +250,7 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
           quantities,
           colorNames,
           colorHexes,
+          sizeNames,
         }),
       });
       const data = await res.json().catch(() => null);

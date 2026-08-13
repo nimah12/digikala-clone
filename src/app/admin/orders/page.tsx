@@ -8,6 +8,7 @@ type OrderItem = {
   quantity: number;
   price: number;
   colorName: string | null;
+  sizeName: string | null;
   productName: string | null;
   productSlug: string | null;
   productImageUrl: string | null;
@@ -356,7 +357,8 @@ export default function AdminOrdersPage() {
                                     </span>
                                   )}
                                   <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                    {it.colorName ? `${it.colorName} • ` : ""}
+                                    {[it.colorName, it.sizeName].filter(Boolean).join(" • ")}
+                                    {it.colorName || it.sizeName ? " • " : ""}
                                     {it.quantity.toLocaleString("fa-IR")} عدد
                                   </span>
                                   <span className="text-xs font-bold">{formatPrice(it.price)}</span>

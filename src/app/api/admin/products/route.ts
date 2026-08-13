@@ -66,6 +66,17 @@ export async function POST(request: Request) {
   const discountPercent = Number.isInteger(body.discountPercent)
     ? body.discountPercent
     : 0;
+  // سایزها: آرایه‌ای از { name, stock }
+  const sizes: { name: string; stock: number }[] = Array.isArray(body.sizes)
+    ? body.sizes
+        .map((s: unknown) => {
+          const row = s as { name?: unknown; stock?: unknown };
+          const name = typeof row?.name === "string" ? row.name.trim() : "";
+          const stock = Number.isInteger(row?.stock) ? (row.stock as number) : 0;
+          return name ? { name, stock: Math.max(0, stock) } : null;
+        })
+        .filter((s: { name: string; stock: number } | null): s is { name: string; stock: number } => s !== null)
+    : [];
 
   if (!name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
@@ -141,6 +152,13 @@ export async function POST(request: Request) {
       imageUrl,
       categoryId: category.id,
       subcategoryId,
+      sizes: {
+        create: sizes.map((s, i) => ({
+          name: s.name,
+          stock: s.stock,
+          order: i,
+        })),
+      },
     },
   });
 

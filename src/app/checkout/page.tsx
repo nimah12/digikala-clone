@@ -137,20 +137,22 @@ export default function CheckoutPage() {
               const p = productById.get(item.id);
               if (!p) return null;
               return (
-                <div key={`${item.id}-${item.colorId ?? "none"}`} className="flex items-center gap-3">
+                <div key={`${item.id}-${item.colorId ?? "none"}-${item.sizeId ?? "none"}`} className="flex items-center gap-3">
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0" style={{ background: "var(--bg)" }}>
                     <Image src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} fill sizes="48px" className="object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-bold truncate">{p.name}</div>
-                    {item.colorName && (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full inline-block"
-                          style={{ background: item.colorHex, border: "1px solid var(--border)" }}
-                        />
+                    {(item.colorName || item.sizeName) && (
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {item.colorName && (
+                          <span
+                            className="w-2.5 h-2.5 rounded-full inline-block"
+                            style={{ background: item.colorHex, border: "1px solid var(--border)" }}
+                          />
+                        )}
                         <span className="text-[10px]" style={{ color: "var(--text-secondary)" }}>
-                          {item.colorName}
+                          {[item.colorName, item.sizeName].filter(Boolean).join(" • ")}
                         </span>
                       </div>
                     )}

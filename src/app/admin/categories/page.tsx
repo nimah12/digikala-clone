@@ -114,6 +114,7 @@ export default function AdminCategoriesPage() {
   const [prodDiscount, setProdDiscount] = useState("0");
   const [prodImage, setProdImage] = useState("");
   const [prodDescription, setProdDescription] = useState("");
+  const [prodSizes, setProdSizes] = useState<{ name: string; stock: string }[]>([]);
   const [prodSaving, setProdSaving] = useState(false);
   const [prodError, setProdError] = useState("");
 
@@ -282,7 +283,14 @@ export default function AdminCategoriesPage() {
     setProdDiscount("0");
     setProdImage("");
     setProdDescription("");
+    setProdSizes([]);
     setProdError("");
+  }
+
+  function updateProdSize(index: number, patch: Partial<{ name: string; stock: string }>) {
+    setProdSizes((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+    );
   }
 
   async function handleAddProduct(category: CategoryNode) {
@@ -317,6 +325,9 @@ export default function AdminCategoriesPage() {
           discountPercent: Number.isInteger(discountPercent) ? discountPercent : 0,
           imageUrl: prodImage.trim() || undefined,
           description: prodDescription.trim() || undefined,
+          sizes: prodSizes
+            .filter((s) => s.name.trim())
+            .map((s) => ({ name: s.name.trim(), stock: Number(s.stock) || 0 })),
         }),
       });
       const data = await res.json();
@@ -498,6 +509,47 @@ export default function AdminCategoriesPage() {
             onChange={(e) => setProdDescription(e.target.value)}
             style={{ ...inputStyle, width: "100%" }}
           />
+        </div>
+        <div className="mt-3">
+          <div className="text-xs mb-1">سایزها (اختیاری — مثلاً S/M/L یا ۳۸/۴۰/۴۲)</div>
+          {prodSizes.length > 0 && (
+            <div className="flex flex-col gap-2 mb-2">
+              {prodSizes.map((row, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="سایز (مثلاً XL)"
+                    value={row.name}
+                    onChange={(e) => updateProdSize(i, { name: e.target.value })}
+                    style={{ ...inputStyle, width: 120 }}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="موجودی"
+                    value={row.stock}
+                    onChange={(e) => updateProdSize(i, { stock: e.target.value })}
+                    style={{ ...inputStyle, width: 90 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setProdSizes((prev) => prev.filter((_, j) => j !== i))}
+                    className="text-xs font-bold text-dk-red border border-dk-red/40 rounded-lg px-2 py-1 transition-colors hover:bg-dk-red/10"
+                  >
+                    حذف
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setProdSizes((prev) => [...prev, { name: "", stock: "" }])}
+            className="text-xs font-bold border rounded-lg px-3 py-1.5 transition-colors hover:bg-dk-bg"
+            style={{ borderColor: "var(--border)" }}
+          >
+            + افزودن سایز
+          </button>
         </div>
         {prodError && <p className="text-xs text-dk-red mt-2">{prodError}</p>}
         <div className="flex gap-2 mt-3">

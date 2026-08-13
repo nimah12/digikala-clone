@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatRating } from "@/lib/format";
+import ReviewForm from "./ReviewForm";
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -22,20 +23,16 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// توزیع تقریبی امتیازها بر اساس میانگین و تعداد (برای نوار ستاره‌ها)
-function ratingBreakdown(rating: number, ratingCount: number): { star: number; pct: number }[] {
-  if (ratingCount <= 0) {
+// توزیع واقعی امتیازها از روی دیدگاه‌های ثبت‌شده (برای نوار ستاره‌ها)
+function ratingBreakdown(reviews: { rating: number }[]): { star: number; pct: number }[] {
+  if (reviews.length === 0) {
     return [5, 4, 3, 2, 1].map((star) => ({ star, pct: 0 }));
   }
-  const five = Math.round(ratingCount * 0.72);
-  const four = Math.round(ratingCount * 0.2);
-  const three = Math.round(ratingCount * 0.05);
-  const rest = Math.max(0, ratingCount - five - four - three);
-  const two = Math.round(rest * 0.4);
-  const one = rest - two;
   return [5, 4, 3, 2, 1].map((star) => ({
     star,
-    pct: Math.round(((star === 5 ? five : star === 4 ? four : star === 3 ? three : star === 2 ? two : one) / ratingCount) * 100),
+    pct: Math.round(
+      (reviews.filter((r) => r.rating === star).length / reviews.length) * 100,
+    ),
   }));
 }
 
@@ -45,7 +42,7 @@ export default async function Reviews({ productId, rating, ratingCount }: { prod
     orderBy: { id: "asc" },
   });
 
-  const breakdown = ratingBreakdown(rating, ratingCount);
+  const breakdown = ratingBreakdown(reviews);
 
   return (
     <section
@@ -134,6 +131,9 @@ export default async function Reviews({ productId, rating, ratingCount }: { prod
           ))}
         </div>
       )}
+
+      {/* فرم ثبت دیدگاه از صفحه محصول */}
+      <ReviewForm productId={productId} />
     </section>
   );
 }

@@ -193,6 +193,16 @@ export async function fetchProductDetail(
   return data.product as ProductDetail;
 }
 
+export async function deleteProductImage(productId: number) {
+  const res = await fetch(`/api/admin/products/${productId}`, {
+    method: "PATCH",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ imageUrl: null }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "حذف عکس ناموفق بود");
+}
+
 export async function saveProduct(
   productId: number,
   input: {

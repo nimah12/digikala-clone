@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   authHeaders,
   deleteProduct,
+  deleteProductImage,
   errorMessage,
   fetchCategoryTree,
   fetchProductList,
@@ -23,6 +24,7 @@ export default function AdminProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   // پنل‌های باز
@@ -98,6 +100,24 @@ export default function AdminProductsPage() {
       setError(errorMessage(err, "خطای نامشخص"));
     } finally {
       setUploadingId(null);
+    }
+  }
+
+  async function handleDeleteImage(productId: number) {
+    if (!confirm("مطمئنی می‌خوای عکس اصلی این محصول رو حذف کنی؟")) {
+      return;
+    }
+    setError("");
+    setDeletingImageId(productId);
+    try {
+      await deleteProductImage(productId);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, imageUrl: null } : p)),
+      );
+    } catch (err) {
+      setError(errorMessage(err, "خطای نامشخص"));
+    } finally {
+      setDeletingImageId(null);
     }
   }
 
@@ -183,10 +203,12 @@ export default function AdminProductsPage() {
             catTree={catTree}
             uploading={uploadingId === product.id}
             deleting={deletingId === product.id}
+            deletingImage={deletingImageId === product.id}
             galleryOpen={expandedId === product.id}
             colorOpen={colorPanelId === product.id}
             editOpen={editPanelId === product.id}
             onUploadImage={(file) => handleFileChange(product.id, file)}
+            onDeleteImage={() => handleDeleteImage(product.id)}
             onDelete={() => handleDeleteProduct(product.id)}
             onToggleGallery={() =>
               setExpandedId((prev) => (prev === product.id ? null : product.id))

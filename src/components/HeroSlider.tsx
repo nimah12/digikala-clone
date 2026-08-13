@@ -79,7 +79,6 @@ function useTimeToMidnight() {
   useEffect(() => {
     const t = setInterval(() => setLeft(calc()), 1000);
     return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return left;
 }
@@ -92,7 +91,13 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [prevCurrent, setPrevCurrent] = useState(current);
   const countdown = useTimeToMidnight();
+
+  if (prevCurrent !== current) {
+    setPrevCurrent(current);
+    setProgress(0);
+  }
 
   const goTo = useCallback((i: number) => {
     setCurrent((i + slides.length) % slides.length);
@@ -114,14 +119,6 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     };
   }, [paused, slides.length]);
 
-  useEffect(() => {
-    setProgress(0);
-  }, [current]);
-
-  const slide = slides[current];
-  const theme = THEMES[slide.theme];
-  const p = slide.product;
-
   return (
     <section
       className="relative overflow-hidden rounded-3xl shadow-2xl"
@@ -133,6 +130,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       <div className="relative min-h-[430px] md:min-h-[480px]">
         {slides.map((s, i) => {
           const t = THEMES[s.theme];
+          const p = s.product;
           return (
             <div
               key={s.id}
@@ -180,7 +178,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   </div>
 
                   <h2
-                    className={`text-white text-3xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] ${
+                    className={`text-white text-3xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "90ms" }}
@@ -244,7 +242,10 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 </div>
 
                 {/* عکس محصول شناور */}
-                <div className={`hidden md:flex items-center justify-center ${i === current ? "hero-pop" : "opacity-0"}`} style={{ animationDelay: "150ms" }}>
+                <div
+                  className={`flex items-center justify-center pb-2 md:pb-0 ${i === current ? "hero-pop" : "opacity-0"}`}
+                  style={{ animationDelay: "150ms" }}
+                >
                   <div className="relative">
                     {/* هاله درخشان */}
                     <div
@@ -255,43 +256,48 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                       <>
                         <Link
                           href={s.href}
-                          className="hero-float relative block w-64 lg:w-72 bg-white/95 backdrop-blur rounded-3xl p-3.5 shadow-2xl ring-1 ring-white/40"
+                          className="hero-float relative block w-40 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2.5 md:p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
-                          <div className="relative overflow-hidden rounded-2xl">
+                          <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
                             <img
                               src={p.imageUrl}
                               alt={p.name}
                               className={`w-full aspect-square object-contain ${i === current ? "hero-kenburns" : ""}`}
                             />
                           </div>
-                          <div className="flex items-center justify-between gap-2 mt-3 px-1">
+                          <div className="flex items-center justify-between gap-2 mt-2.5 md:mt-3 px-1">
                             <div className="min-w-0">
-                              <p className="text-[11px] text-gray-500 truncate">{p.name}</p>
-                              <p className="text-sm font-extrabold text-gray-900 whitespace-nowrap">
+                              <p className="text-[10px] md:text-[11px] text-gray-500 truncate">{p.name}</p>
+                              <p className="text-xs md:text-sm font-extrabold text-gray-900 whitespace-nowrap">
                                 {formatPrice(p.price)}
-                                <span className="text-[10px] font-medium text-gray-400"> تومان</span>
+                                <span className="text-[9px] md:text-[10px] font-medium text-gray-400"> تومان</span>
                               </p>
+                              {p.originalPrice && p.originalPrice > p.price && (
+                                <p className="text-[9px] md:text-[10px] text-gray-400 line-through whitespace-nowrap">
+                                  {formatPrice(p.originalPrice)} تومان
+                                </p>
+                              )}
                             </div>
-                            <span className="shrink-0 bg-dk-red text-white text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-md">
+                            <span className="shrink-0 bg-dk-red text-white text-[10px] md:text-[11px] font-extrabold px-2 md:px-2.5 py-1 rounded-lg shadow-md">
                               ٪{p.discountPercent.toLocaleString("fa-IR")}
                             </span>
                           </div>
                           {/* درخشش روی کارت */}
-                          <span className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+                          <span className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden pointer-events-none">
                             <span className="hero-shine absolute inset-y-0 w-1/2 bg-gradient-to-l from-transparent via-white/50 to-transparent" />
                           </span>
                         </Link>
 
                         {/* چیپ‌های شناور */}
-                        <span className="hero-float-delayed absolute -top-4 -right-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                        <span className="hero-float-delayed absolute -top-3 md:-top-4 -right-3 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[10px] md:text-[11px] font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                           <span className="text-dk-green">✓</span> ضمانت اصالت
                         </span>
-                        <span className="hero-float-delayed absolute -bottom-4 -left-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                        <span className="hero-float-delayed absolute -bottom-3 md:-bottom-4 -left-3 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[10px] md:text-[11px] font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                           <span className="text-dk-red">🚚</span> ارسال رایگان
                         </span>
                       </>
                     ) : (
-                      <div className="w-64 lg:w-72 aspect-square rounded-3xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-sm">
+                      <div className="w-40 sm:w-52 md:w-64 lg:w-72 aspect-square rounded-2xl md:rounded-3xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-xs md:text-sm">
                         {s.badge}
                       </div>
                     )}
@@ -302,27 +308,31 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           );
         })}
 
-        {/* کان‌داون — فقط روی اسلاید تخفیف‌ها */}
-        {slide.theme === "deals" && (
-          <div className="absolute top-4 left-4 md:top-6 md:left-10 z-10">
-            <div className="hero-slide-up flex items-center gap-1.5 bg-black/25 backdrop-blur rounded-2xl px-3.5 py-2.5 border border-white/20 shadow-lg" key={`cd-${current}`}>
-              <span className="text-white/80 text-[10px] font-bold ml-1">پایان تخفیف‌ها تا</span>
-              {[
-                { v: pad2(countdown.h), l: "ساعت" },
-                { v: pad2(countdown.m), l: "دقیقه" },
-                { v: pad2(countdown.s), l: "ثانیه" },
-              ].map((unit, idx) => (
-                <span key={unit.l} className="flex items-center gap-1.5">
+        {/* کان‌داون پایان تخفیف‌ها */}
+        <div className="absolute top-4 left-4 md:top-6 md:left-10 z-10">
+          <div
+            suppressHydrationWarning
+            className="hero-slide-up flex items-center gap-1.5 bg-black/25 backdrop-blur rounded-2xl px-3.5 py-2.5 border border-white/20 shadow-lg"
+            key={`cd-${current}`}
+          >
+            <span className="text-white/80 text-[10px] font-bold ml-1">پایان تخفیف‌ها تا</span>
+            {[
+              { v: pad2(countdown.h), l: "ساعت" },
+              { v: pad2(countdown.m), l: "دقیقه" },
+              { v: pad2(countdown.s), l: "ثانیه" },
+            ].map((unit, idx) => (                <span key={unit.l} className="flex items-center gap-1.5">
                   {idx > 0 && <span className="text-white/40 font-black">:</span>}
-                  <span className="min-w-8 text-center bg-white/15 text-white text-sm font-black rounded-lg px-1.5 py-1 tabular-nums">
+                  <span
+                    suppressHydrationWarning
+                    className="min-w-8 text-center bg-white/15 text-white text-sm font-black rounded-lg px-1.5 py-1 tabular-nums"
+                  >
                     {unit.v}
                   </span>
                   <span className="text-white/60 text-[9px]">{unit.l}</span>
                 </span>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* فلش‌ها */}

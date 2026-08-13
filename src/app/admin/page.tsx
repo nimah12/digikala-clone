@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import GoldPriceChart from "@/components/GoldPriceChart";
 
 type Stats = {
   productCount: number;
@@ -22,11 +23,33 @@ function formatPrice(n: number): string {
     : `${n.toLocaleString("fa-IR")} تومان`;
 }
 
+type HistPoint = {
+  t: number;
+  gold18k: number | null;
+  sekkeh: number | null;
+  rob: number | null;
+  nim: number | null;
+  usd: number | null;
+};
+
+const faDT = (t: number) =>
+  new Intl.DateTimeFormat("fa-IR", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(t));
+
 export default function AdminDashboardPage() {
   const [status, setStatus] = useState<"loading" | "denied" | "ready">(
     "loading",
   );
   const [stats, setStats] = useState<Stats | null>(null);
+
+  // تاریخچه قیمت طلا
+  const [historyPoints, setHistoryPoints] = useState<HistPoint[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
 
   // همگام‌سازی دستی قیمت طلا
   const [syncing, setSyncing] = useState(false);
@@ -85,6 +108,21 @@ export default function AdminDashboardPage() {
         setStatus("ready");
       })
       .catch(() => setStatus("ready"));
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("dk-token");
+    if (!token) return;
+    fetch("/api/admin/gold-history", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setHistoryPoints(Array.isArray(data.points) ? data.points : []);
+      })
+      .catch(() => setHistoryError("خطا در خواندن تاریخچه قیمت طلا"))
+      .finally(() => setHistoryLoading(false));
   }, []);
 
   if (status === "loading") {
@@ -213,6 +251,102 @@ export default function AdminDashboardPage() {
             ✓ {syncResult.synced.toLocaleString("fa-IR")} محصول به‌روزرسانی شد
             {syncResult.updatedAt ? ` — آخرین بروزرسانی: ${syncResult.updatedAt}` : ""}
           </p>
+        )}
+      </div>
+
+      {/* تاریخچه قیمت طلا */}
+      <div className="mt-6 rounded-2xl border p-5" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 className="font-extrabold flex items-center gap-2">
+            <Icon name="chart-line" size={18} className="text-dk-amber" />
+            نمودار و تاریخچه قیمت طلا و سکه
+          </h2>
+          <span className="text-[11px] font-bold" style={{ color: "var(--text-secondary)" }}>
+            {historyLoading
+              ? "در حال بارگذاری..."
+              : `${historyPoints.length.toLocaleString("fa-IR")} نقطه ثبت‌شده`}
+          </span>
+        </div>
+
+        {/* نمودار با کنترل بازه (۷/۳۰/۹۰ روز) */}
+        {!historyLoading && historyPoints.length > 1 && (
+          <div className="mb-5">
+            <GoldPriceChart history={historyPoints} />
+          </div>
+        )}
+
+        {historyError && (
+          <p className="text-xs text-dk-red font-bold mb-2">{historyError}</p>
+        )}
+
+        {historyPoints.length > 0 ? (
+          <div
+            className="overflow-auto rounded-xl border max-h-[360px]"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <table className="w-full text-xs min-w-[680px]">
+              <thead>
+                <tr
+                  className="text-right"
+                  style={{ background: "var(--bg)", color: "var(--text-secondary)" }}
+                >
+                  {["#", "تاریخ", "طلای ۱۸ عیار", "سکه امامی", "نیم سکه", "ربع سکه", "دلار"].map(
+                    (h) => (
+                      <th key={h} className="px-3 py-2.5 font-bold sticky top-0 whitespace-nowrap" style={{ background: "var(--bg)" }}>
+                        {h}
+                      </th>
+                    ),
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {historyPoints.map((p, i) => {
+                  const prev = historyPoints[i - 1];
+                  const cell = (v: number | null, prevV: number | null | undefined) => {
+                    if (v === null || v === undefined) {
+                      return (
+                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                      );
+                    }
+                    let tone: string | undefined;
+                    let arrow: string | null = null;
+                    if (prevV !== null && prevV !== undefined && prevV !== v) {
+                      arrow = v > prevV ? "▲" : "▼";
+                      tone =
+                        v > prevV
+                          ? "var(--color-dk-green, #2ab57d)"
+                          : "var(--color-dk-red, #ef4050)";
+                    }
+                    return (
+                      <span className="digits whitespace-nowrap" style={{ color: tone }}>
+                        {arrow && <span className="text-[9px] ml-0.5">{arrow}</span>}
+                        {v.toLocaleString("fa-IR")}
+                      </span>
+                    );
+                  };
+                  return (
+                    <tr key={p.t} className="border-t" style={{ borderColor: "var(--border)" }}>
+                      <td className="px-3 py-2 digits" style={{ color: "var(--text-muted)" }}>
+                        {historyPoints.length - i}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap font-bold">{faDT(p.t)}</td>
+                      <td className="px-3 py-2">{cell(p.gold18k, prev?.gold18k)}</td>
+                      <td className="px-3 py-2">{cell(p.sekkeh, prev?.sekkeh)}</td>
+                      <td className="px-3 py-2">{cell(p.nim, prev?.nim)}</td>
+                      <td className="px-3 py-2">{cell(p.rob, prev?.rob)}</td>
+                      <td className="px-3 py-2">{cell(p.usd, prev?.usd)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          !historyLoading && (
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              هنوز نقطه‌ای ثبت نشده — با همگام‌سازی دستی یا بروزرسانی خودکار، تاریخچه ساخته می‌شود.
+            </p>
+          )
         )}
       </div>
 

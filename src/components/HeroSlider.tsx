@@ -98,7 +98,7 @@ function pad2(n: number) {
 }
 
 /** پنل «قیمت لحظه‌ای روز» برای اسلاید طلا — قیمت واقعی ناواسان (کش ۸ ساعته) */
-function LiveGoldPanel({ items, updatedAt }: { items: GoldItem[]; updatedAt?: string }) {
+function LiveGoldPanel({ items }: { items: GoldItem[] }) {
   return (
     <div className="relative">
       {/* هاله درخشان */}
@@ -116,7 +116,6 @@ function LiveGoldPanel({ items, updatedAt }: { items: GoldItem[]; updatedAt?: st
             </span>
             قیمت لحظه‌ای روز
           </span>
-          <span className="text-white/60 text-[9px] font-medium">هر ۸ ساعت</span>
         </div>
 
         {/* ردیف قیمت‌ها */}
@@ -147,11 +146,8 @@ function LiveGoldPanel({ items, updatedAt }: { items: GoldItem[]; updatedAt?: st
           })}
         </div>
 
-        {/* آخرین بروزرسانی + لینک */}
+        {/* لینک */}
         <div className="mt-2 space-y-1.5">
-          {updatedAt && (
-            <p className="text-white/50 text-[9px]">آخرین بروزرسانی: {updatedAt}</p>
-          )}
           <Link
             href="/gold-price"
             className="group flex items-center justify-between bg-white/15 hover:bg-white/25 transition-colors rounded-xl px-3 py-2 text-white text-[11px] md:text-xs font-bold"
@@ -352,7 +348,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                 >
                   <div className="relative">
                     {s.goldItems?.length ? (
-                      <LiveGoldPanel items={s.goldItems} updatedAt={s.goldUpdatedAt} />
+                      <LiveGoldPanel items={s.goldItems} />
                     ) : (
                       <>
                         {/* هاله درخشان */}

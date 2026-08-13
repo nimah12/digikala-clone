@@ -198,15 +198,25 @@ export default function Header({ menuGroups }: HeaderProps) {
               </Link>
             )}
 
-            {/* قیمت روز طلا — لینک مستقیم در هدر */}
+            {/* قیمت روز طلا — لینک مستقیم با تم طلایی */}
             <Link
               href="/gold-price"
-              className="inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-10 sm:px-3 rounded-lg hover:bg-dk-bg transition-colors shrink-0"
+              className="group relative inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-10 sm:px-3 rounded-lg shrink-0 overflow-visible
+                bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500
+                text-amber-950 shadow-lg shadow-amber-400/60 ring-1 ring-amber-400/70
+                hover:shadow-xl hover:shadow-amber-500/80 hover:brightness-110 hover:scale-105
+                active:scale-95 transition-all duration-200"
               aria-label="قیمت روز طلا و سکه"
               title="قیمت روز طلا و سکه"
             >
-              <Icon name="coins" size={18} className="text-dk-amber" />
-              <span className="hidden sm:inline text-sm font-bold">قیمت طلا</span>
+              {/* درخشش طلایی هنگام هاور */}
+              <span className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-t from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-200" />
+              <Icon
+                name="coins"
+                size={18}
+                className="relative text-amber-950 drop-shadow-sm transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-6"
+              />
+              <span className="relative hidden sm:inline text-sm font-black tracking-tight">قیمت طلا</span>
             </Link>
 
             {/* Cart */}

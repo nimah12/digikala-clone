@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ARTICLES } from "@/lib/articles";
+import { getArticles } from "@/lib/articles";
 
 export const metadata: Metadata = { title: "مقالات و اخبار" };
+export const dynamic = "force-dynamic";
 
-export default function ArticlesPage() {
+export default async function ArticlesPage() {
+  const articles = await getArticles();
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-lg font-extrabold mb-6">مقالات و اخبار دنیای تکنولوژی</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {ARTICLES.map((article) => (
+        {articles.map((article) => (
           <Link
             key={article.id}
             href={`/articles/${article.id}`}

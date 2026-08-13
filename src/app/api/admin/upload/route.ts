@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin";
+import { optimizeImage, percentSaved } from "@/lib/media-optimizer";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB (قبل از بهینه‌سازی)
 
 export async function POST(request: Request) {
   const auth = await requireAdmin(request);
@@ -20,13 +21,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "file must be an image" }, { status: 400 });
   }
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "file too large (max 5MB)" }, { status: 400 });
+    return NextResponse.json(
+      { error: "file too large (max 20MB)" },
+      { status: 400 },
+    );
   }
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-  const blob = await put(`products/${Date.now()}-${safeName}`, file, {
-    access: "public",
-  });
+  try {
+    // ۱) بهینه‌سازی با sharp: تغییر اندازه + WebP + حذف متادیتا
+    const original = Buffer.from(await file.arrayBuffer());
+    const { data, format } = await optimizeImage(original);
 
-  return NextResponse.json({ url: blob.url });
+    // ۲) ذخیره نسخه بهینه‌شده در Blob
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_").replace(/\.[^.]+$/, "");
+    const blob = await put(`products/${Date.now()}-${safeName}.${format}`, data, {
+      access: "public",
+      contentType: `image/${format}`,
+    });
+
+    return NextResponse.json({
+      url: blob.url,
+      optimized: true,
+      originalBytes: original.length,
+      optimizedBytes: data.length,
+      savedPercent: percentSaved(original.length, data.length),
+    });
+  } catch (err) {
+    console.error("[admin/upload] optimize failed:", err);
+    // اگر بهینه‌سازی ناموفق بود، فایل اصلی آپلود شود
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const blob = await put(`products/${Date.now()}-${safeName}`, file, {
+      access: "public",
+    });
+    return NextResponse.json({ url: blob.url, optimized: false });
+  }
 }

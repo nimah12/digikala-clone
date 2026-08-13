@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { optimizeImage } from "@/lib/media-optimizer";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB (قبل از بهینه‌سازی)
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 
 function parseProductId(id: string) {
@@ -87,17 +88,42 @@ export async function POST(
       continue;
     }
 
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const blob = await put(
-      `products/${productId}/media/${Date.now()}-${safeName}`,
-      file,
-      { access: "public" }
-    );
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_").replace(/\.[^.]+$/, "");
+
+    // تصاویر: بهینه‌سازی با sharp (WebP + تغییر اندازه + حذف متادیتا)
+    // ویدیوها: بدون تغییر نگه داشته می‌شوند (کدگذاری مجدد نیاز به ffmpeg دارد)
+    let blobUrl: string;
+    if (isImage) {
+      const original = Buffer.from(await file.arrayBuffer());
+      try {
+        const { data, format } = await optimizeImage(original);
+        const blob = await put(
+          `products/${productId}/media/${Date.now()}-${safeName}.${format}`,
+          data,
+          { access: "public", contentType: `image/${format}` }
+        );
+        blobUrl = blob.url;
+      } catch {
+        const blob = await put(
+          `products/${productId}/media/${Date.now()}-${safeName}`,
+          file,
+          { access: "public" }
+        );
+        blobUrl = blob.url;
+      }
+    } else {
+      const blob = await put(
+        `products/${productId}/media/${Date.now()}-${safeName}`,
+        file,
+        { access: "public" }
+      );
+      blobUrl = blob.url;
+    }
 
     const record = await prisma.productMedia.create({
       data: {
         productId,
-        url: blob.url,
+        url: blobUrl,
         type: isImage ? "image" : "video",
         order: nextOrder,
       },

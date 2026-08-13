@@ -55,3 +55,6 @@ archive/
 next-env.d.ts
 
 /src/generated/prisma
+
+# فایل‌های محلی اپ دسکتاپ Freebuff — نباید در گیت بیایند
+.freebuff/

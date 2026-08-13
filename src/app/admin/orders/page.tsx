@@ -146,6 +146,54 @@ export default function AdminOrdersPage() {
     });
   }
 
+  // خروجی اکسل (فایل .xls با جدول HTML — پشتیبانی کامل فارسی و اعداد)
+  function exportExcel() {
+    if (!orders.length) return;
+    const esc = (s: string) =>
+      String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const head = ["شماره", "تاریخ", "گیرنده", "تلفن", "آدرس", "اقلام", "مبلغ (تومان)", "وضعیت"]
+      .map((h) => `<th style="background:#ef4050;color:#fff;padding:8px;border:1px solid #ddd;text-align:right">${h}</th>`)
+      .join("");
+    const body = orders
+      .map(
+        (o) =>
+          `<tr>` +
+          [
+            o.id,
+            formatDate(o.createdAt),
+            o.receiverName,
+            o.phone,
+            o.address,
+            o.items.map((i) => `${i.productName ?? i.product?.name ?? "?"} ×${i.quantity}`).join(" | "),
+            o.total.toLocaleString("fa-IR"),
+            STATUS_LABELS[o.status] ?? o.status,
+          ]
+            .map(
+              (c) =>
+                `<td style="padding:8px;border:1px solid #ddd;text-align:right;vertical-align:top">${esc(String(c))}</td>`,
+            )
+            .join("") +
+          `</tr>`,
+      )
+      .join("");
+    const html =
+      `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">` +
+      `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>سفارش‌ها</x:Name>` +
+      `<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>` +
+      `<body><table style="border-collapse:collapse;direction:rtl"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></body></html>`;
+    const blob = new Blob(["\uFEFF" + html], {
+      type: "application/vnd.ms-excel;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   if (status === "loading") {
     return <p className="text-sm py-16 text-center">در حال بارگذاری...</p>;
   }
@@ -184,6 +232,22 @@ export default function AdminOrdersPage() {
             مدیریت و به‌روزرسانی وضعیت سفارش‌های فروشگاه
           </p>
         </div>
+        <button
+          type="button"
+          onClick={exportExcel}
+          disabled={!orders.length}
+          className="inline-flex items-center gap-2 text-sm font-bold rounded-xl px-4 py-2.5 border transition-colors hover:border-dk-green hover:text-dk-green disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ borderColor: "var(--border)" }}
+          title="خروجی اکسل از سفارش‌های نمایش‌داده‌شده"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+            <path d="M8 13h8" />
+            <path d="M8 17h5" />
+          </svg>
+          خروجی اکسل ({orders.length.toLocaleString("fa-IR")})
+        </button>
       </div>
 
       {error && (

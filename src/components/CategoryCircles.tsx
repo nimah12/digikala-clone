@@ -29,20 +29,20 @@ export default function CategoryCircles() {
         className="rounded-2xl border p-4"
         style={{ background: "var(--panel)", borderColor: "var(--border)" }}
       >
-        <div className="flex gap-3 overflow-x-auto no-scrollbar">
+        <div className="flex gap-3.5 overflow-x-auto no-scrollbar">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}
-              className="flex flex-col items-center gap-2 shrink-0 w-[76px] group"
+              className="flex flex-col items-center gap-2 shrink-0 w-[82px] group"
             >
               <span
-                className="w-14 h-14 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-200"
-                style={{ background: cat.color, color: "#23254e" }}
+                className="cat-tile w-[70px] h-[70px] flex items-center justify-center"
+                style={{ "--c": cat.color } as React.CSSProperties}
               >
-                <Icon name={cat.icon} size={26} strokeWidth={1.7} />
+                <Icon name={cat.icon} size={28} strokeWidth={1.6} className="cat-tile-icon" />
               </span>
-              <span className="text-[11px] text-center leading-4 group-hover:text-dk-red transition-colors">
+              <span className="text-[11px] font-bold text-center leading-4 group-hover:text-dk-red transition-colors">
                 {cat.label}
               </span>
             </Link>

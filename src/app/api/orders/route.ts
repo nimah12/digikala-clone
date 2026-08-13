@@ -70,18 +70,26 @@ export async function POST(request: NextRequest) {
 
     // هر ردیف از سبد خرید (نه هر محصولِ یکتا) به یک OrderItem تبدیل می‌شود؛
     // این‌طوری همان محصول با رنگ‌های مختلف، ردیف‌های جداگانه در سفارش باقی می‌ماند.
+    // name/slug/imageUrl به‌عنوان snapshot ذخیره می‌شوند تا پس از حذف کامل محصول،
+    // تاریخچه سفارش همچنان قابل نمایش باشد.
     const itemsData = (productIds as number[])
       .map((pid, i) => {
         const p = productById.get(pid);
         if (!p) return null;
+        // محصول ناموجود قابل خرید نیست
+        if (p.stock <= 0) return null;
         const quantity = Math.min(
           Array.isArray(quantities) ? quantities[i] || 1 : 1,
-          p.stock || 1
+          p.stock
         );
+        if (quantity <= 0) return null;
         return {
           productId: p.id,
           quantity,
           price: p.price,
+          productName: p.name,
+          productSlug: p.slug,
+          productImageUrl: p.imageUrl,
           colorName: Array.isArray(colorNames) ? colorNames[i] || null : null,
           colorHex: Array.isArray(colorHexes) ? colorHexes[i] || null : null,
         };
@@ -100,8 +108,9 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         userId: user.id,
-        // پرداخت در این دمو همیشه موفق است؛ سفارش مستقیماً در مرحله آماده‌سازی قرار می‌گیرد
-        status: "processing",
+        // پرداخت در این دمو همیشه موفق است؛ سفارش در انتظار تایید ادمین قرار می‌گیرد
+        // و موجودی/فروش فقط پس از تایید (pending → processing) کسر/ثبت می‌شود
+        status: "pending",
         total,
         shippingName,
         shippingPrice,

@@ -21,7 +21,10 @@ type Order = {
     price: number;
     colorName?: string | null;
     colorHex?: string | null;
-    product: { name: string; imageUrl: string | null; slug: string };
+    productName?: string | null;
+    productSlug?: string | null;
+    productImageUrl?: string | null;
+    product: { name: string; imageUrl: string | null; slug: string } | null;
   }[];
 };
 
@@ -102,34 +105,48 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="space-y-2 mb-3">
-                  {order.items.map((item) => (
-                    <Link key={item.id} href={`/product/${item.product.slug}`} className="flex items-center gap-3 hover:text-dk-red transition-colors">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.product.imageUrl || "/images/placeholder.svg"}
-                        alt={item.product.name}
-                        className="w-10 h-10 rounded-lg object-cover"
-                        style={{ background: "var(--bg)" }}
-                      />
-                      <span className="text-xs flex-1 flex items-center gap-1.5">
-                        {item.product.name}
-                        {item.colorName && (
-                          <span className="inline-flex items-center gap-1">
-                            <span
-                              className="w-2.5 h-2.5 rounded-full inline-block"
-                              style={{ background: item.colorHex ?? undefined, border: "1px solid var(--border)" }}
-                            />
-                            <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                              ({item.colorName})
+                  {order.items.map((item) => {
+                    const name = item.product?.name ?? item.productName ?? "محصول حذف‌شده";
+                    const slug = item.product?.slug ?? item.productSlug;
+                    const imageUrl = item.product?.imageUrl ?? item.productImageUrl ?? "/images/placeholder.svg";
+                    const inner = (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imageUrl}
+                          alt={name}
+                          className="w-10 h-10 rounded-lg object-cover"
+                          style={{ background: "var(--bg)" }}
+                        />
+                        <span className="text-xs flex-1 flex items-center gap-1.5">
+                          {name}
+                          {item.colorName && (
+                            <span className="inline-flex items-center gap-1">
+                              <span
+                                className="w-2.5 h-2.5 rounded-full inline-block"
+                                style={{ background: item.colorHex ?? undefined, border: "1px solid var(--border)" }}
+                              />
+                              <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                                ({item.colorName})
+                              </span>
                             </span>
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-xs digits" style={{ color: "var(--text-secondary)" }}>
-                        {item.quantity.toLocaleString("fa-IR")} × {formatPrice(item.price)}
-                      </span>
-                    </Link>
-                  ))}
+                          )}
+                        </span>
+                        <span className="text-xs digits" style={{ color: "var(--text-secondary)" }}>
+                          {item.quantity.toLocaleString("fa-IR")} × {formatPrice(item.price)}
+                        </span>
+                      </>
+                    );
+                    return slug ? (
+                      <Link key={item.id} href={`/product/${slug}`} className="flex items-center gap-3 hover:text-dk-red transition-colors">
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div key={item.id} className="flex items-center gap-3">
+                        {inner}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "var(--border)" }}>

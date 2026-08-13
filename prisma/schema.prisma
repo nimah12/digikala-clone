@@ -79,6 +79,7 @@ model Product {
   createdAt   DateTime @default(now())
 
   discountPercent Int   @default(0) // تخفیف درصدی، برای نمایش «٪۱۷» روی کارت
+  originalPrice   Int?  // قیمت اصلی (قبل از تخفیف)؛ برای محصولات قدیمی null است و از price/٪ تخفیف محاسبه می‌شود
   rating          Float @default(0) // میانگین امتیاز (۰ تا ۵)
   ratingCount     Int   @default(0) // تعداد امتیازدهندگان
   salesCount      Int   @default(0) // تعداد فروش، برای مرتب‌سازی پرفروش‌ترین‌ها
@@ -165,11 +166,15 @@ model Order {
 model OrderItem {
   id        Int     @id @default(autoincrement())
   orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   quantity  Int     @default(1)
   price     Int
+  // snapshot برای حفظ تاریخچه سفارش پس از حذف کامل محصول
+  productName      String?
+  productSlug      String?
+  productImageUrl  String?
   colorName String?
   colorHex  String?
 }

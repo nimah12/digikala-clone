@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { slugify } from "@/lib/slugify";
+import { getFinalPrice } from "@/lib/format";
 
 export async function GET(request: Request) {
   const auth = await requireAdmin(request);
@@ -22,6 +23,9 @@ export async function GET(request: Request) {
       slug: true,
       imageUrl: true,
       price: true,
+      originalPrice: true,
+      discountPercent: true,
+      salesCount: true,
       stock: true,
       category: { select: { slug: true, name: true } },
       subcategory: { select: { slug: true, name: true } },
@@ -55,7 +59,9 @@ export async function POST(request: Request) {
       : null;
   const description =
     typeof body.description === "string" ? body.description.trim() : null;
-  const price = Number(body.price);
+  // «قیمت» در فرم پنل ادمین، قیمت اصلی (قبل از تخفیف) است؛
+  // قیمت نهایی با کسر ٪ تخفیف محاسبه و در دیتابیس ذخیره می‌شود.
+  const originalPrice = Number(body.originalPrice ?? body.price);
   const stock = Number.isInteger(body.stock) ? body.stock : 0;
   const discountPercent = Number.isInteger(body.discountPercent)
     ? body.discountPercent
@@ -73,7 +79,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (!Number.isFinite(price) || price < 0) {
+  if (!Number.isFinite(originalPrice) || originalPrice < 0) {
     return NextResponse.json({ error: "invalid price" }, { status: 400 });
   }
   if (stock < 0) {
@@ -128,7 +134,8 @@ export async function POST(request: Request) {
       name,
       slug,
       description,
-      price,
+      price: getFinalPrice(originalPrice, discountPercent),
+      originalPrice,
       stock,
       discountPercent,
       imageUrl,

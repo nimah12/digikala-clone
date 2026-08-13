@@ -259,12 +259,12 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
       pushEvent({
         type: "order",
         title: "سفارش شما ثبت شد",
-        description: "سفارش شما با موفقیت ثبت شد و در حال آماده‌سازی است.",
+        description: "سفارش شما ثبت شد و پس از تایید توسط فروشگاه آماده‌سازی می‌شود.",
         href: `/orders/${data.orderId}`,
       });
       showToast({
         title: "سفارش شما ثبت شد",
-        description: `سفارش #${data.orderId} با موفقیت ثبت شد و در حال آماده‌سازی است.`,
+        description: `سفارش #${data.orderId} ثبت شد و در انتظار تایید فروشگاه است.`,
         href: `/orders/${data.orderId}`,
       });
       return data.orderId as number;
@@ -834,7 +834,7 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
           </div>
           <h2 className="text-lg font-extrabold mb-2">پرداخت موفق بود</h2>
           <p className="text-sm leading-7" style={{ color: "var(--text-secondary)" }}>
-            سفارش شما ثبت شد و در حال آماده‌سازی است.
+            سفارش شما ثبت شد و در انتظار تایید فروشگاه است.
             <br />
             در حال انتقال به صفحه پیگیری سفارش...
           </p>

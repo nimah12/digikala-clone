@@ -41,7 +41,11 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
             {product.salesCount.toLocaleString("fa-IR")} فروش
           </span>
         </div>
-        <PriceBadge price={product.price} discountPercent={product.discountPercent} />
+        <PriceBadge
+          price={product.price}
+          discountPercent={product.discountPercent}
+          originalPrice={product.originalPrice ?? undefined}
+        />
       </div>
     </Link>
   );

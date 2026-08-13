@@ -8,7 +8,10 @@ type OrderItem = {
   quantity: number;
   price: number;
   colorName: string | null;
-  product: { id: number; name: string; slug: string; imageUrl: string | null };
+  productName: string | null;
+  productSlug: string | null;
+  productImageUrl: string | null;
+  product: { id: number; name: string; slug: string; imageUrl: string | null } | null;
 };
 
 type Order = {
@@ -26,7 +29,7 @@ type Order = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "در انتظار پرداخت",
+  pending: "در انتظار تایید",
   processing: "در حال آماده‌سازی",
   shipped: "تحویل به پست",
   delivered: "تحویل شده",
@@ -113,6 +116,18 @@ export default function AdminOrdersPage() {
     } finally {
       setSavingId(null);
     }
+  }
+
+  // تایید سفارش: با کسر موجودی و ثبت فروش همراه است
+  function handleApprove(orderId: number) {
+    if (
+      !confirm(
+        "با تایید این سفارش، موجودی محصولات کسر و فروش موفق ثبت می‌شود. ادامه می‌دهی؟",
+      )
+    ) {
+      return;
+    }
+    handleStatusChange(orderId, "processing");
   }
 
   function formatPrice(n: number): string {
@@ -272,7 +287,18 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">
-                          {STATUS_FLOW.includes(o.status) &&
+                          {o.status === "pending" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(o.id)}
+                              disabled={savingId === o.id}
+                              className="text-[11px] font-bold rounded-lg px-2.5 py-1 bg-dk-green text-white hover:opacity-90 transition-colors disabled:opacity-50"
+                              style={{ background: "var(--dk-green, #26a65b)" }}
+                            >
+                              {savingId === o.id ? "..." : "تایید سفارش"}
+                            </button>
+                          ) : (
+                            STATUS_FLOW.includes(o.status) &&
                             STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1] && (
                               <button
                                 type="button"
@@ -290,7 +316,8 @@ export default function AdminOrdersPage() {
                                   ? "..."
                                   : STATUS_LABELS[STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1]]}
                               </button>
-                            )}
+                            )
+                          )}
                           {o.status !== "cancelled" && (
                             <button
                               type="button"
@@ -311,20 +338,31 @@ export default function AdminOrdersPage() {
                             {o.items.length === 0 && (
                               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>اقلامی ندارد.</p>
                             )}
-                            {o.items.map((it) => (
-                              <div key={it.id} className="flex items-center gap-3 rounded-xl border px-3 py-2" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={it.product.imageUrl ?? ""} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                                <Link href={`/product/${it.product.slug}`} target="_blank" className="text-xs font-bold hover:text-dk-red transition-colors flex-1 min-w-0 truncate">
-                                  {it.product.name}
-                                </Link>
-                                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                  {it.colorName ? `${it.colorName} • ` : ""}
-                                  {it.quantity.toLocaleString("fa-IR")} عدد
-                                </span>
-                                <span className="text-xs font-bold">{formatPrice(it.price)}</span>
-                              </div>
-                            ))}
+                            {o.items.map((it) => {
+                              const name = it.product?.name ?? it.productName ?? "محصول حذف‌شده";
+                              const slug = it.product?.slug ?? it.productSlug;
+                              const imageUrl = it.product?.imageUrl ?? it.productImageUrl ?? "";
+                              return (
+                                <div key={it.id} className="flex items-center gap-3 rounded-xl border px-3 py-2" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                  {slug ? (
+                                    <Link href={`/product/${slug}`} target="_blank" className="text-xs font-bold hover:text-dk-red transition-colors flex-1 min-w-0 truncate">
+                                      {name}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-xs font-bold flex-1 min-w-0 truncate" style={{ color: "var(--text-secondary)" }}>
+                                      {name}
+                                    </span>
+                                  )}
+                                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                                    {it.colorName ? `${it.colorName} • ` : ""}
+                                    {it.quantity.toLocaleString("fa-IR")} عدد
+                                  </span>
+                                  <span className="text-xs font-bold">{formatPrice(it.price)}</span>
+                                </div>
+                              );
+                            })}
                             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs pt-1" style={{ color: "var(--text-secondary)" }}>
                               <span>روش ارسال: {o.shippingName}</span>
                               <span>هزینه ارسال: {formatPrice(o.shippingPrice)}</span>

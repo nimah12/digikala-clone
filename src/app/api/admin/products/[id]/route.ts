@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { getFinalPrice } from "@/lib/format";
 
 export async function GET(
   request: Request,
@@ -93,7 +94,16 @@ export async function PATCH(
       typeof body.description === "string" ? body.description.trim() || null : null;
   }
 
-  if (body.price !== undefined) {
+  // قیمت اصلی (قبل از تخفیف) از پنل ادمین می‌آید؛ قیمت نهایی با کسر ٪ تخفیف محاسبه می‌شود.
+  // برای سازگاری با فراخوان‌های قبلی، ارسال مستقیم price هم مثل قبل رفتار می‌کند.
+  let newOriginalPrice: number | null = null;
+  if (body.originalPrice !== undefined) {
+    const original = Number(body.originalPrice);
+    if (!Number.isFinite(original) || original < 0) {
+      return NextResponse.json({ error: "invalid originalPrice" }, { status: 400 });
+    }
+    newOriginalPrice = original;
+  } else if (body.price !== undefined) {
     const price = Number(body.price);
     if (!Number.isFinite(price) || price < 0) {
       return NextResponse.json({ error: "invalid price" }, { status: 400 });
@@ -115,6 +125,19 @@ export async function PATCH(
       return NextResponse.json({ error: "invalid discountPercent" }, { status: 400 });
     }
     data.discountPercent = discountPercent;
+  }
+
+  if (newOriginalPrice !== null) {
+    const current = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { discountPercent: true },
+    });
+    const discount =
+      (data.discountPercent as number | undefined) ??
+      current?.discountPercent ??
+      0;
+    data.originalPrice = newOriginalPrice;
+    data.price = getFinalPrice(newOriginalPrice, discount);
   }
 
   // تغییر دسته/ساب‌دسته
@@ -192,20 +215,9 @@ export async function DELETE(
     return NextResponse.json({ error: "product not found" }, { status: 404 });
   }
 
-  const orderCount = await prisma.orderItem.count({ where: { productId } });
-  if (orderCount > 0) {
-    return NextResponse.json(
-      {
-        error:
-          "این محصول در سفارش‌های ثبت‌شده استفاده شده و برای حفظ سابقه‌ی سفارش‌ها قابل حذف نیست",
-      },
-      { status: 409 }
-    );
-  }
-
-  // حذف رکوردهای وابسته که مانع حذف محصول می‌شوند.
-  // جدول‌های ProductMedia/ProductColor در برخی دیتابیس‌ها وجود ندارند
-  // (migration قدیمی حذف شده)، بنابراین حذف آن‌ها باید مقاوم باشد.
+  // حذف کامل محصول حتی اگر در سفارش‌های قبلی استفاده شده باشد.
+  // اقلام سفارش به محصول وابسته نمی‌مانند (productId → null با ON DELETE SET NULL)
+  // و نام/عکس/اسلاگِ snapshot در OrderItem تاریخچه سفارش را حفظ می‌کند.
   const safeDeleteMany = async (fn: () => Promise<unknown>) => {
     try {
       await fn();

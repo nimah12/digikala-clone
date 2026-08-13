@@ -37,7 +37,7 @@ const BANNERS: {
 
 export default function PromoBanners() {
   return (
-    <section className="mb-8">
+    <section className="mb-8 cv-auto">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {BANNERS.map((b) => (
           <Link

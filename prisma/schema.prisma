@@ -246,6 +246,15 @@ model Article {
   updatedAt    DateTime @updatedAt
 }
 
+// جلسات چت ربات پشتیبان — تاریخچه گفتگو و کانتکست برای ادامه مکالمه
+model ChatSession {
+  id        String   @id
+  messages  Json     // [{ from: "user" | "bot", text, at }]
+  context   Json     // { lastOrderId, awaitingOrderId, lastProducts }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // تیکت‌های پشتیبانی کاربران — با اعلان ایمیلی به ادمین
 model SupportTicket {
   id        Int      @id @default(autoincrement())

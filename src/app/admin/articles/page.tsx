@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 type Article = {
@@ -220,6 +220,13 @@ export default function AdminArticlesPage() {
   );
 }
 
+type PickedProduct = {
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+  price: number;
+};
+
 function ArticleForm({
   article,
   saving,
@@ -236,10 +243,99 @@ function ArticleForm({
   inputStyle: React.CSSProperties;
 }) {
   const [form, setForm] = useState<Article>(article);
-  const [slugsText, setSlugsText] = useState(article.productSlugs.join("، "));
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // محصولات انتخاب‌شده (با اطلاعات نمایشی — تصویر محصول جدای از تصویر مقاله است)
+  const [picked, setPicked] = useState<PickedProduct[]>([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchResults, setSearchResults] = useState<PickedProduct[]>([]);
+  const [searching, setSearching] = useState(false);
 
   function set<K extends keyof Article>(key: K, value: Article[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  // بارگذاری اولیه: اطلاعات محصولات از قبل انتخاب‌شده (برای نمایش تصویر و نام)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const slugs = article.productSlugs;
+      if (!slugs.length) return;
+      const out: PickedProduct[] = [];
+      for (const s of slugs) {
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(s)}`);
+          const json = await res.json();
+          const hit = (json.data || []).find((p: { slug: string }) => p.slug === s);
+          if (hit) out.push({ slug: hit.slug, name: hit.name, imageUrl: hit.imageUrl, price: hit.price });
+        } catch {
+          // نادیده بگیر
+        }
+      }
+      if (!cancelled) setPicked(out);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // فقط اولین بار (بر اساس article اولیه)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // جستجوی محصول با debounce
+  useEffect(() => {
+    if (searchQ.trim().length < 2) {
+      return;
+    }
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQ.trim())}`);
+        const json = await res.json();
+        setSearchResults(
+          (json.data || []).map((p: { slug: string; name: string; imageUrl: string | null; price: number }) => ({
+            slug: p.slug,
+            name: p.name,
+            imageUrl: p.imageUrl,
+            price: p.price,
+          })),
+        );
+      } catch {
+        setSearchResults([]);
+      }
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQ]);
+
+  function togglePick(p: PickedProduct) {
+    setPicked((prev) => {
+      const exists = prev.some((x) => x.slug === p.slug);
+      const next = exists ? prev.filter((x) => x.slug !== p.slug) : [...prev, p];
+      set("productSlugs", next.map((x) => x.slug));
+      return next;
+    });
+  }
+
+  async function uploadImage(file: File) {
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "articles");
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("dk-token") ?? ""}` },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("آپلود ناموفق بود");
+      const { url } = await res.json();
+      set("image", url);
+    } catch {
+      alert("آپلود عکس ناموفق بود — دوباره تلاش کنید.");
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   return (
@@ -269,16 +365,8 @@ function ArticleForm({
           </div>
         </div>
         <div>
-          <label className="block text-xs font-bold mb-1">آدرس تصویر</label>
-          <input dir="ltr" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="/images/articles/..." style={inputStyle} />
-        </div>
-        <div>
           <label className="block text-xs font-bold mb-1">زمان مطالعه</label>
           <input value={form.readTime} onChange={(e) => set("readTime", e.target.value)} placeholder="۵ دقیقه" style={inputStyle} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold mb-1">محصولات مرتبط (slug با ویرگول)</label>
-          <input dir="ltr" value={slugsText} onChange={(e) => { setSlugsText(e.target.value); set("productSlugs", e.target.value.split(/[،,]/).map((s) => s.trim())); }} placeholder="iphone-15, galaxy-s24" style={inputStyle} />
         </div>
         <div className="flex items-center gap-2 pt-6">
           <input
@@ -291,6 +379,134 @@ function ArticleForm({
           <label htmlFor="published" className="text-xs font-bold">منتشر شده (در سایت نمایش داده شود)</label>
         </div>
       </div>
+
+      {/* ---- تصویر مقاله (جدای از تصویر محصولات) ---- */}
+      <div className="mt-5 rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+        <label className="block text-xs font-bold mb-2">تصویر مقاله (بنر بالای مقاله)</label>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-40 h-24 rounded-xl overflow-hidden border shrink-0" style={{ borderColor: "var(--border)", background: "var(--panel)" }}>
+            {form.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.image} alt="پیش‌نمایش مقاله" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[11px]" style={{ color: "var(--text-muted)" }}>
+                بدون تصویر
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadImage(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploadingImage}
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-2 text-xs font-bold text-white bg-dk-red hover:bg-dk-red-dark rounded-lg px-3.5 py-2 transition-colors disabled:opacity-60"
+            >
+              {uploadingImage ? "در حال آپلود..." : "آپلود تصویر مقاله"}
+            </button>
+            <p className="text-[10px] leading-4" style={{ color: "var(--text-muted)" }}>
+              عکس مقاله به‌صورت جدا ذخیره می‌شود و ربطی به تصویر محصولات مرتبط ندارد.
+            </p>
+          </div>
+        </div>
+        <div className="mt-2">
+          <label className="block text-xs font-bold mb-1">یا آدرس تصویر (اختیاری)</label>
+          <input dir="ltr" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="/images/articles/... یا لینک" style={inputStyle} />
+        </div>
+      </div>
+
+      {/* ---- محصولات مرتبط (پیکر با جستجو) ---- */}
+      <div className="mt-5 rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+        <label className="block text-xs font-bold mb-2">محصولات مرتبط با مقاله</label>
+        <p className="text-[10px] mb-3 leading-4" style={{ color: "var(--text-muted)" }}>
+          محصولات را جستجو و انتخاب کنید — هر محصول با تصویر خودش در انتهای مقاله نمایش داده می‌شود.
+        </p>
+
+        {/* جستجو */}
+        <div className="relative">
+          <input
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            placeholder="جستجوی محصول... (مثلاً آیفون)"
+            style={inputStyle}
+          />
+          {searching && (
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px]" style={{ color: "var(--text-muted)" }}>
+              در حال جستجو...
+            </span>
+          )}
+          {searchQ.trim().length >= 2 && searchResults.length > 0 && (
+            <div
+              className="absolute z-20 left-0 right-0 mt-1 rounded-xl border shadow-xl overflow-hidden max-h-56 overflow-y-auto"
+              style={{ background: "var(--panel)", borderColor: "var(--border)" }}
+            >
+              {searchResults.map((p) => {
+                const added = picked.some((x) => x.slug === p.slug);
+                return (
+                  <button
+                    key={p.slug}
+                    type="button"
+                    onClick={() => togglePick(p)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-dk-red/5 transition-colors text-right"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold truncate">{p.name}</div>
+                      <div className="text-[10px] digits" style={{ color: "var(--text-muted)" }}>
+                        {p.price.toLocaleString("fa-IR")} تومان
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${added ? "text-white" : ""}`}
+                      style={added ? { background: "#16a34a" } : { background: "var(--border)", color: "var(--text-secondary)" }}
+                    >
+                      {added ? "انتخاب شد ✓" : "+ افزودن"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* محصولات انتخاب‌شده */}
+        {picked.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {picked.map((p) => (
+              <div
+                key={p.slug}
+                className="flex items-center gap-2 pl-2 rounded-lg border"
+                style={{ background: "var(--panel)", borderColor: "var(--border)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-8 h-8 rounded-l-lg object-cover" />
+                <span className="text-[11px] font-bold max-w-[140px] truncate">{p.name}</span>
+                <button
+                  type="button"
+                  onClick={() => togglePick(p)}
+                  className="text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center transition-colors hover:bg-dk-red hover:text-white"
+                  style={{ color: "var(--text-muted)", background: "var(--bg)" }}
+                  aria-label={`حذف ${p.name}`}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="mt-4">
         <label className="block text-xs font-bold mb-1">متن مقاله (هر پاراگراف با یک خط خالی جدا می‌شود)</label>
         <textarea rows={8} value={form.content} onChange={(e) => set("content", e.target.value)} placeholder={"پاراگراف اول...\n\nپاراگراف دوم..."} style={{ ...inputStyle, resize: "vertical" }} />
@@ -302,7 +518,7 @@ function ArticleForm({
         <button
           type="button"
           disabled={saving}
-          onClick={() => onSave({ ...form, productSlugs: slugsText.split(/[،,]/).map((s) => s.trim()).filter(Boolean) })}
+          onClick={() => onSave({ ...form, productSlugs: picked.map((x) => x.slug) })}
           className="text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark rounded-xl px-5 py-2.5 transition-colors disabled:opacity-60"
         >
           {saving ? "در حال ذخیره..." : "ذخیره مقاله"}

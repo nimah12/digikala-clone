@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Icon from "./Icon";
 import PriceBadge from "./PriceBadge";
@@ -34,21 +34,96 @@ const QUICK_REPLIES = [
   { label: "مرجوعی", text: "شرایط مرجوعی کالا چیه؟" },
 ];
 
+// نام اپراتور + پیام‌های شروع متغیر
+// نام اپراتور در هدر چت و پیام خوش‌آمدگویی استفاده می‌شود
+
+function greetingText(): string {
+  const h = new Date().getHours();
+  const salutation = h >= 5 && h < 12 ? "صبح‌تون بخیر" : h >= 12 && h < 17 ? "ظهر بخیر" : h >= 17 && h < 22 ? "عصرتون بخیر" : "شب بخیر";
+  return `${salutation}! اینجا پشتیبانی دیجی‌کلون‌م، من نگار هستم. چطور می‌تونم کمکتون کنم؟ درباره ارسال، مرجوعی، پرداخت یا پیگیری سفارش می‌تونید بپرسید، یا اسم محصول موردنظرتون رو بنویسید تا براتون پیدا کنم. 😊`;
+}
+
+// جملات کوتاه «در حال جستجو» که به‌صورت تصادفی قبل از نتایج ظاهر می‌شوند
+const SEARCH_FILLERS = [
+  "یه لحظه، دارم براتون چک می‌کنم...",
+  "بذارید ببینم چی داریم...",
+  "دارم سرچ می‌کنم، چند ثانیه صبر کنید...",
+  "براتون پیدا کردم، لحظه‌ای...",
+];
+
+function randomFiller(): string {
+  return SEARCH_FILLERS[Math.floor(Math.random() * SEARCH_FILLERS.length)];
+}
+
+// شناسه پایدار جلسه — در localStorage ذخیره می‌شود تا تاریخچه گفتگو بین باز و بسته شدن حفظ شود
+function getOrCreateSessionId(): string {
+  try {
+    let sid = localStorage.getItem("dk-chat-session");
+    if (!sid) {
+      sid = crypto.randomUUID ? crypto.randomUUID() : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem("dk-chat-session", sid);
+    }
+    return sid;
+  } catch {
+    return `s-${Date.now()}`;
+  }
+}
+
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { from: "bot", text: "سلام! به پشتیبانی آنلاین دیجی‌کلون خوش اومدی. چطور می‌تونم کمکت کنم؟ می‌تونی درباره ارسال، مرجوعی، پرداخت، گارانتی، پیگیری سفارش بپرسی یا اسم محصول موردنظرت رو بنویسی تا برات پیدا کنم." },
+    { from: "bot", text: greetingText() },
   ]);
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+  const [typing, setTyping] = useState(false); // نشانگر «در حال تایپ...»
+  const [reveal, setReveal] = useState<string | null>(null); // متن در حال تایپ شدن
   const [extra, setExtra] = useState<{ products?: BotProduct[]; order?: BotResponse["order"]; links?: BotLink[] } | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [resumed, setResumed] = useState(false); // تاریخچه جلسه قبلی بازیابی شد
   const listRef = useRef<HTMLDivElement>(null);
+
+  // بازیابی تاریخچه جلسه قبلی (شناسه از localStorage)
+  const restoreSession = useCallback(async () => {
+    const sid = getOrCreateSessionId();
+    try {
+      const res = await fetch(`/api/chat?sessionId=${encodeURIComponent(sid)}`);
+      const data = await res.json();
+      setSessionId(sid);
+      const msgs = Array.isArray(data.messages)
+        ? (data.messages as { from: string; text: string }[]).filter((m) => m && m.text)
+        : [];
+      if (msgs.length > 0) {
+        setMessages(msgs.map((m) => ({ from: m.from === "user" ? ("user" as const) : ("bot" as const), text: m.text })));
+        setResumed(true);
+      }
+    } catch {
+      setSessionId(sid);
+    }
+  }, []);
+
+  // هنگام باز شدن چت: تاریخچه قبلی را بازیابی می‌کنیم
+  useEffect(() => {
+    if (!open || sessionId) return;
+    // بازیابی تاریخچه جلسه (setState داخل callback غیرهمگام پس از fetch)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    restoreSession();
+  }, [open, sessionId, restoreSession]);
 
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-  }, [messages, typing, extra, open]);
+  }, [messages, typing, reveal, extra, open]);
+
+  // زمان «خواندن» پیام کاربر — هرچه پیام طولانی‌تر، بیشتر (مثل آدم واقعی)
+  function readingDelay(userText: string): number {
+    return Math.min(2000, Math.max(500, 350 + userText.length * 14));
+  }
+
+  // مدت «تایپ» پاسخ بر اساس طول پاسخ
+  function typingDelay(reply: string): number {
+    return Math.min(3200, Math.max(900, 500 + reply.length * 26));
+  }
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -56,20 +131,43 @@ export default function SupportChat() {
     setMessages((m) => [...m, { from: "user", text: trimmed }]);
     setExtra(null);
     setTyping(true);
+    let data: BotResponse | null = null;
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: faNormalize(trimmed) }),
+        body: JSON.stringify({ message: faNormalize(trimmed), sessionId: sessionId ?? undefined }),
       });
-      const data: BotResponse = await res.json();
-      setMessages((m) => [...m, { from: "bot", text: data.text }]);
-      setExtra({ products: data.products, order: data.order, links: data.links });
+      const json = (await res.json()) as BotResponse & { sessionId?: string };
+      if (json.sessionId) setSessionId(json.sessionId);
+      data = json;
     } catch {
-      setMessages((m) => [...m, { from: "bot", text: "یک لحظه صبر کن، دوباره تلاش می‌کنم..." }]);
-    } finally {
-      setTyping(false);
+      data = { text: "یه مشکل کوچیک پیش اومد، یه بار دیگه تلاش کنید. 🙏" };
     }
+
+    const reply = data.text;
+    const fillers = data.products?.length || data.order
+      ? " " + randomFiller() + " "
+      : "";
+    const finalText = reply + fillers;
+
+    // ۱) زمان خواندن پیام کاربر
+    await new Promise((r) => setTimeout(r, readingDelay(trimmed)));
+    // ۲) مدت تایپ (نشانگر سه‌نقطه)
+    await new Promise((r) => setTimeout(r, typingDelay(finalText)));
+    // ۳) افکت تایپ تدریجی
+    setTyping(false);
+    setReveal(finalText);
+    const words = finalText.split(" ");
+    let shown = "";
+    for (let i = 0; i < words.length; i++) {
+      shown = words.slice(0, i + 1).join(" ");
+      setReveal(shown);
+      await new Promise((r) => setTimeout(r, 28 + Math.random() * 40));
+    }
+    setReveal(null);
+    setMessages((m) => [...m, { from: "bot", text: finalText }]);
+    setExtra({ products: data.products, order: data.order, links: data.links });
   }
 
   function send() {
@@ -114,8 +212,11 @@ export default function SupportChat() {
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-dk-green border-2 border-white" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold">پشتیبانی دیجی‌کلون</div>
-              <div className="text-[11px] text-white/80">پاسخگویی ۲۴ ساعته، ۷ روز هفته</div>
+              <div className="text-sm font-bold">نگار | پشتیبانی دیجی‌کلون</div>
+              <div className="text-[11px] text-white/80 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-dk-green animate-pulse" />
+                آنلاین — پاسخگو در چند ثانیه
+              </div>
               <Link
                 href="/support"
                 onClick={() => setOpen(false)}
@@ -151,6 +252,15 @@ export default function SupportChat() {
 
           {/* Messages */}
           <div ref={listRef} className="h-80 overflow-y-auto p-3 space-y-2" style={{ background: "var(--bg)" }}>
+            {resumed && (
+              <div className="flex items-center gap-2 my-1">
+                <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                <span className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>
+                  ادامه گفتگوی قبلی
+                </span>
+                <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+              </div>
+            )}
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.from === "user" ? "justify-start" : "justify-end"}`}>
                 <div
@@ -230,10 +340,23 @@ export default function SupportChat() {
               </div>
             )}
 
-            {typing && (
+            {/* متن در حال تایپ شدن (افکت تایپ تدریجی) */}
+            {reveal && (
               <div className="flex justify-end">
-                <div className="bg-dk-red text-white px-3 py-2 rounded-xl text-xs">
-                  در حال تایپ...
+                <div className="bg-dk-red text-white px-3 py-2 rounded-xl text-xs leading-5 whitespace-pre-line">
+                  {reveal}
+                  <span className="typing-caret" />
+                </div>
+              </div>
+            )}
+
+            {/* نشانگر «در حال تایپ...» سه‌نقطه متحرک */}
+            {typing && !reveal && (
+              <div className="flex justify-end">
+                <div className="bg-dk-red text-white px-3.5 py-2.5 rounded-xl flex items-center gap-1">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" style={{ animationDelay: "0.15s" }} />
+                  <span className="typing-dot" style={{ animationDelay: "0.3s" }} />
                 </div>
               </div>
             )}

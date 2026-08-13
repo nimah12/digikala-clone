@@ -13,6 +13,9 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const file = formData.get("file");
+  // پوشه مقصد: پیش‌فرض products (برای عکس مقاله: articles)
+  const folder = String(formData.get("folder") ?? "products").replace(/[^a-z0-9-]/gi, "");
+  const safeFolder = folder || "products";
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "no file provided" }, { status: 400 });
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
 
     // ۲) ذخیره نسخه بهینه‌شده در Blob
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_").replace(/\.[^.]+$/, "");
-    const blob = await put(`products/${Date.now()}-${safeName}.${format}`, data, {
+    const blob = await put(`${safeFolder}/${Date.now()}-${safeName}.${format}`, data, {
       access: "public",
       contentType: `image/${format}`,
     });
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
     console.error("[admin/upload] optimize failed:", err);
     // اگر بهینه‌سازی ناموفق بود، فایل اصلی آپلود شود
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const blob = await put(`products/${Date.now()}-${safeName}`, file, {
+    const blob = await put(`${safeFolder}/${Date.now()}-${safeName}`, file, {
       access: "public",
     });
     return NextResponse.json({ url: blob.url, optimized: false });

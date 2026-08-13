@@ -51,6 +51,11 @@ body {
   font-family: var(--font-sans);
 }
 
+/* ---- اعداد با عرض یکسان (برای قیمت‌ها و آمار) ---- */
+.digits {
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---- Horizontal scroll sections with visible scrollbar ---- */
 .scroll-row {
   overflow-x: auto;

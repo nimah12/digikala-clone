@@ -304,3 +304,105 @@ body {
 .brand-tile:hover .brand-icon {
   transform: scale(1.2) rotate(-8deg);
 }
+
+/* ---- Hero slider ---- */
+@keyframes hero-blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(28px, -22px) scale(1.1);
+  }
+  66% {
+    transform: translate(-22px, 16px) scale(0.92);
+  }
+}
+.hero-blob {
+  animation: hero-blob 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.hero-float {
+  animation: hero-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes hero-float-delayed {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+.hero-float-delayed {
+  animation: hero-float-delayed 7s ease-in-out 1.2s infinite;
+  will-change: transform;
+}
+
+@keyframes hero-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-slide-up {
+  animation: hero-slide-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.82) translateY(20px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.hero-pop {
+  animation: hero-pop 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+.hero-kenburns {
+  animation: hero-kenburns 7s ease-out both;
+}
+
+@keyframes hero-shine {
+  from {
+    transform: translateX(-140%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(240%) skewX(-20deg);
+  }
+}
+.hero-shine {
+  animation: hero-shine 1.1s ease forwards;
+}

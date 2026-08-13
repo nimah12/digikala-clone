@@ -11,6 +11,16 @@ export type BotResponse = {
   links?: { label: string; href: string }[];
 };
 
+// کانتکست گفتگو — بین پیام‌های یک جلسه حفظ می‌شود
+export type BotContext = {
+  // آخرین سفارشی که کاربر پیگیری کرد (برای سوال‌های بعدی مثل «وضعیتش چطوره؟»)
+  lastOrderId?: number | null;
+  // منتظر فرستادن شماره سفارش هستیم
+  awaitingOrderId?: boolean;
+  // نتایج آخرین پاسخ محصول (برای «ارزون‌ترینش» و...)
+  lastProducts?: { name: string; slug: string; price: number }[];
+};
+
 const STATUS_LABELS: Record<string, string> = {
   pending: "در انتظار تایید",
   processing: "در حال آماده‌سازی",
@@ -87,6 +97,23 @@ const CATEGORY_QUERIES: { keywords: string[]; query: string; title: string; cate
   { keywords: ["پلوپز"], query: "پلوپز", title: "پلوپز" },
 ];
 
+// جملات معرفی نتایج — متغیر تا پاسخ‌ها یکنواخت نباشن
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const CATEGORY_INTROS = [
+  (t: string) => `از دسته «${t}» این‌ها رو براتون پیدا کردم:`,
+  (t: string) => `چند تا از بهترین‌های «${t}» رو براتون گذاشتم:`,
+  (t: string) => `این‌ها رو توی دسته «${t}» داریم، ببینید به‌دردتون می‌خوره:`,
+];
+
+const SEARCH_INTROS = [
+  (q: string) => `برای «${q}» این نتایج رو پیدا کردم:`,
+  (q: string) => `چند تا گزینه خوب برای «${q}» داریم:`,
+  (q: string) => `این‌ها نزدیک‌ترین چیزها به «${q}» هستن:`,
+];
+
 // کلمات پرکننده که در عبارت جستجو بی‌معنی هستن
 const FILLER_WORDS = [
   "میخوام", "می‌خوام", "می‌خوایم", "دارید", "دارین", "داره", "هست", "هستن", "یه", "یک", "یکی",
@@ -110,33 +137,93 @@ export async function lookupOrderById(id: number): Promise<BotResponse["order"]>
   };
 }
 
-export async function handleBotMessage(message: string): Promise<BotResponse> {
-  const q = faNormalize(message);
+// ساخت پاسخ برای سفارش — هم در پاسخ اولیه و هم در ادامه گفتگو استفاده می‌شود
+function orderReply(order: { id: number; status: string; total: number; receiverName: string; createdAt: string }): string {
+  return `سفارش #${order.id.toLocaleString("fa-IR")} با موفقیت پیدا شد.\nوضعیت فعلی: ${STATUS_LABELS[order.status] ?? order.status}\nگیرنده: ${order.receiverName}\nمبلغ: ${formatPrice(order.total)}\nثبت شده در: ${new Date(order.createdAt).toLocaleDateString("fa-IR")}`;
+}
 
-  // ۱) اگر پیام فقط یک عدد است (شماره سفارش) — صرف‌نظر از تعداد ارقام
+export async function handleBotMessage(
+  message: string,
+  context: BotContext = {},
+): Promise<{ response: BotResponse; context: BotContext }> {
+  const q = faNormalize(message);
+  const nextContext: BotContext = { ...context };  // ۱) اگر پیام فقط یک عدد است (شماره سفارش) — صرف‌نظر از تعداد ارقام
   const digitsOnly = q.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[^0-9]/g, "");
   const isOnlyDigits = digitsOnly.length > 0 && digitsOnly.length === q.length;
   if (isOnlyDigits && digitsOnly.length <= 6) {
     const id = Number(digitsOnly);
     const order = await lookupOrderById(id);
     if (!order) {
+      nextContext.awaitingOrderId = false;
       return {
-        text: `سفارشی با شماره ${id.toLocaleString("fa-IR")} پیدا نکردم. مطمئن شو عدد سفارش درست وارد شده یا سفارش رو از طریق صفحه «پیگیری سفارش» چک کن.`,
-        links: [{ label: "پیگیری سفارش", href: "/track-order" }],
+        response: {
+          text: `سفارشی با شماره ${id.toLocaleString("fa-IR")} پیدا نکردم. مطمئن شو عدد سفارش درست وارد شده یا سفارش رو از طریق صفحه «پیگیری سفارش» چک کن.`,
+          links: [{ label: "پیگیری سفارش", href: "/track-order" }],
+        },
+        context: nextContext,
       };
     }
+    nextContext.lastOrderId = order.id;
+    nextContext.awaitingOrderId = false;
+    return { response: { text: orderReply(order), order }, context: nextContext };
+  }
+
+  // ۱.۵) ادامه گفتگو درباره آخرین سفارش — «وضعیتش چطوره؟»، «همون سفارش»، «کجاست؟» و...
+  const lastOrderFollowUp = /(همون سفارش|این سفارش|سفارش قبلی|وضعیتش|وضعیتش چطور|کجاست|کجا رسید|رسید|بازگشت|مرجوع|لغوش کن|لغو کن|پیکش|پیک|تحویلش|کد رهگیری)/.test(q);
+  if (context.lastOrderId && lastOrderFollowUp) {
+    const order = await lookupOrderById(context.lastOrderId);
+    if (order) {
+      // پاسخ مخصوص «بازگشت/مرجوع» برای همان سفارش
+      if (/(بازگشت|مرجوع|پس‌داد)/.test(q)) {
+        return {
+          response: {
+            text: `برای مرجوعی سفارش #${order.id.toLocaleString("fa-IR")}، تا ۷ روز بعد از تحویل فرصت دارید. کالا باید بدون استفاده و با بسته‌بندی اصلی باشه. می‌تونید از صفحه سفارشات اقدام کنید.`,
+            links: [{ label: "سفارشات من", href: "/profile?tab=orders" }],
+          },
+          context: nextContext,
+        };
+      }
+      if (/(لغو)/.test(q)) {
+        return {
+          response: {
+            text: `سفارش #${order.id.toLocaleString("fa-IR")} الان در وضعیت «${STATUS_LABELS[order.status] ?? order.status}» هست. اگه هنوز ارسال نشده، می‌تونید از صفحه سفارشات درخواست لغو بدید.`,
+            links: [{ label: "سفارشات من", href: "/profile?tab=orders" }],
+          },
+          context: nextContext,
+        };
+      }
+      return {
+        response: {
+          text: `سفارش #${order.id.toLocaleString("fa-IR")} که قبلاً براتون پیدا کردم: \n${orderReply(order)}`,
+          order,
+        },
+        context: nextContext,
+      };
+    }
+  }
+
+  // ۲) پیگیری سفارش (درخواست شماره سفارش)
+  if (/(پیگیری|رهگیری|وضعیت سفارش|کد رهگیری|ردیابی|سفارشم کجاست|سفارش رو|پیگیری سفارش)/.test(q)) {
+    nextContext.awaitingOrderId = true;
     return {
-      text: `سفارش #${order.id.toLocaleString("fa-IR")} با موفقیت پیدا شد.\nوضعیت فعلی: ${STATUS_LABELS[order.status] ?? order.status}\nگیرنده: ${order.receiverName}\nمبلغ: ${formatPrice(order.total)}\nثبت شده در: ${new Date(order.createdAt).toLocaleDateString("fa-IR")}`,
-      order,
+      response: {
+        text: "بریم سفارشت رو پیگیری کنیم! عدد سفارش رو برام بفرست (مثلاً ۱۲۳۴۵).",
+        askOrderId: true,
+        links: [{ label: "صفحه پیگیری سفارش", href: "/track-order" }],
+      },
+      context: nextContext,
     };
   }
 
-  // ۲) پیگیری سفارش
-  if (/(پیگیری|رهگیری|وضعیت سفارش|کد رهگیری|ردیابی|سفارشم کجاست|سفارش رو).*/.test(q)) {
+  // ۲.۵) اگر منتظر شماره سفارش بودیم ولی کاربر عدد نفرستاد
+  if (context.awaitingOrderId && meaningfulTokens(q).length === 0) {
     return {
-      text: "بریم سفارشت رو پیگیری کنیم! عدد سفارش رو برام بفرست (مثلاً ۱۲۳۴۵).",
-      askOrderId: true,
-      links: [{ label: "صفحه پیگیری سفارش", href: "/track-order" }],
+      response: {
+        text: "منتظر شماره سفارش هستم (فقط عدد، مثلاً ۱۲۳۴۵). یا اگه حوصله نداری، از صفحه «پیگیری سفارش» استفاده کن.",
+        askOrderId: true,
+        links: [{ label: "پیگیری سفارش", href: "/track-order" }],
+      },
+      context: nextContext,
     };
   }
 
@@ -148,16 +235,20 @@ export async function handleBotMessage(message: string): Promise<BotResponse> {
       take: 6,
     });
     if (deals.length > 0) {
+      nextContext.lastProducts = deals.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
-        text: `در حال حاظر ${deals.length} محصول با تخفیف ویژه داریم. چند تا از بهترینشون:` + (q.includes("کد تخفیف") ? "\n\nنکته: برای اعمال کد تخفیف، کد رو در مرحله تسویه حساب در کادر مخصوص وارد کن." : ""),
-        products: deals.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: p.discountPercent,
-          imageUrl: p.imageUrl,
-        })),
-        links: [{ label: "همه تخفیف‌ها", href: "/deals" }],
+        response: {
+          text: `در حال حاضر ${deals.length} محصول با تخفیف ویژه داریم. چند تا از بهترینشون:` + (q.includes("کد تخفیف") ? "\n\nنکته: برای اعمال کد تخفیف، کد رو در مرحله تسویه حساب در کادر مخصوص وارد کن." : ""),
+          products: deals.map((p) => ({
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            discountPercent: p.discountPercent,
+            imageUrl: p.imageUrl,
+          })),
+          links: [{ label: "همه تخفیف‌ها", href: "/deals" }],
+        },
+        context: nextContext,
       };
     }
   }
@@ -168,16 +259,42 @@ export async function handleBotMessage(message: string): Promise<BotResponse> {
       orderBy: { salesCount: "desc" },
       take: 5,
     });
+    nextContext.lastProducts = best.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
     return {
-      text: "این‌ها پرفروش‌ترین محصولات دیجی‌کلون هستن:",
-      products: best.map((p) => ({
-        name: p.name,
-        slug: p.slug,
-        price: p.price,
-        discountPercent: p.discountPercent,
-        imageUrl: p.imageUrl,
-      })),
-      links: [{ label: "مشاهده همه", href: "/bestsellers" }],
+      response: {
+        text: "این‌ها پرفروش‌ترین محصولات دیجی‌کلون هستن:",
+        products: best.map((p) => ({
+          name: p.name,
+          slug: p.slug,
+          price: p.price,
+          discountPercent: p.discountPercent,
+          imageUrl: p.imageUrl,
+        })),
+        links: [{ label: "مشاهده همه", href: "/bestsellers" }],
+      },
+      context: nextContext,
+    };
+  }
+
+  // ۴.۵) سوال درباره نتایج قبلی — «ارزون‌ترینش؟»، «گرون‌ترینش؟»
+  if (context.lastProducts && context.lastProducts.length > 0 && /(ارزون‌ترین|گرون‌ترین|گران‌ترین|کدومش بهتره|کدومشون|بهترینش|قیمتش)/.test(q)) {
+    const sorted = [...context.lastProducts].sort((a, b) => a.price - b.price);
+    const isCheapest = /(ارزون‌ترین|قیمتش)/.test(q);
+    const target = isCheapest ? sorted[0] : sorted[sorted.length - 1];
+    return {
+      response: {
+        text: isCheapest
+          ? `ارزون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`
+          : `گرون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`,
+        products: context.lastProducts.map((p) => ({
+          name: p.name,
+          slug: p.slug,
+          price: p.price,
+          discountPercent: 0,
+          imageUrl: null,
+        })),
+      },
+      context: nextContext,
     };
   }
 
@@ -199,34 +316,42 @@ export async function handleBotMessage(message: string): Promise<BotResponse> {
         products = await searchProducts(c.query || q, 6);
       }
       if (!products || products.length === 0) continue;
+      nextContext.lastProducts = products.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
-        text: `این‌ها چند محصول از دسته «${c.title}» هستن:`,
-        products: products.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: p.discountPercent,
-          imageUrl: p.imageUrl,
-        })),
+        response: {
+          text: pick(CATEGORY_INTROS)(c.title),
+          products: products.map((p) => ({
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            discountPercent: p.discountPercent,
+            imageUrl: p.imageUrl,
+          })),
+        },
+        context: nextContext,
       };
     }
   }
 
   // ۶) جستجوی آزاد: اگر کلمه‌ای غیر از پرکننده‌ها داشت
-  const meaningfulTokens = q.split(" ").filter((t) => t.length >= 2 && !FILLER_WORDS.includes(t));
-  if (meaningfulTokens.length > 0) {
-    const query = meaningfulTokens.join(" ");
+  const meaningful = meaningfulTokens(q);
+  if (meaningful.length > 0) {
+    const query = meaningful.join(" ");
     const results = await searchProducts(query, 5);
     if (results.length > 0) {
+      nextContext.lastProducts = results.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
-        text: `برای «${query}» این نتایج رو پیدا کردم:`,
-        products: results.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: p.discountPercent,
-          imageUrl: p.imageUrl,
-        })),
+        response: {
+          text: pick(SEARCH_INTROS)(query),
+          products: results.map((p) => ({
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            discountPercent: p.discountPercent,
+            imageUrl: p.imageUrl,
+          })),
+        },
+        context: nextContext,
       };
     }
   }
@@ -234,24 +359,38 @@ export async function handleBotMessage(message: string): Promise<BotResponse> {
   // ۷) پاسخ‌های ثابت عمومی
   for (const item of GENERAL_ANSWERS) {
     if (item.keywords.some((k) => q.includes(k))) {
-      return { text: item.answer, links: item.links };
+      return { response: { text: item.answer, links: item.links }, context: nextContext };
     }
   }
 
   // ۸) احوال‌پرسی
   if (/(سلام|درود|hi|hello|علیک|صبح بخیر|عصر بخیر|شب بخیر)/.test(q)) {
     return {
-      text: "سلام! به پشتیبانی آنلاین دیجی‌کلون خوش اومدی. چطور می‌تونم کمکت کنم؟ می‌تونی درباره ارسال، مرجوعی، پرداخت، گارانتی، پیگیری سفارش بپرسی یا اسم محصول موردنظرت رو بنویسی تا برات پیدا کنم.",
+      response: {
+        text: "سلام! به پشتیبانی آنلاین دیجی‌کلون خوش اومدی. چطور می‌تونم کمکت کنم؟ می‌تونی درباره ارسال، مرجوعی، پرداخت، گارانتی، پیگیری سفارش بپرسی یا اسم محصول موردنظرت رو بنویسی تا برات پیدا کنم.",
+      },
+      context: nextContext,
     };
   }
 
   // ۹) تشکر
   if (/(تشکر|ممنون|مرسی|دمت|خسته نباشی|ممنونم)/.test(q)) {
-    return { text: "خواهش می‌کنم! اگه سوال دیگه‌ای داشتی همیشه در خدمتم. روز خوبی داشته باشی. 🌟" };
+    return {
+      response: { text: "خواهش می‌کنم! اگه سوال دیگه‌ای داشتی همیشه در خدمتم. روز خوبی داشته باشی. 🌟" },
+      context: nextContext,
+    };
   }
 
   // ۱۰) پاسخ پیش‌فرض
   return {
-    text: "سوالت رو کامل متوجه نشدم. می‌تونی از دکمه‌های سریع بالا استفاده کنی یا این موارد رو امتحان کن:\n• «پیگیری سفارشم»\n• «هدفون می‌خوام»\n• «تخفیف‌ها»\n• «پرفروش‌ترین‌ها»\n• «شرایط مرجوعی»\nاگه عجله داری با ۰۲۱-۹۱۰۰۱۰۰۰ تماس بگیر.",
+    response: {
+      text: "ببخشید، متوجه سوالتون نشدم. 🙏 می‌تونید از دکمه‌های سریع بالا استفاده کنید یا این موارد رو امتحان کنید:\n• «پیگیری سفارشم»\n• «هدفون می‌خوام»\n• «تخفیف‌ها»\n• «پرفروش‌ترین‌ها»\n• «شرایط مرجوعی»\nاگه عجله دارید، با ۰۲۱-۹۱۰۰۱۰۰۰ تماس بگیرید.",
+    },
+    context: nextContext,
   };
+}
+
+// کلمات پرکننده برای تشخیص جستجوی معنادار
+function meaningfulTokens(q: string): string[] {
+  return q.split(" ").filter((t) => t.length >= 2 && !FILLER_WORDS.includes(t));
 }

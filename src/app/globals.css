@@ -484,6 +484,49 @@ html[data-theme="dark"] .cat-tile {
   }
 }
 
+/* ---- چت پشتیبانی: نشانگر تایپ و مکان‌نما ---- */
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  display: inline-block;
+  animation: typing-bounce 1.1s ease-in-out infinite;
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.typing-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  vertical-align: text-bottom;
+  margin-inline-start: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  animation: caret-blink 0.9s step-end infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 /* ---- content-visibility: بخش‌های خارج از دید اصلاً رندر نمی‌شوند ---- */
 .cv-auto {
   content-visibility: auto;

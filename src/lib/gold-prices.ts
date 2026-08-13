@@ -1,0 +1,123 @@
+import { prisma } from "@/lib/prisma";
+
+export type GoldPrices = {
+  gold18k: number | null; // تومان/گرم
+  sekkeh: number | null; // سکه امامی (تومان)
+  rob: number | null; // ربع سکه (تومان)
+  nim: number | null; // نیم سکه (تومان)
+  usd: number | null; // دلار آمریکا (تومان)
+  change: Record<string, number>; // تغییر امروز (تومان)
+  date: string | null; // تاریخ شمسی آخرین بروزرسانی ناواسان
+  fetchedAt: number; // میلی‌ثانیه
+};
+
+// هر ۸ ساعت یک بار — یعنی روزی ۳ درخواست (سقف رایگان ۱۲۰ درخواست در ماه)
+export const GOLD_TTL_MS = 8 * 60 * 60 * 1000;
+export const GOLD_CACHE_KEY = "latest";
+
+const NAVASAN_URL = "https://api.navasan.tech/latest/";
+// ناواسان قیمت سکه‌ها را به واحد «هزار تومان» برمی‌گرداند؛ طلا و دلار به تومان
+const COIN_SCALE = 1000;
+
+type NavasanEntry = { value?: string | number; change?: string | number; date?: string };
+
+function num(v: NavasanEntry | undefined): number | null {
+  if (!v) return null;
+  const n = Number(v.value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function chg(v: NavasanEntry | undefined): number {
+  if (!v) return 0;
+  const n = Number(v.change);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function mapNavasan(json: Record<string, NavasanEntry>): GoldPrices {
+  const gold18k = num(json["18ayar"]);
+  const sekkeh = num(json["sekkeh"]);
+  const rob = num(json["rob"]);
+  const nim = num(json["nim"]);
+  const usd = num(json["usd_sell"] ?? json["usd"]);
+  return {
+    gold18k,
+    sekkeh: sekkeh !== null ? sekkeh * COIN_SCALE : null,
+    rob: rob !== null ? rob * COIN_SCALE : null,
+    nim: nim !== null ? nim * COIN_SCALE : null,
+    usd,
+    change: {
+      gold18k: chg(json["18ayar"]),
+      sekkeh: chg(json["sekkeh"]) * COIN_SCALE,
+      rob: chg(json["rob"]) * COIN_SCALE,
+      nim: chg(json["nim"]) * COIN_SCALE,
+      usd: chg(json["usd_sell"] ?? json["usd"]),
+    },
+    date: json["18ayar"]?.date ?? json["sekkeh"]?.date ?? null,
+    fetchedAt: Date.now(),
+  };
+}
+
+const EMPTY: GoldPrices = {
+  gold18k: null,
+  sekkeh: null,
+  rob: null,
+  nim: null,
+  usd: null,
+  change: {},
+  date: null,
+  fetchedAt: 0,
+};
+
+// جلوگیری از درخواست‌های همزمان تکراری (حفظ سهمیه ماهانه)
+let inflight: Promise<GoldPrices> | null = null;
+
+async function fetchAndCache(): Promise<GoldPrices> {
+  const apiKey = process.env.NAVASAN_API_KEY;
+  if (apiKey) {
+    try {
+      const res = await fetch(`${NAVASAN_URL}?api_key=${apiKey}`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.ok) {
+        const json = (await res.json()) as Record<string, NavasanEntry>;
+        const data = mapNavasan(json);
+        await prisma.goldPriceCache.upsert({
+          where: { key: GOLD_CACHE_KEY },
+          update: { data, updatedAt: new Date() },
+          create: { key: GOLD_CACHE_KEY, data },
+        });
+        return data;
+      }
+    } catch (err) {
+      console.error("[gold-prices] ناواسان در دسترس نبود:", err);
+    }
+  }
+  // fallback: کش قبلی (حتی کهنه) یا داده خالی
+  const cached = await prisma.goldPriceCache.findUnique({
+    where: { key: GOLD_CACHE_KEY },
+  });
+  return cached ? (cached.data as GoldPrices) : EMPTY;
+}
+
+/**
+ * قیمت لحظه‌ای طلا و سکه از ناواسان — با کش ۸ ساعته در دیتابیس.
+ * روزی حداکثر ۳ درخواست واقعی به API زده می‌شود؛ بقیه از کش خوانده می‌شود.
+ */
+export async function getGoldPrices(force = false): Promise<GoldPrices> {
+  const cached = await prisma.goldPriceCache.findUnique({
+    where: { key: GOLD_CACHE_KEY },
+  });
+  const isFresh =
+    cached && Date.now() - cached.updatedAt.getTime() < GOLD_TTL_MS;
+
+  if (!force && isFresh && cached) {
+    return cached.data as GoldPrices;
+  }
+
+  if (!force && inflight) return inflight;
+  inflight = fetchAndCache().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}

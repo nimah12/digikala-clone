@@ -13,6 +13,13 @@ export type HeroProduct = {
   categoryName: string;
 };
 
+export type GoldItem = {
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+};
+
 export type HeroSlide = {
   id: string;
   badge: string;
@@ -22,6 +29,8 @@ export type HeroSlide = {
   href: string;
   theme: "deals" | "laptop" | "smartwatch" | "audio" | "gold";
   product: HeroProduct | null;
+  goldItems?: GoldItem[];
+  goldUpdatedAt?: string;
 };
 
 const THEMES: Record<
@@ -87,7 +96,86 @@ function pad2(n: number) {
   return n.toLocaleString("fa-IR", { minimumIntegerDigits: 2 });
 }
 
-export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
+/** پنل «قیمت لحظه‌ای روز» برای اسلاید طلا — قیمت واقعی ناواسان (کش ۸ ساعته) */
+function LiveGoldPanel({ items, updatedAt }: { items: GoldItem[]; updatedAt?: string }) {
+  return (
+    <div className="relative">
+      {/* هاله درخشان */}
+      <div
+        className="absolute -inset-8 rounded-full blur-3xl opacity-50"
+        style={{ background: "rgba(255,209,102,0.5)" }}
+      />
+      <div className="hero-float relative w-64 sm:w-72 md:w-80 bg-black/30 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-2xl ring-1 ring-white/20">
+        {/* سربرگ پنل */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="flex items-center gap-2 text-white text-[11px] md:text-xs font-extrabold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+            </span>
+            قیمت لحظه‌ای روز
+          </span>
+          <span className="text-white/60 text-[9px] font-medium">هر ۸ ساعت</span>
+        </div>
+
+        {/* ردیف قیمت‌ها */}
+        <div className="divide-y divide-white/10">
+          {items.map((item) => {
+            const up = item.change >= 0;
+            return (
+              <div key={item.name} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-white/85 text-[11px] md:text-xs truncate">{item.name}</p>
+                  <p
+                    className={`flex items-center gap-1 text-[9px] md:text-[10px] font-bold ${
+                      up ? "text-emerald-300" : "text-red-300"
+                    }`}
+                  >
+                    <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      {up ? <path d="M7 14l5-5 5 5" /> : <path d="M7 10l5 5 5-5" />}
+                    </svg>
+                    {Math.abs(item.changePercent).toLocaleString("fa-IR", { maximumFractionDigits: 2 })}٪
+                  </p>
+                </div>
+                <p className="shrink-0 text-white font-black text-xs md:text-sm tabular-nums">
+                  {formatPrice(item.price)}
+                  <span className="text-[9px] font-medium text-white/60"> تومان</span>
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* آخرین بروزرسانی + لینک */}
+        <div className="mt-2 space-y-1.5">
+          {updatedAt && (
+            <p className="text-white/50 text-[9px]">آخرین بروزرسانی: {updatedAt}</p>
+          )}
+          <Link
+            href="/category/gold-silver"
+            className="group flex items-center justify-between bg-white/15 hover:bg-white/25 transition-colors rounded-xl px-3 py-2 text-white text-[11px] md:text-xs font-bold"
+          >
+            مشاهده همه محصولات طلا و سکه
+            <svg
+              className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlide[] }) {
+  const [slides, setSlides] = useState(initialSlides);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -102,6 +190,21 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const goTo = useCallback((i: number) => {
     setCurrent((i + slides.length) % slides.length);
   }, [slides.length]);
+
+  // وقتی تایمر تخفیف‌ها به صفر رسید (نیمه‌شب)، اسلایدهای جدید از سرور گرفته می‌شود
+  useEffect(() => {
+    if (!countdown || countdown.h !== 0 || countdown.m !== 0 || countdown.s !== 0) return;
+    fetch("/api/hero", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const next = d?.slides;
+        if (Array.isArray(next) && next.length) {
+          setSlides(next);
+          setCurrent((c) => Math.min(c, next.length - 1));
+        }
+      })
+      .catch(() => {});
+  }, [countdown]);
 
   // پیشرفت + تغییر خودکار اسلاید
   useEffect(() => {
@@ -247,11 +350,15 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   style={{ animationDelay: "150ms" }}
                 >
                   <div className="relative">
-                    {/* هاله درخشان */}
-                    <div
-                      className="absolute -inset-8 rounded-full blur-3xl opacity-50"
-                      style={{ background: t.glow }}
-                    />
+                    {s.goldItems?.length ? (
+                      <LiveGoldPanel items={s.goldItems} updatedAt={s.goldUpdatedAt} />
+                    ) : (
+                      <>
+                        {/* هاله درخشان */}
+                        <div
+                          className="absolute -inset-8 rounded-full blur-3xl opacity-50"
+                          style={{ background: t.glow }}
+                        />
                     {p?.imageUrl ? (
                       <>
                         <Link
@@ -300,6 +407,8 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                       <div className="w-40 sm:w-52 md:w-64 lg:w-72 aspect-square rounded-2xl md:rounded-3xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-xs md:text-sm">
                         {s.badge}
                       </div>
+                    )}
+                      </>
                     )}
                   </div>
                 </div>

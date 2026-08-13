@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   authHeaders,
   deleteProduct,
@@ -22,6 +22,8 @@ export default function AdminProductsPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [catTree, setCatTree] = useState<TreeCategory[]>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
@@ -32,9 +34,9 @@ export default function AdminProductsPage() {
   const [colorPanelId, setColorPanelId] = useState<number | null>(null);
   const [editPanelId, setEditPanelId] = useState<number | null>(null);
 
-  async function loadProducts(category: string) {
+  async function loadProducts(category: string, search = "") {
     try {
-      const list = await fetchProductList(category);
+      const list = await fetchProductList(category, search);
       setProducts(list);
       setStatus("ready");
     } catch (err) {
@@ -84,8 +86,19 @@ export default function AdminProductsPage() {
 
   function handleCategoryChange(value: string) {
     setCategoryFilter(value);
+    if (searchQuery.trim()) return;
     setStatus("loading");
     loadProducts(value);
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchQuery(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    const term = value.trim();
+    searchTimer.current = setTimeout(() => {
+      setStatus("loading");
+      loadProducts(term ? "" : categoryFilter, term);
+    }, 300);
   }
 
   async function handleFileChange(productId: number, file: File) {
@@ -139,7 +152,8 @@ export default function AdminProductsPage() {
 
   function handleEditSaved() {
     setEditPanelId(null);
-    loadProducts(categoryFilter);
+    const term = searchQuery.trim();
+    loadProducts(term ? "" : categoryFilter, term);
   }
 
   if (status === "loading") {
@@ -158,10 +172,51 @@ export default function AdminProductsPage() {
   return (
     <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }} dir="rtl">
       <h1 style={{ marginBottom: 16, fontSize: 22, fontWeight: 700 }}>
-        مدیریت عکس محصولات
+        پنل مدیریت محصولات
       </h1>
 
-      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ position: "relative", flex: 1, minWidth: 220 }}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="جستجوی محصول (اسم یا slug)..."
+            style={{
+              width: "100%",
+              padding: "8px 34px 8px 10px",
+              borderRadius: 6,
+              border: "1px solid #ccc",
+              boxSizing: "border-box",
+            }}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                if (searchTimer.current) clearTimeout(searchTimer.current);
+                setStatus("loading");
+                loadProducts(categoryFilter);
+              }}
+              style={{
+                position: "absolute",
+                left: 6,
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                color: "#888",
+                fontSize: 14,
+              }}
+              title="پاک کردن جستجو"
+              aria-label="پاک کردن جستجو"
+            >
+              ×
+            </button>
+          )}
+        </div>
         <select
           value={categoryFilter}
           onChange={(e) => handleCategoryChange(e.target.value)}
@@ -193,8 +248,21 @@ export default function AdminProductsPage() {
 
       {error && <p style={{ color: "#c0392b", marginBottom: 12 }}>{error}</p>}
 
+      {searchQuery.trim() && (
+        <p style={{ fontSize: 12, color: "#666", marginBottom: 12 }}>
+          نتایج جستجو در همه محصولات برای «{searchQuery.trim()}» — {products.length}{" "}
+          محصول
+        </p>
+      )}
+
       <div style={{ display: "grid", gap: 12 }}>
-        {products.length === 0 && <p>محصولی توی این دسته پیدا نشد.</p>}
+        {products.length === 0 && (
+          <p>
+            {searchQuery.trim()
+              ? "محصولی با این عبارت پیدا نشد."
+              : "محصولی توی این دسته پیدا نشد."}
+          </p>
+        )}
         {products.map((product) => (
           <ProductListRow
             key={product.id}

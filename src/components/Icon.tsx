@@ -1,65 +1,8 @@
 import type { JSX } from "react";
+import { LUCIDE_PATHS } from "@/lib/lucide-paths";
 
-export type IconName =
-  | "phone"
-  | "laptop"
-  | "tablet"
-  | "watch"
-  | "coins"
-  | "basket"
-  | "shirt"
-  | "gamepad"
-  | "wrench"
-  | "headphones"
-  | "home"
-  | "coffee"
-  | "book"
-  | "spray"
-  | "gift"
-  | "lamp"
-  | "tag"
-  | "truck"
-  | "banknote"
-  | "shield"
-  | "return"
-  | "box"
-  | "bolt"
-  | "flame"
-  | "sparkles"
-  | "newspaper"
-  | "user"
-  | "bag"
-  | "bell"
-  | "logout"
-  | "package"
-  | "chat"
-  | "star"
-  | "check"
-  | "mail"
-  | "map-pin"
-  | "clock"
-  | "phonecall"
-  | "key"
-  | "lock"
-  | "eye"
-  | "credit-card"
-  | "alert"
-  | "search"
-  | "heart"
-  | "arrow-up"
-  | "gauge"
-  | "handshake"
-  | "megaphone"
-  | "camera"
-  | "t-shirt"
-  | "shoe"
-  | "monitor"
-  | "pan"
-  | "tv"
-  | "calendar"
-  | "refresh"
-  | "filter"
-  | "car";
+// نام‌های قدیمیِ آیکون‌های دستی + هر نام آیکون Lucide (PascalCase) قابل قبول است
+export type IconName = string;
 
 const PATHS: Record<IconName, JSX.Element> = {
   phone: (
@@ -428,6 +371,10 @@ export default function Icon({
   className?: string;
   strokeWidth?: number;
 }) {
+  // اول آیکون‌های دستیِ قدیمی، بعد کل آیکون‌های Lucide، در آخر fallback
+  const custom = PATHS[name as keyof typeof PATHS];
+  const lucide = !custom ? LUCIDE_PATHS[name] : undefined;
+
   return (
     <svg
       width={size}
@@ -441,7 +388,11 @@ export default function Icon({
       className={className}
       aria-hidden="true"
     >
-      {PATHS[name]}
+      {custom ?? (
+        <g
+          dangerouslySetInnerHTML={{ __html: lucide ?? PATHS.tag }}
+        />
+      )}
     </svg>
   );
 }

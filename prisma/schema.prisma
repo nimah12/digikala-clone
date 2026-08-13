@@ -22,6 +22,7 @@ model User {
 
   cart   Cart?
   orders Order[]
+  reviews Review[]
 }
 
 // گروه‌های مگامنو (نوار راستِ منوی دسته‌بندی‌ها)، مثال: «کالای دیجیتال»
@@ -122,6 +123,8 @@ model Review {
   id        Int     @id @default(autoincrement())
   productId Int
   product   Product @relation(fields: [productId], references: [id])
+  userId    Int?
+  user      User?   @relation(fields: [userId], references: [id])
   author    String
   date      String
   rating    Int
@@ -130,6 +133,7 @@ model Review {
   verified  Boolean @default(true)
 
   @@index([productId])
+  @@index([userId])
 }
 
 model Vendor {

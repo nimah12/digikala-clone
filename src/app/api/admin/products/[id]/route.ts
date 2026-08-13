@@ -233,6 +233,9 @@ export async function DELETE(
   await safeDeleteMany(() =>
     prisma.productColor.deleteMany({ where: { productId } })
   );
+  await safeDeleteMany(() =>
+    prisma.productSize.deleteMany({ where: { productId } })
+  );
 
   await prisma.$transaction([
     prisma.cartItem.deleteMany({ where: { productId } }),

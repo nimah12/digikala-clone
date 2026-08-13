@@ -11,10 +11,12 @@ type Props = {
   catTree: TreeCategory[];
   uploading: boolean;
   deleting: boolean;
+  deletingImage: boolean;
   galleryOpen: boolean;
   colorOpen: boolean;
   editOpen: boolean;
   onUploadImage: (file: File) => void;
+  onDeleteImage: () => void;
   onDelete: () => void;
   onToggleGallery: () => void;
   onToggleColor: () => void;
@@ -28,10 +30,12 @@ export default function ProductListRow({
   catTree,
   uploading,
   deleting,
+  deletingImage,
   galleryOpen,
   colorOpen,
   editOpen,
   onUploadImage,
+  onDeleteImage,
   onDelete,
   onToggleGallery,
   onToggleColor,
@@ -131,6 +135,24 @@ export default function ProductListRow({
               <span style={{ fontSize: 13, color: "#555" }}>
                 در حال آپلود...
               </span>
+            )}
+            {product.imageUrl && (
+              <button
+                type="button"
+                onClick={onDeleteImage}
+                disabled={deletingImage}
+                style={{
+                  fontSize: 13,
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: "1px solid #c0392b",
+                  background: "#fff",
+                  color: "#c0392b",
+                  cursor: "pointer",
+                }}
+              >
+                {deletingImage ? "در حال حذف..." : "حذف عکس"}
+              </button>
             )}
             <button
               type="button"

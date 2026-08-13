@@ -12,6 +12,9 @@ export const ORDER_STATUSES = [
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+// وضعیت‌هایی که در آن‌ها موجودی قبلاً کسر شده است (برای بازگردانی هنگام لغو)
+const STOCK_DEDUCTED_STATUSES = ["processing", "shipped", "delivered"];
+
 export async function GET(request: Request) {
   const auth = await requireAdmin(request);
   if ("error" in auth) {
@@ -43,6 +46,9 @@ export async function GET(request: Request) {
           quantity: true,
           price: true,
           colorName: true,
+          productName: true,
+          productSlug: true,
+          productImageUrl: true,
           product: { select: { id: true, name: true, slug: true, imageUrl: true } },
         },
       },
@@ -77,14 +83,74 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true },
+  });
   if (!order) {
     return NextResponse.json({ error: "order not found" }, { status: 404 });
   }
 
-  const updated = await prisma.order.update({
+  const oldStatus = order.status;
+  if (status === oldStatus) {
+    return NextResponse.json({
+      order: { id: order.id, status, total: order.total, createdAt: order.createdAt },
+    });
+  }
+
+  // تایید سفارش توسط ادمین: کسر موجودی و ثبت فروش موفق
+  const approving = status === "processing" && oldStatus === "pending";
+  // لغو سفارشی که قبلاً تایید شده: بازگردانی موجودی و فروش
+  const cancelling =
+    status === "cancelled" && STOCK_DEDUCTED_STATUSES.includes(oldStatus);
+
+  if (approving || cancelling) {
+    await prisma.$transaction(async (tx) => {
+      for (const item of order.items) {
+        if (item.productId === null) continue;
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+        if (!product) continue;
+
+        if (approving) {
+          await tx.product.update({
+            where: { id: product.id },
+            data: {
+              stock: Math.max(0, product.stock - item.quantity),
+              salesCount: product.salesCount + item.quantity,
+            },
+          });
+          if (item.colorName) {
+            await tx.productColor.updateMany({
+              where: { productId: product.id, name: item.colorName },
+              data: { stock: { decrement: item.quantity } },
+            });
+          }
+        } else {
+          await tx.product.update({
+            where: { id: product.id },
+            data: {
+              stock: product.stock + item.quantity,
+              salesCount: Math.max(0, product.salesCount - item.quantity),
+            },
+          });
+          if (item.colorName) {
+            await tx.productColor.updateMany({
+              where: { productId: product.id, name: item.colorName },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+      }
+      await tx.order.update({ where: { id: orderId }, data: { status } });
+    });
+  } else {
+    await prisma.order.update({ where: { id: orderId }, data: { status } });
+  }
+
+  const updated = await prisma.order.findUnique({
     where: { id: orderId },
-    data: { status },
     select: { id: true, status: true, total: true, createdAt: true },
   });
 

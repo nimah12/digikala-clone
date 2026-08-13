@@ -450,7 +450,7 @@ export default function AdminCategoriesPage() {
             />
           </div>
           <div>
-            <div className="text-xs mb-1">قیمت (تومان)</div>
+            <div className="text-xs mb-1">قیمت اصلی (تومان)</div>
             <input
               type="number"
               value={prodPrice}
@@ -475,6 +475,9 @@ export default function AdminCategoriesPage() {
               onChange={(e) => setProdDiscount(e.target.value)}
               style={{ ...inputStyle, width: 80 }}
             />
+          </div>
+          <div className="w-full text-[11px]" style={{ color: "var(--text-secondary)" }}>
+            قیمت اصلی را وارد کن؛ قیمت نهایی با کسر ٪ تخفیف به‌صورت خودکار محاسبه و در سبد/تسویه اعمال می‌شود.
           </div>
           <div>
             <div className="text-xs mb-1">عکس (url)</div>

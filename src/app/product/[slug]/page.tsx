@@ -91,6 +91,7 @@ export default async function ProductPage({ params }: Props) {
             description={product.description}
             price={product.price}
             discountPercent={product.discountPercent}
+            originalPrice={product.originalPrice}
             stock={product.stock}
             colors={product.colors}
           />

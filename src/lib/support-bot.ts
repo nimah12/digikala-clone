@@ -12,7 +12,7 @@ export type BotResponse = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "در انتظار پرداخت",
+  pending: "در انتظار تایید",
   processing: "در حال آماده‌سازی",
   shipped: "تحویل به پست",
   delivered: "تحویل شده",

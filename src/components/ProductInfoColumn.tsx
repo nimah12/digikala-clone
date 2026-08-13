@@ -23,6 +23,7 @@ type Props = {
   description: string | null;
   price: number;
   discountPercent: number;
+  originalPrice?: number | null;
   stock: number;
   colors: ColorOption[];
 };
@@ -47,6 +48,7 @@ export default function ProductInfoColumn({
   description,
   price,
   discountPercent,
+  originalPrice,
   stock,
   colors,
 }: Props) {
@@ -161,7 +163,11 @@ export default function ProductInfoColumn({
               </span>
             )}
           </div>
-          <PriceBadge price={price} discountPercent={discountPercent} />
+          <PriceBadge
+            price={price}
+            discountPercent={discountPercent}
+            originalPrice={originalPrice ?? undefined}
+          />
         </div>
 
         <button

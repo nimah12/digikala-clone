@@ -8,6 +8,9 @@ type Product = {
   slug: string;
   imageUrl: string | null;
   price: number;
+  originalPrice: number | null;
+  discountPercent: number;
+  salesCount: number;
   stock: number;
   category: { name: string; slug: string } | null;
   subcategory: { name: string; slug: string } | null;
@@ -59,6 +62,7 @@ type ProductDetail = {
   slug: string;
   description: string | null;
   price: number;
+  originalPrice: number | null;
   stock: number;
   discountPercent: number;
   imageUrl: string | null;
@@ -146,7 +150,7 @@ export default function AdminProductsPage() {
     name: "",
     slug: "",
     description: "",
-    price: "",
+    price: "", // قیمت اصلی (قبل از تخفیف)
     stock: "",
     discountPercent: "",
     imageUrl: "",
@@ -466,11 +470,17 @@ export default function AdminProductsPage() {
       const productData = await productRes.json();
       const product: ProductDetail = productData.product;
       const categorySlug = product.category?.slug ?? "";
+      // قیمت اصلی: برای محصولات قدیمی از قیمت نهایی و ٪ تخفیف محاسبه می‌شود
+      const originalPrice =
+        product.originalPrice ??
+        (product.discountPercent > 0 && product.discountPercent < 100
+          ? Math.round((product.price * 100) / (100 - product.discountPercent))
+          : product.price);
       setEditForm({
         name: product.name,
         slug: product.slug,
         description: product.description ?? "",
-        price: String(product.price),
+        price: String(originalPrice),
         stock: String(product.stock),
         discountPercent: String(product.discountPercent),
         imageUrl: product.imageUrl ?? "",
@@ -517,7 +527,7 @@ export default function AdminProductsPage() {
           name: editForm.name.trim(),
           slug: editForm.slug.trim() || undefined,
           description: editForm.description.trim() || null,
-          price,
+          originalPrice: price,
           stock: Number.isInteger(stock) ? stock : 0,
           discountPercent: Number.isInteger(discountPercent) ? discountPercent : 0,
           imageUrl: editForm.imageUrl.trim() || undefined,
@@ -752,7 +762,27 @@ export default function AdminProductsPage() {
                   {product.name}
                 </a>
                 <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>
-                  {product.price.toLocaleString("fa-IR")} تومان • موجودی:{" "}
+                  {product.discountPercent > 0 && product.originalPrice ? (
+                    <>
+                      <span style={{ textDecoration: "line-through", opacity: 0.65 }}>
+                        {product.originalPrice.toLocaleString("fa-IR")}
+                      </span>{" "}
+                      <span style={{ fontWeight: 700 }}>
+                        {product.price.toLocaleString("fa-IR")} تومان
+                      </span>{" "}
+                      <span style={{ color: "#c0392b" }}>
+                        (٪{product.discountPercent.toLocaleString("fa-IR")})
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {product.price.toLocaleString("fa-IR")} تومان
+                      {product.discountPercent > 0
+                        ? ` (٪${product.discountPercent.toLocaleString("fa-IR")})`
+                        : ""}
+                    </>
+                  )}{" "}
+                  • فروش: {product.salesCount.toLocaleString("fa-IR")} • موجودی:{" "}
                   {product.stock.toLocaleString("fa-IR")}
                   {product.subcategory ? ` • ${product.subcategory.name}` : ""}
                 </div>
@@ -1107,10 +1137,10 @@ export default function AdminProductsPage() {
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <input
                           type="number"
-                          placeholder="قیمت (تومان)"
+                          placeholder="قیمت اصلی (تومان)"
                           value={editForm.price}
                           onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value }))}
-                          style={{ width: 150, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                          style={{ width: 160, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
                         />
                         <input
                           type="number"

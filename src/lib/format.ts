@@ -6,6 +6,22 @@ export function formatDiscountPercent(percent: number): string {
   return `٪${percent.toLocaleString("fa-IR")}`;
 }
 
+// قیمت نهایی پس از اعمال تخفیف درصدی (قیمت در دیتابیس همیشه نهایی است)
+export function getFinalPrice(original: number, discountPercent: number): number {
+  if (discountPercent <= 0) return original;
+  if (discountPercent >= 100) return 0;
+  return Math.round((original * (100 - discountPercent)) / 100);
+}
+
+// قیمت اصلی (قبل از تخفیف) از روی قیمت نهایی؛ برای محصولات قدیمی‌ای که originalPrice ندارند
+export function getOriginalPrice(
+  final: number,
+  discountPercent: number,
+): number | null {
+  if (discountPercent <= 0 || discountPercent >= 100) return null;
+  return Math.round((final * 100) / (100 - discountPercent));
+}
+
 export function formatRating(rating: number): string {
   return rating
     .toFixed(1)

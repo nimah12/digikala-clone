@@ -1,12 +1,18 @@
-import { formatDiscountPercent, formatPrice } from "@/lib/format";
+import {
+  formatDiscountPercent,
+  formatPrice,
+  getOriginalPrice,
+} from "@/lib/format";
 
 export default function PriceBadge({
   price,
   discountPercent,
+  originalPrice,
   compact = false,
 }: {
   price: number;
   discountPercent: number;
+  originalPrice?: number | null;
   compact?: boolean;
 }) {
   if (discountPercent <= 0) {
@@ -18,7 +24,8 @@ export default function PriceBadge({
     );
   }
 
-  const original = Math.round((price * 100) / (100 - discountPercent));
+  // برای محصولات جدید originalPrice دقیق ذخیره شده؛ بقیه از روی قیمت نهایی محاسبه می‌شود
+  const original = originalPrice ?? getOriginalPrice(price, discountPercent);
 
   return (
     <div className="flex items-center justify-between gap-2">
@@ -26,9 +33,11 @@ export default function PriceBadge({
         <span className="bg-dk-red text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
           {formatDiscountPercent(discountPercent)}
         </span>
-        <span className="text-[10px] line-through digits" style={{ color: "var(--text-secondary)" }}>
-          {formatPrice(original)}
-        </span>
+        {original !== null && (
+          <span className="text-[10px] line-through digits" style={{ color: "var(--text-secondary)" }}>
+            {formatPrice(original)}
+          </span>
+        )}
       </div>
       <div className="text-left">
         <span className={compact ? "text-sm font-bold digits" : "text-base font-bold digits"}>{formatPrice(price)}</span>

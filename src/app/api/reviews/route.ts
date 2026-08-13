@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
     }
 
     const product = order.items[0].product;
+    if (!product) {
+      return Response.json({ success: false, error: "محصول این سفارش حذف شده است" }, { status: 404 });
+    }
     const date = new Date().toLocaleDateString("fa-IR");
 
     const review = await prisma.review.create({

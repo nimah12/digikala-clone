@@ -12,7 +12,7 @@ export default function Footer() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {FOOTER_LINKS.map((col) => (
             <div key={col.title}>
               <h3 className="text-sm font-bold mb-3">{col.title}</h3>

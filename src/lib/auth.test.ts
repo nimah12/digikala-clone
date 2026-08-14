@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   signAuthToken,
   verifyAuthToken,
@@ -14,7 +14,8 @@ describe("auth", () => {
 
   it("rejects a token signed with a different secret", async () => {
     process.env.AUTH_SECRET = "another-secret";
-    const other = await import("./auth?other-secret");
+    vi.resetModules();
+    const other = await import("./auth");
     const token = other.signAuthToken(42);
     expect(verifyAuthToken(token)).toBeNull();
   });

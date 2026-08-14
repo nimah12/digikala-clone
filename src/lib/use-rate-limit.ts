@@ -48,6 +48,9 @@ export const LOCK_SECONDS = 60;
 
 export type FailState = { count: number; lockUntil: number };
 
+/** مقدار ثابت و cache شده برای getServerSnapshot تا حلقه بینهایت رندر رخ ندهد */
+const EMPTY_FAIL_STATE: FailState = { count: 0, lockUntil: 0 };
+
 /**
  * منطق خالص قفل: با هر شکست count جلو می‌رود؛ وقتی به maxFails رسید،
  * قفل فعال و count صفر می‌شود (بعد از اتمام قفل، ۵ فرصت تازه).
@@ -113,19 +116,36 @@ export function useFailedAttemptLock() {
 
 /** ===== زیرساخت ذخیره‌سازی localStorage به‌صورت store (برای useSyncExternalStore) ===== */
 
-function readFailState(): FailState {
-  if (typeof window === "undefined") return { count: 0, lockUntil: 0 };
+/** کش در حافظه — برای ثبات مرجع snapshot تا React وارد حلقه بینهایت نشود */
+let failCache: FailState = EMPTY_FAIL_STATE;
+let failCacheLoaded = false;
+
+function loadFailFromStorage(): FailState {
+  if (typeof window === "undefined") return EMPTY_FAIL_STATE;
   try {
     const raw = window.localStorage.getItem(FAIL_KEY);
-    if (!raw) return { count: 0, lockUntil: 0 };
+    if (!raw) return EMPTY_FAIL_STATE;
     const st = JSON.parse(raw) as FailState;
-    return {
-      count: typeof st.count === "number" ? st.count : 0,
-      lockUntil: typeof st.lockUntil === "number" ? st.lockUntil : 0,
-    };
+    if (typeof st.count !== "number" || typeof st.lockUntil !== "number") {
+      return EMPTY_FAIL_STATE;
+    }
+    return st;
   } catch {
-    return { count: 0, lockUntil: 0 };
+    return EMPTY_FAIL_STATE;
   }
+}
+
+function readFailState(): FailState {
+  if (!failCacheLoaded) {
+    failCache = loadFailFromStorage();
+    failCacheLoaded = true;
+  }
+  return failCache;
+}
+
+function invalidateFailState() {
+  failCache = loadFailFromStorage();
+  failCacheLoaded = true;
 }
 
 const failListeners = new Set<() => void>();
@@ -136,16 +156,25 @@ function emitFailChange() {
 
 function subscribeFailState(cb: () => void): () => void {
   failListeners.add(cb);
-  return () => failListeners.delete(cb);
+  const onStorage = () => {
+    invalidateFailState();
+    emitFailChange();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    failListeners.delete(cb);
+    window.removeEventListener("storage", onStorage);
+  };
 }
 
 /** نوشتن state جدید + خبر دادن به همه‌ی subscriberها (همین کامپوننت و تب‌های دیگر) */
 function setFailState(next: FailState) {
+  failCache = next;
+  failCacheLoaded = true;
   try {
     window.localStorage.setItem(FAIL_KEY, JSON.stringify(next));
   } catch {
     /* ignore */
   }
   emitFailChange();
-  window.dispatchEvent(new Event("storage"));
 }

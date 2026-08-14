@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { handleBotMessage, lookupOrderById } from "./support-bot";
 import { prisma } from "@/lib/prisma";
+import { searchProducts } from "@/lib/search";
 
 // ---- موک‌ها ----
 vi.mock("@/lib/prisma", () => ({
@@ -89,6 +90,91 @@ describe("پیگیری سفارش", () => {
 
     expect(response.askOrderId).toBe(true);
     expect(response.text).toContain("منتظر شماره سفارش");
+  });
+});
+
+// ---------- احوال‌پرسی ----------
+describe("احوال‌پرسی (سلام)", () => {
+  it("«سلام» به‌جای جستجوی محصول، احوال‌پرسی برمی‌گرداند و محصولی نمی‌دهد", async () => {
+    // جستجوی آزاد هرگز نباید صدا زده شود
+    vi.mocked(searchProducts).mockResolvedValue([
+      { name: "محصول سلام", slug: "salam", price: 1000, discountPercent: 0, imageUrl: null, category: { slug: "x" } } as never,
+    ]);
+
+    const { response } = await handleBotMessage("سلام");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/بخیر|در خدمت|خوش اومدید/);
+    expect(searchProducts).not.toHaveBeenCalled();
+  });
+
+  it("«سلام خوبی؟» هم احوال‌پرسی حساب می‌شود", async () => {
+    const { response } = await handleBotMessage("سلام خوبی؟");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/بخیر|در خدمت|خوش اومدید/);
+  });
+
+  it("«سلام هدفون می‌خوام» همچنان جستجوی محصول است نه احوال‌پرسی", async () => {
+    vi.mocked(prisma.category.findUnique).mockResolvedValue({ id: 5, slug: "audio" } as never);
+    vi.mocked(prisma.product.findMany).mockResolvedValue(audioProducts as never);
+
+    const { response } = await handleBotMessage("سلام هدفون می‌خوام");
+
+    expect(response.products?.length).toBe(3);
+    expect(response.text).toContain("هدفون");
+  });
+
+  it("«درود بر شما» هم سلام است", async () => {
+    const { response } = await handleBotMessage("درود بر شما");
+
+    // پاسخ‌ها متغیرند — هر سه شامل «بخیر» یا «در خدمت» هستند و هیچ‌کدام جستجوی محصول نیست
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/بخیر|در خدمت|خوش اومدید/);
+  });
+
+  it("سلام بر اساس ساعت روز مناسب می‌دهد", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-14T09:00:00")); // ۹ صبح
+    const morning = await handleBotMessage("سلام");
+    expect(morning.response.text).toContain("صبح‌تون بخیر");
+
+    vi.setSystemTime(new Date("2026-08-14T14:00:00")); // ۲ بعدازظهر
+    const noon = await handleBotMessage("سلام");
+    expect(noon.response.text).toContain("ظهر بخیر");
+    vi.useRealTimers();
+  });
+});
+
+// ---------- خداحافظی ----------
+describe("خداحافظی", () => {
+  it("«خداحافظ» را مثل آدم جواب می‌دهد و جستجوی محصول نمی‌کند", async () => {
+    const { response } = await handleBotMessage("خداحافظ");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/خداحافظ|در خدمت|به امید دیدار|همین‌جاییم/);
+    expect(searchProducts).not.toHaveBeenCalled();
+  });
+
+  it("«مرسی که کمک کردی» را با خداحافظی جواب می‌دهد", async () => {
+    const { response } = await handleBotMessage("مرسی که کمک کردی");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/خداحافظ|در خدمت|به امید دیدار|همین‌جاییم/);
+  });
+
+  it("«خدا نگهدار» هم خداحافظی است", async () => {
+    const { response } = await handleBotMessage("خدا نگهدار");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toMatch(/خداحافظ|در خدمت|به امید دیدار|همین‌جاییم/);
+  });
+
+  it("«ممنون» ساده همچنان تشکر است نه خداحافظی", async () => {
+    const { response } = await handleBotMessage("ممنون");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).not.toMatch(/به امید دیدار/);
   });
 });
 

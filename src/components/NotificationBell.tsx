@@ -51,7 +51,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={handleClick}
-        className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
+        className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
         aria-label="نوتیفیکیشن‌ها"
         title="نوتیفیکیشن‌ها"
       >
@@ -100,7 +100,7 @@ export default function NotificationBell() {
                     if (e.href) router.push(e.href);
                   }}
                   className={`flex items-start gap-3 px-4 py-2.5 border-b text-xs ${
-                    e.href ? "cursor-pointer hover:bg-dk-bg transition-colors" : ""
+                    e.href ? "cursor-pointer hover:bg-[var(--hover)] transition-colors" : ""
                   }`}
                   style={{ borderColor: "var(--border)" }}
                 >

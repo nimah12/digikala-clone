@@ -17,7 +17,7 @@ export default function ServiceStrip() {
       {SERVICES.map((item) => (
         <div
           key={item.label}
-          className="flex items-center justify-center gap-2 py-1.5 rounded-xl hover:bg-dk-bg transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 py-1.5 rounded-xl hover:bg-[var(--hover)] transition-colors cursor-pointer"
         >
           <span
             className="text-dk-red"

@@ -146,7 +146,7 @@ export default function ProfilePage() {
           ))}
           <Link
             href="/orders"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-dk-bg"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[var(--hover)]"
             style={{ color: "var(--text)" }}
           >
             <span className="text-dk-red"><Icon name="package" size={18} /></span>
@@ -154,7 +154,7 @@ export default function ProfilePage() {
           </Link>
           <Link
             href="/dashboard"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-dk-bg"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[var(--hover)]"
             style={{ color: "var(--text)" }}
           >
             <span className="text-dk-red"><Icon name="home" size={18} /></span>

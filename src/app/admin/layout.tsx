@@ -150,7 +150,7 @@ export default function AdminLayout({
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                       active
                         ? "text-dk-red font-bold"
-                        : "hover:bg-dk-bg"
+                        : "hover:bg-[var(--hover)]"
                     }`}
                     style={active ? { background: "color-mix(in srgb, #ef4050 7%, transparent)" } : undefined}
                   >

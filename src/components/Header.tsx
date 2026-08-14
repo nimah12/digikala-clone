@@ -75,7 +75,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             <button
               type="button"
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="md:hidden flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
               aria-label="منو"
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
               aria-label={theme === "dark" ? "حالت روز" : "حالت شب"}
               title={theme === "dark" ? "حالت روز" : "حالت شب"}
             >
@@ -148,16 +148,16 @@ export default function Header({ menuGroups }: HeaderProps) {
                     <div className="px-4 py-3 border-b text-sm font-bold" style={{ borderColor: "var(--border)" }}>
                       {userName}
                     </div>
-                    <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-dk-bg transition-colors">
+                    <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[var(--hover)] transition-colors">
                       <Icon name="home" size={18} className="text-dk-red" /> داشبورد
                     </Link>
-                    <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-dk-bg transition-colors">
+                    <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[var(--hover)] transition-colors">
                       <Icon name="user" size={18} className="text-dk-red" /> پروفایل
                     </Link>
-                    <Link href="/orders" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-dk-bg transition-colors">
+                    <Link href="/orders" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[var(--hover)] transition-colors">
                       <Icon name="package" size={18} className="text-dk-red" /> سفارش‌های من
                     </Link>
-                    <Link href="/cart" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-dk-bg transition-colors">
+                    <Link href="/cart" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-[var(--hover)] transition-colors">
                       <Icon name="bag" size={18} className="text-dk-red" /> سبد خرید
                     </Link>
                     <div className="border-t" style={{ borderColor: "var(--border)" }}>
@@ -223,7 +223,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             {/* Cart */}
             <Link
               href="/cart"
-              className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-dk-bg transition-colors"
+              className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
               aria-label="سبد خرید"
               title="سبد خرید"
             >
@@ -340,7 +340,7 @@ export default function Header({ menuGroups }: HeaderProps) {
                         onMouseEnter={() => setActiveGroup(i)}
                         onClick={() => setActiveGroup(i)}
                         className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors ${
-                          isActive ? "text-dk-red font-bold" : "hover:bg-dk-bg"
+                          isActive ? "text-dk-red font-bold" : "hover:bg-[var(--hover)]"
                         }`}
                         style={
                           isActive

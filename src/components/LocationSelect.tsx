@@ -90,7 +90,7 @@ export default function LocationSelect({
                       onChange(opt);
                       setOpen(false);
                     }}
-                    className="w-full flex items-center justify-between text-right px-3 py-2.5 text-sm transition-colors hover:bg-dk-bg"
+                    className="w-full flex items-center justify-between text-right px-3 py-2.5 text-sm transition-colors hover:bg-[var(--hover)]"
                     style={
                       selected
                         ? { color: "#ef4050", fontWeight: 700, background: "rgba(239,64,80,0.06)" }

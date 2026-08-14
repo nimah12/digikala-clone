@@ -234,7 +234,7 @@ export default function NotificationsPage() {
                 if (n.actionHref) router.push(n.actionHref);
               }}
               className={`flex items-start gap-4 p-4 md:p-5 ${
-                n.actionHref ? "cursor-pointer hover:bg-dk-bg transition-colors" : ""
+                n.actionHref ? "cursor-pointer hover:bg-[var(--hover)] transition-colors" : ""
               }`}
             >
               <IconBubble icon={n.icon} />

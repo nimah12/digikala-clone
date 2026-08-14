@@ -3,6 +3,7 @@ import { getGoldPrices } from "@/lib/gold-prices";
 import { formatPrice } from "@/lib/format";
 import Icon from "@/components/Icon";
 import GoldPriceChart from "@/components/GoldPriceChart";
+import UsdPriceChart from "@/components/UsdPriceChart";
 
 export const dynamic = "force-dynamic";
 
@@ -49,13 +50,28 @@ export default async function GoldPricePage() {
         </p>
       </div>
 
-      {/* نمودار تغییرات ۳۰ روزه */}
+      {/* نمودار قیمت طلا — فقط طلای ۱۸ عیار */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
           <Icon name="chart-line" size={18} className="text-dk-red" />
-          <h2 className="text-base md:text-lg font-black">نمودار تغییرات قیمت (۳۰ روز)</h2>
+          <h2 className="text-base md:text-lg font-black">نمودار تغییرات قیمت طلا</h2>
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            (طلای ۱۸ عیار، گرمی)
+          </span>
         </div>
         <GoldPriceChart history={gold.history ?? []} />
+      </div>
+
+      {/* نمودار جداگانه و دقیق دلار */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Icon name="banknote" size={18} className="text-[#22a7f0]" />
+          <h2 className="text-base md:text-lg font-black">نمودار تغییرات قیمت دلار</h2>
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            (دلار آمریکا)
+          </span>
+        </div>
+        <UsdPriceChart history={gold.history ?? []} />
       </div>
 
       {/* جدول قیمت‌ها */}

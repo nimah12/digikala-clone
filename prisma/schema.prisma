@@ -251,7 +251,7 @@ model Article {
 model ChatSession {
   id        String   @id
   messages  Json     // [{ from: "user" | "bot", text, at }]
-  context   Json     // { lastOrderId, awaitingOrderId, lastProducts }
+  context   Json     // { lastOrderId, awaitingOrderId }
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

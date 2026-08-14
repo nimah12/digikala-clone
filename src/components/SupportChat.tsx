@@ -60,12 +60,12 @@ type BotResponse = {
   links?: BotLink[];
 };
 
+// دکمه‌های سریع — دقیقاً همان ۴ موضوعی که ربات پشتیبانی پوشش می‌دهد
 const QUICK_REPLIES = [
   { label: "پیگیری سفارش", text: "پیگیری سفارشم" },
-  { label: "تخفیف‌ها", text: "چه تخفیف‌هایی دارید؟" },
+  { label: "تخفیف‌ها", text: "تخفیف‌ها" },
   { label: "پرفروش‌ترین‌ها", text: "پرفروش‌ترین‌ها" },
-  { label: "هدفون", text: "هدفون می‌خوام" },
-  { label: "مرجوعی", text: "شرایط مرجوعی کالا چیه؟" },
+  { label: "شرایط مرجوعی", text: "شرایط مرجوعی" },
 ];
 
 // نام اپراتور + پیام‌های شروع متغیر
@@ -74,14 +74,14 @@ const QUICK_REPLIES = [
 function greetingText(): string {
   const h = new Date().getHours();
   const salutation = h >= 5 && h < 12 ? "صبح‌تون بخیر" : h >= 12 && h < 17 ? "ظهر بخیر" : h >= 17 && h < 22 ? "عصرتون بخیر" : "شب بخیر";
-  return `${salutation}! اینجا پشتیبانی دیجی‌کلون‌م، من نگار هستم. چطور می‌تونم کمکتون کنم؟ درباره ارسال، مرجوعی، پرداخت یا پیگیری سفارش می‌تونید بپرسید، یا اسم محصول موردنظرتون رو بنویسید تا براتون پیدا کنم. 😊`;
+  return `${salutation}! اینجا پشتیبانی دیجی‌کلون‌م، من نگار هستم. در این موارد می‌تونم کمکتون کنم: پیگیری سفارش، تخفیف‌ها، پرفروش‌ترین‌ها و شرایط مرجوعی. 😊`;
 }
 
 // جملات کوتاه «در حال جستجو» که به‌صورت تصادفی قبل از نتایج ظاهر می‌شوند
 const SEARCH_FILLERS = [
   "یه لحظه، دارم براتون چک می‌کنم...",
   "بذارید ببینم چی داریم...",
-  "دارم سرچ می‌کنم، چند ثانیه صبر کنید...",
+  "دارم براتون آماده‌ش می‌کنم، چند ثانیه صبر کنید...",
   "براتون پیدا کردم، لحظه‌ای...",
 ];
 
@@ -304,21 +304,6 @@ export default function SupportChat() {
             </div>
           </div>
 
-          {/* Quick replies */}
-          <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto border-b whitespace-nowrap" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
-            {QUICK_REPLIES.map((q) => (
-              <button
-                key={q.label}
-                type="button"
-                onClick={() => sendMessage(q.text)}
-                className="h-7 px-3 rounded-full border text-[11px] font-bold shrink-0 transition-colors hover:text-dk-red hover:border-dk-red"
-                style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text-secondary)" }}
-              >
-                {q.label}
-              </button>
-            ))}
-          </div>
-
           {/* Messages */}
           <div ref={listRef} className="h-80 overflow-y-auto p-3 space-y-2" style={{ background: "var(--bg)" }}>
             {resumed && (
@@ -453,6 +438,22 @@ export default function SupportChat() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Quick replies — بالای باکس پیام */}
+          <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto border-t whitespace-nowrap" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+            {QUICK_REPLIES.map((q) => (
+              <button
+                key={q.label}
+                type="button"
+                onClick={() => sendMessage(q.text)}
+                disabled={typing}
+                className="h-7 px-3 rounded-full border text-[11px] font-bold shrink-0 transition-colors hover:text-dk-red hover:border-dk-red disabled:opacity-50"
+                style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              >
+                {q.label}
+              </button>
+            ))}
           </div>
 
           {/* Input */}

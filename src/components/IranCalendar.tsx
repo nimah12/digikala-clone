@@ -177,16 +177,24 @@ export default function IranCalendar() {
         <div className="grid grid-cols-7" dir="rtl">
           {grid.cells.map((c, i) => {
             const today = c.inMonth && c.isToday;
+            const holiday = c.inMonth && c.holiday;
+            const holidayColor = "#c62828";
             return (
               <div
                 key={i}
-                title={c.gregorian}
+                title={
+                  holiday
+                    ? `${c.gregorian} — تعطیل: ${c.holiday}`
+                    : c.gregorian
+                }
                 className="relative aspect-square flex items-center justify-center border-b border-l last:border-l-0"
                 style={{
                   borderColor: "var(--border)",
                   background: today
                     ? "var(--dk-red, #e11d48)"
-                    : undefined,
+                    : holiday
+                      ? "color-mix(in srgb, #c62828 9%, transparent)"
+                      : undefined,
                 }}
               >
                 {today && (
@@ -201,22 +209,34 @@ export default function IranCalendar() {
                   className={`text-sm md:text-base font-bold tabular-nums ${
                     today
                       ? "text-white"
-                      : c.inMonth
-                        ? c.isFriday
-                          ? "text-dk-red"
+                      : holiday
+                        ? ""
+                        : c.inMonth
+                          ? c.isFriday
+                            ? "text-dk-red"
+                            : ""
                           : ""
-                        : ""
                   }`}
                   style={
-                    !today && !c.inMonth
-                      ? { color: "var(--text-muted)", opacity: 0.55 }
-                      : !today && !c.isFriday && c.inMonth
-                        ? undefined
-                        : undefined
+                    today
+                      ? undefined
+                      : holiday
+                        ? { color: holidayColor }
+                        : !c.inMonth
+                          ? { color: "var(--text-muted)", opacity: 0.55 }
+                          : undefined
                   }
                 >
                   {c.faDay}
                 </span>
+                {holiday && !today && (
+                  <span
+                    className="absolute bottom-0.5 inset-x-0 text-center text-[8px] leading-tight font-bold px-0.5 truncate"
+                    style={{ color: holidayColor }}
+                  >
+                    تعطیل
+                  </span>
+                )}
               </div>
             );
           })}
@@ -240,6 +260,13 @@ export default function IranCalendar() {
               style={{ borderColor: "var(--border)" }}
             />
             روزهای خاکستری: ماه قبل / بعد
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span
+              className="w-3 h-3 rounded"
+              style={{ background: "#c62828" }}
+            />
+            تعطیل رسمی
           </span>
           <span>شروع هفته: شنبه</span>
         </div>

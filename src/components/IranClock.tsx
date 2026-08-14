@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getIranParts, type IranParts } from "@/lib/iran-time";
 
 type Props = {
@@ -17,10 +18,12 @@ export default function IranClock({ compact = false }: Props) {
 
   if (compact) {
     return (
-      <div
-        className="flex items-center gap-2 shrink-0"
+      <Link
+        href="/iran-calendar"
+        className="flex items-center gap-2 shrink-0 transition-colors hover:text-dk-red"
         dir="rtl"
         style={{ color: "var(--text-secondary)" }}
+        title="ساعت و تقویم ایران"
       >
         <svg
           width="13"
@@ -41,13 +44,14 @@ export default function IranClock({ compact = false }: Props) {
         <span className="text-[11px]" suppressHydrationWarning>
           {parts.faDate}
         </span>
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div
-      className="flex items-center gap-2.5 shrink-0 px-3 h-10 border-x"
+    <Link
+      href="/iran-calendar"
+      className="flex items-center gap-2.5 shrink-0 px-3 h-10 border-x transition-colors hover:text-dk-red"
       style={{ borderColor: "var(--border)" }}
       title={`${parts.faDate} • ${parts.enDate}`}
     >
@@ -77,6 +81,6 @@ export default function IranClock({ compact = false }: Props) {
           {parts.faDate} • {parts.enDate}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }

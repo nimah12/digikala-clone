@@ -3,6 +3,8 @@
 // با این حال همه‌ی قالب‌بندی‌ها صریحاً timeZone: Asia/Tehran دارند تا
 // فارغ از منطقه‌ی زمانی سرور (Vercel و...) همیشه وقت ایران برگردد.
 
+import { getIranHoliday } from "./iran-holidays";
+
 const IRAN_TZ = "Asia/Tehran";
 
 export type IranParts = {
@@ -160,6 +162,7 @@ export type CalendarCell = {
   isFriday: boolean;
   faDay: string; // رقم فارسی
   gregorian: string; // برای tooltip
+  holiday?: string; // نام تعطیلی رسمی ایران (اگر باشد)
 };
 
 export type PersianMonthGrid = {
@@ -233,6 +236,7 @@ export function getPersianMonthGrid(
       isFriday: getWeekdayIndex(date) === 6,
       faDay: faNumPlain(daysInPrev - offset + i + 1),
       gregorian: formatGregorian(date),
+      holiday: getIranHoliday(date)?.name,
     });
   }
 
@@ -248,6 +252,7 @@ export function getPersianMonthGrid(
       isFriday: wd === 6,
       faDay: faNumPlain(d + 1),
       gregorian: formatGregorian(date),
+      holiday: getIranHoliday(date)?.name,
     });
   }
 
@@ -264,6 +269,7 @@ export function getPersianMonthGrid(
       isFriday: getWeekdayIndex(date) === 6,
       faDay: faNumPlain(p.day),
       gregorian: formatGregorian(date),
+      holiday: getIranHoliday(date)?.name,
     });
   }
 

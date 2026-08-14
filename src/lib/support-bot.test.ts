@@ -273,6 +273,19 @@ describe("چهار موضوع اصلی (بدون جستجو)", () => {
     expect(response.links?.[0]?.href).toBe("/returns");
   });
 
+  it("«موبایلم چطور مرجوع کنم» شرایط مرجوعی را می‌گوید نه خداحافظی (باگ «بای» داخل «موبایلم»)", async () => {
+    const { response } = await handleBotMessage("موبایلم چطور مرجوع کنم");
+
+    expect(response.text).toContain("۷ روز");
+    expect(response.text).not.toMatch(/خداحافظ|به امید دیدار/);
+  });
+
+  it("«خداحافظی» هنوز خداحافظی حساب می‌شود (شروعِ توکن بلند)", async () => {
+    const { response } = await handleBotMessage("خداحافظی می‌کنم");
+
+    expect(response.text).toMatch(/خداحافظ|در خدمت|به امید دیدار|همین‌جاییم/);
+  });
+
   it("«هدفون می‌خوام» جستجو نیست — محصول نمی‌آورد و پاسخ پیش‌فرض با ۴ موضوع می‌دهد", async () => {
     const { response } = await handleBotMessage("هدفون می‌خوام");
 

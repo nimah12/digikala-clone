@@ -18,6 +18,8 @@ export type GoldItem = {
   price: number;
   change: number;
   changePercent: number;
+  imageUrl?: string | null;
+  slug?: string;
 };
 
 export type HeroSlide = {
@@ -98,18 +100,18 @@ function pad2(n: number) {
   return n.toLocaleString("fa-IR", { minimumIntegerDigits: 2 });
 }
 
-/** پنل «قیمت لحظه‌ای روز» برای اسلاید طلا — قیمت واقعی ناواسان (کش ۸ ساعته) */
+/** پنل «قیمت لحظه‌ای روز» برای اسلاید طلا — همه محصولات طلا (بدون نقره) به صورت ردیف افقی اسکرول‌دار */
 function LiveGoldPanel({ items }: { items: GoldItem[] }) {
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {/* هاله درخشان */}
       <div
         className="absolute -inset-8 rounded-full blur-3xl opacity-50"
         style={{ background: "rgba(255,209,102,0.5)" }}
       />
-      <div className="hero-float relative w-64 sm:w-72 md:w-80 bg-black/30 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-2xl ring-1 ring-white/20">
+      <div className="hero-float relative w-full max-w-[min(92vw,560px)] bg-black/30 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-2xl ring-1 ring-white/20">
         {/* سربرگ پنل */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-3">
           <span className="flex items-center gap-2 text-white text-[11px] md:text-xs font-extrabold">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -117,38 +119,39 @@ function LiveGoldPanel({ items }: { items: GoldItem[] }) {
             </span>
             قیمت لحظه‌ای روز
           </span>
+          <span className="text-white/60 text-[9px] md:text-[10px] font-bold">
+            {items.length.toLocaleString("fa-IR")} محصول طلا
+          </span>
         </div>
 
-        {/* ردیف قیمت‌ها */}
-        <div className="divide-y divide-white/10">
-          {items.map((item) => {
-            const up = item.change >= 0;
-            return (
-              <div key={item.name} className="flex items-center justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  <p className="text-white/85 text-[11px] md:text-xs truncate">{item.name}</p>
-                  <p
-                    className={`flex items-center gap-1 text-[9px] md:text-[10px] font-bold ${
-                      up ? "text-emerald-300" : "text-red-300"
-                    }`}
-                  >
-                    <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      {up ? <path d="M7 14l5-5 5 5" /> : <path d="M7 10l5 5 5-5" />}
-                    </svg>
-                    {Math.abs(item.changePercent).toLocaleString("fa-IR", { maximumFractionDigits: 2 })}٪
-                  </p>
-                </div>
-                <p className="shrink-0 text-white font-black text-xs md:text-sm tabular-nums">
-                  {formatPrice(item.price)}
-                  <span className="text-[9px] font-medium text-white/60"> تومان</span>
-                </p>
-              </div>
-            );
-          })}
+        {/* ردیف افقی محصولات — با اسکرول بار */}
+        <div className="scroll-row flex gap-2.5">
+          {items.map((item) => (
+            <Link
+              key={item.slug ?? item.name}
+              href={`/product/${item.slug ?? "#"}`}
+              className="shrink-0 w-28 sm:w-32 bg-white/10 hover:bg-white/20 transition-colors rounded-xl p-2 block group"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.imageUrl || "/images/placeholder.svg"}
+                alt={item.name}
+                loading="lazy"
+                className="w-full h-14 sm:h-16 object-contain rounded-lg"
+              />
+              <p className="text-white/90 text-[10px] leading-4 truncate mt-1.5 group-hover:text-white transition-colors">
+                {item.name}
+              </p>
+              <p className="text-white font-black text-[10px] mt-1 tabular-nums truncate">
+                {formatPrice(item.price)}
+              </p>
+              <p className="text-white/50 text-[8px]">تومان</p>
+            </Link>
+          ))}
         </div>
 
         {/* لینک */}
-        <div className="mt-2 space-y-1.5">
+        <div className="mt-3 space-y-1.5">
           <Link
             href="/gold-price"
             className="group flex items-center justify-between bg-white/15 hover:bg-white/25 transition-colors rounded-xl px-3 py-2 text-white text-[11px] md:text-xs font-bold"
@@ -368,6 +371,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                           className="hero-float relative block w-40 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2.5 md:p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
                           <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={p.imageUrl}
                               alt={p.name}

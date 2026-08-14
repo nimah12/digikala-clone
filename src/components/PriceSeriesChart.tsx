@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { GoldHistoryPoint } from "@/lib/gold-prices";
 
-export type SeriesKey = "gold18k" | "usd";
+export type SeriesKey = "gold18k";
 
 export type SeriesConfig = {
   key: SeriesKey;

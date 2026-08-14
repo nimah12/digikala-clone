@@ -102,39 +102,29 @@ export async function buildHeroSlides(): Promise<HeroSlide[]> {
     };
   });
 
-  // ---- اسلاید طلا و سکه ----
-  const goldItems: GoldItem[] = [];
-  const push = (name: string, price: number | null, changeKey: string) => {
-    if (!price || price <= 0) return;
-    const change = gold.change[changeKey] ?? 0;
-    const changePercent =
-      price - change > 0 ? (change / (price - change)) * 100 : 0;
-    goldItems.push({ name, price, change, changePercent });
-  };
-  // پنل هیرو فشرده: ۵ آیتم اصلی (بقیه در صفحه قیمت روز طلا)
-  push("طلای ۱۸ عیار (گرم)", gold.gold18k, "gold18k");
-  push("سکه امامی", gold.sekkeh, "sekkeh");
-  push("ربع سکه", gold.rob, "rob");
-  push("نیم سکه", gold.nim, "nim");
-  push("دلار آمریکا", gold.usd, "usd");
+  // ---- اسلاید طلا: همه محصولات طلا (بدون نقره) به صورت ردیف افقی اسکرول‌دار ----
+  const goldProducts = await prisma.product.findMany({
+    where: {
+      category: { slug: "gold-silver" },
+      name: { not: { contains: "نقره" } },
+    },
+    orderBy: { salesCount: "desc" },
+  });
 
-  // fallback: اگر ناواسان در دسترس نبود، قیمت محصولات طلای فروشگاه
-  if (!goldItems.length) {
-    const dbGold = await prisma.product.findMany({
-      where: { category: { slug: "gold-silver" } },
-      orderBy: { salesCount: "desc" },
-      take: 4,
-    });
-    dbGold.forEach((gp) =>
-      goldItems.push({ name: gp.name, price: gp.price, change: 0, changePercent: 0 }),
-    );
-  }
+  const goldItems: GoldItem[] = goldProducts.map((gp) => ({
+    name: gp.name,
+    price: gp.price,
+    change: 0,
+    changePercent: 0,
+    imageUrl: gp.imageUrl,
+    slug: gp.slug,
+  }));
 
   const goldSlide: HeroSlide = {
     id: "gold-live",
     badge: "قیمت لحظه‌ای",
     title: "طلا و سکه",
-    subtitle: "قیمت روز طلا، سکه و ارز با ضمانت اصالت و عیار تضمینی",
+    subtitle: "قیمت روز طلا و سکه با ضمانت اصالت و عیار تضمینی",
     stats: "قیمت لحظه‌ای بازار",
     href: "/category/gold-silver",
     secondaryHref: "/gold-price",

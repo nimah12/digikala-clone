@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import GoldPriceChart from "@/components/GoldPriceChart";
-import UsdPriceChart from "@/components/UsdPriceChart";
 
 type Stats = {
   productCount: number;
@@ -269,22 +268,11 @@ export default function AdminDashboardPage() {
           </span>
         </div>
 
-        {/* نمودار طلا و نمودار جداگانه دلار — با کنترل بازه (۷/۳۰/۹۰ روز) */}
+        {/* نمودار قیمت طلا — با کنترل بازه (۷/۳۰/۹۰ روز) */}
         {!historyLoading && historyPoints.length > 1 && (
-          <>
-            <div className="mb-5">
-              <p className="text-xs font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
-                نمودار طلا (۱۸ عیار)
-              </p>
-              <GoldPriceChart history={historyPoints} />
-            </div>
-            <div className="mb-5">
-              <p className="text-xs font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
-                نمودار دلار آمریکا
-              </p>
-              <UsdPriceChart history={historyPoints} />
-            </div>
-          </>
+          <div className="mb-5">
+            <GoldPriceChart history={historyPoints} />
+          </div>
         )}
 
         {historyError && (
@@ -302,7 +290,7 @@ export default function AdminDashboardPage() {
                   className="text-right"
                   style={{ background: "var(--bg)", color: "var(--text-secondary)" }}
                 >
-                  {["#", "تاریخ", "طلای ۱۸ عیار", "سکه امامی", "نیم سکه", "ربع سکه", "دلار"].map(
+                  {["#", "تاریخ", "طلای ۱۸ عیار", "سکه امامی", "نیم سکه", "ربع سکه"].map(
                     (h) => (
                       <th key={h} className="px-3 py-2.5 font-bold sticky top-0 whitespace-nowrap" style={{ background: "var(--bg)" }}>
                         {h}
@@ -346,7 +334,6 @@ export default function AdminDashboardPage() {
                       <td className="px-3 py-2">{cell(p.sekkeh, prev?.sekkeh)}</td>
                       <td className="px-3 py-2">{cell(p.nim, prev?.nim)}</td>
                       <td className="px-3 py-2">{cell(p.rob, prev?.rob)}</td>
-                      <td className="px-3 py-2">{cell(p.usd, prev?.usd)}</td>
                     </tr>
                   );
                 })}

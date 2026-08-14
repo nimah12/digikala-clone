@@ -259,8 +259,21 @@ export async function handleBotMessage(
     };
   }
 
-  // ۷) خداحافظی — قبل از تشکر تا «مرسی که کمک کردی» هم خداحافظی جواب بدهد
-  if (BOT_CONFIG.farewellKeywords.some((k) => q.includes(k))) {
+  // ۷) خداحافظی — قبل از تشکر تا «مرسی که کمک کردی» هم خداحافظی جواب بدهد.
+  // نکته مهم: کلمات تک‌کلمه‌ای فقط اگر یک توکن کامل باشند (نه زیررشته داخل کلمه دیگر —
+  // مثلاً «بای» نباید داخل «موبایلم» خداحافظی حساب شود)
+  const isFarewell = BOT_CONFIG.farewellKeywords.some((k) => {
+    const words = k.split(" ");
+    if (words.length === 1) {
+      const kw = words[0];
+      // کلمات کوتاه (مثل «بای») فقط تطبیق دقیق توکن؛ کلمات بلندتر (مثل «خداحافظ») شروعِ توکن هم قبول است
+      return q
+        .split(" ")
+        .some((t) => t === kw || (kw.length >= 5 && t.startsWith(kw)));
+    }
+    return q.includes(k);
+  });
+  if (isFarewell) {
     return {
       response: {
         text: pick(BOT_CONFIG.farewells.map((tpl) => renderText(tpl, { agent: BOT_CONFIG.agentName }))),

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import GoldPriceChart from "@/components/GoldPriceChart";
+import UsdPriceChart from "@/components/UsdPriceChart";
 
 type Stats = {
   productCount: number;
@@ -268,11 +269,22 @@ export default function AdminDashboardPage() {
           </span>
         </div>
 
-        {/* نمودار با کنترل بازه (۷/۳۰/۹۰ روز) */}
+        {/* نمودار طلا و نمودار جداگانه دلار — با کنترل بازه (۷/۳۰/۹۰ روز) */}
         {!historyLoading && historyPoints.length > 1 && (
-          <div className="mb-5">
-            <GoldPriceChart history={historyPoints} />
-          </div>
+          <>
+            <div className="mb-5">
+              <p className="text-xs font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
+                نمودار طلا (۱۸ عیار)
+              </p>
+              <GoldPriceChart history={historyPoints} />
+            </div>
+            <div className="mb-5">
+              <p className="text-xs font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
+                نمودار دلار آمریکا
+              </p>
+              <UsdPriceChart history={historyPoints} />
+            </div>
+          </>
         )}
 
         {historyError && (

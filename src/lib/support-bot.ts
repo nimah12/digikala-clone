@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { faNormalize } from "@/lib/normalize";
-import { searchProducts } from "@/lib/search";
 import { formatPrice } from "@/lib/format";
 import { formatIranDate, getIranHour } from "@/lib/iran-time";
 import { BOT_CONFIG, renderText, pick, type BotLink } from "@/lib/support-bot-config";
@@ -19,11 +18,17 @@ export type BotContext = {
   lastOrderId?: number | null;
   // منتظر فرستادن شماره سفارش هستیم
   awaitingOrderId?: boolean;
-  // نتایج آخرین پاسخ محصول (برای «ارزون‌ترینش» و...)
-  lastProducts?: { name: string; slug: string; price: number }[];
+  // محصولات پیشنهادشده در پاسخ تخفیف/پرفروش — برای فلوی «مایلید سفارش بدید؟»
+  lastSuggestedProducts?: {
+    name: string;
+    slug: string;
+    price: number;
+    discountPercent: number;
+    imageUrl: string | null;
+  }[];
 };
 
-const { statusLabels, generalAnswers, categoryQueries } = BOT_CONFIG;
+const { statusLabels, returnConditions } = BOT_CONFIG;
 
 // کلمات پرکننده برای تشخیص جستجوی معنادار
 function meaningfulTokens(q: string): string[] {
@@ -123,30 +128,6 @@ export async function handleBotMessage(
     }
   }
 
-  // ۱.۷) سوال درباره نتایج محصول قبلی — «ارزون‌ترینش؟»، «گرون‌ترینش؟»، «کدومش بهتره؟»
-  // (نیم‌فاصله در نوشته کاربر اختیاری است — هم «ارزون‌ترین» و هم «ارزونترین» را می‌گیرد)
-  if (context.lastProducts && context.lastProducts.length > 0 && /(ارزون(?:‌)?ترین|گرون(?:‌)?ترین|گران(?:‌)?ترین|کدومش بهتره|کدومشون|بهترینش|قیمتش)/.test(q)) {
-    const sorted = [...context.lastProducts].sort((a, b) => a.price - b.price);
-    const isCheapest = /(ارزون(?:‌)?ترین|قیمتش)/.test(q);
-    const target = isCheapest ? sorted[0] : sorted[sorted.length - 1];
-    return {
-      response: {
-        text: renderText(isCheapest ? BOT_CONFIG.cheapestResult : BOT_CONFIG.expensiveResult, {
-          name: target.name,
-          price: formatPrice(target.price),
-        }),
-        products: context.lastProducts.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: 0,
-          imageUrl: null,
-        })),
-      },
-      context: nextContext,
-    };
-  }
-
   // ۲) پیگیری سفارش (درخواست شماره سفارش)
   if (/(پیگیری|رهگیری|وضعیت سفارش|کد رهگیری|ردیابی|سفارشم کجاست|سفارش رو|پیگیری سفارش)/.test(q)) {
     nextContext.awaitingOrderId = true;
@@ -180,17 +161,21 @@ export async function handleBotMessage(
       take: 6,
     });
     if (deals.length > 0) {
-      nextContext.lastProducts = deals.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
+      nextContext.lastSuggestedProducts = deals.map((p) => ({
+        name: p.name,
+        slug: p.slug,
+        price: p.price,
+        discountPercent: p.discountPercent,
+        imageUrl: p.imageUrl,
+      }));
       return {
         response: {
-          text: renderText(BOT_CONFIG.dealsIntro, { count: deals.length }) + (q.includes("کد تخفیف") ? BOT_CONFIG.dealsCouponNote : ""),
-          products: deals.map((p) => ({
-            name: p.name,
-            slug: p.slug,
-            price: p.price,
-            discountPercent: p.discountPercent,
-            imageUrl: p.imageUrl,
-          })),
+          text:
+            renderText(BOT_CONFIG.dealsIntro, { count: deals.length }) +
+            (q.includes("کد تخفیف") ? BOT_CONFIG.dealsCouponNote : "") +
+            "\n\n" +
+            BOT_CONFIG.orderSuggestionQuestion,
+          products: nextContext.lastSuggestedProducts,
           links: [BOT_CONFIG.dealsLink],
         },
         context: nextContext,
@@ -204,59 +189,55 @@ export async function handleBotMessage(
       orderBy: { salesCount: "desc" },
       take: 5,
     });
-    nextContext.lastProducts = best.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
+    nextContext.lastSuggestedProducts = best.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      discountPercent: p.discountPercent,
+      imageUrl: p.imageUrl,
+    }));
     return {
       response: {
-        text: BOT_CONFIG.bestsellersIntro,
-        products: best.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: p.discountPercent,
-          imageUrl: p.imageUrl,
-        })),
+        text:
+          BOT_CONFIG.bestsellersIntro +
+          "\n\n" +
+          BOT_CONFIG.orderSuggestionQuestion,
+        products: nextContext.lastSuggestedProducts,
         links: [BOT_CONFIG.bestsellersLink],
       },
       context: nextContext,
     };
   }
 
-  // ۵) جستجوی محصول بر اساس دسته‌بندی یا عبارت آزاد
-  for (const c of categoryQueries) {
-    if (c.keywords.some((k) => q.includes(k))) {
-      let products;
-      if (c.category) {
-        const cat = await prisma.category.findUnique({ where: { slug: c.category } });
-        if (cat) {
-          products = await prisma.product.findMany({
-            where: { categoryId: cat.id },
-            include: { category: true },
-            orderBy: [{ discountPercent: "desc" }, { salesCount: "desc" }],
-            take: 6,
-          });
-        }
-      } else {
-        products = await searchProducts(c.query || q, 6);
-      }
-      if (!products || products.length === 0) continue;
-      nextContext.lastProducts = products.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
+  // ۴.۵) فلوی «مایلید این محصول رو سفارش بدید؟» — بعد از تخفیف/پرفروش
+  if (context.lastSuggestedProducts && context.lastSuggestedProducts.length > 0) {
+    const tokens = q.split(/\s+/).filter(Boolean);
+    const short = tokens.length <= 4;
+    if (
+      short &&
+      /(بله|آره|اره|حله|اوکی|باشه|بفرست|ارسالش|می‌خوامش|می‌خوامشون|بخرش|بخر|خوبه|سفارش بده|سفارش بدم|ثبتش کن|ثبت کن|می‌خوام سفارش|بله بفرست)/.test(q)
+    ) {
       return {
         response: {
-          text: pick(BOT_CONFIG.categoryIntros.map((tpl) => renderText(tpl, { title: c.title }))),
-          products: products.map((p) => ({
-            name: p.name,
-            slug: p.slug,
-            price: p.price,
-            discountPercent: p.discountPercent,
-            imageUrl: p.imageUrl,
-          })),
+          text: BOT_CONFIG.orderSuggestionYes,
+          products: context.lastSuggestedProducts,
+          links: [BOT_CONFIG.orderSuggestionYesLink],
         },
+        context: nextContext,
+      };
+    }
+    if (
+      short &&
+      /(نمی‌خوام|نمی‌خوامش|الان نه|فعلا نه|فعلاً نه|مرسی نه|ممنون نه|بعدا|بعداً|کافیه|نه ممنون|نه مرسی|^نه$)/.test(q)
+    ) {
+      return {
+        response: { text: BOT_CONFIG.orderSuggestionNo },
         context: nextContext,
       };
     }
   }
 
-  // ۶) احوال‌پرسی — قبل از جستجو تا «سلام» به‌جای محصول، سلام برگرداند
+  // ۶) احوال‌پرسی — تا «سلام» به‌جای محصول، سلام برگرداند
   // فقط وقتی واقعاً احوال‌پرسی است: حتماً کلمه سلام دارد و بقیه کلماتش هم سلام/خوش‌آمد است
   const GREETING_RE = /(سلام|درود|علیک|hello|\bhi\b|صبح(تون)? بخیر|ظهر(تون)? بخیر|عصر(تون)? بخیر|شب(تون)? بخیر)/;
   // نکته: برای کلمات فارسی از \b استفاده نمی‌شود چون boundary فقط برای حروف لاتین کار می‌کند؛
@@ -298,34 +279,12 @@ export async function handleBotMessage(
     };
   }
 
-  // ۹) پاسخ‌های ثابت عمومی
-  for (const item of generalAnswers) {
-    if (item.keywords.some((k) => q.includes(k))) {
-      return { response: { text: item.answer, links: item.links }, context: nextContext };
-    }
-  }
-
-  // ۱۰) جستجوی آزاد: اگر کلمه‌ای غیر از پرکننده‌ها داشت
-  const meaningful = meaningfulTokens(q);
-  if (meaningful.length > 0) {
-    const query = meaningful.join(" ");
-    const results = await searchProducts(query, 5);
-    if (results.length > 0) {
-      nextContext.lastProducts = results.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
-      return {
-        response: {
-          text: pick(BOT_CONFIG.searchIntros.map((tpl) => renderText(tpl, { query }))),
-          products: results.map((p) => ({
-            name: p.name,
-            slug: p.slug,
-            price: p.price,
-            discountPercent: p.discountPercent,
-            imageUrl: p.imageUrl,
-          })),
-        },
-        context: nextContext,
-      };
-    }
+  // ۹) شرایط مرجوعی — یکی از ۴ موضوع اصلی
+  if (returnConditions.keywords.some((k) => q.includes(k))) {
+    return {
+      response: { text: returnConditions.answer, links: returnConditions.links },
+      context: nextContext,
+    };
   }
 
   // ۱۱) پاسخ پیش‌فرض

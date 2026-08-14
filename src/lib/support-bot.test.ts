@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { handleBotMessage, lookupOrderById } from "./support-bot";
 import { prisma } from "@/lib/prisma";
-import { searchProducts } from "@/lib/search";
 
 // ---- موک‌ها ----
 vi.mock("@/lib/prisma", () => ({
@@ -10,11 +9,6 @@ vi.mock("@/lib/prisma", () => ({
     product: { findMany: vi.fn() },
     category: { findUnique: vi.fn() },
   },
-}));
-
-vi.mock("@/lib/search", () => ({
-  // پیش‌فرض: بدون نتیجه — هر تستی که نیاز دارد مقدار خودش را set می‌کند
-  searchProducts: vi.fn().mockResolvedValue([]),
 }));
 
 const mockedOrder = {
@@ -26,7 +20,7 @@ const mockedOrder = {
   items: [],
 };
 
-const audioProducts = [
+const sampleProducts = [
   { id: 1, name: "هندزفری QCY T13", slug: "qcy-t13", price: 980_000, discountPercent: 15, imageUrl: "/x.jpg", categoryId: 5, salesCount: 620, category: { slug: "audio" } },
   { id: 2, name: "ایرپادز پرو ۲", slug: "airpods-pro-2", price: 12_800_000, discountPercent: 7, imageUrl: "/y.jpg", categoryId: 5, salesCount: 812, category: { slug: "audio" } },
   { id: 3, name: "هدفون سونی XM5", slug: "sony-xm5", price: 21_000_000, discountPercent: 0, imageUrl: "/z.jpg", categoryId: 5, salesCount: 300, category: { slug: "audio" } },
@@ -95,17 +89,11 @@ describe("پیگیری سفارش", () => {
 
 // ---------- احوال‌پرسی ----------
 describe("احوال‌پرسی (سلام)", () => {
-  it("«سلام» به‌جای جستجوی محصول، احوال‌پرسی برمی‌گرداند و محصولی نمی‌دهد", async () => {
-    // جستجوی آزاد هرگز نباید صدا زده شود
-    vi.mocked(searchProducts).mockResolvedValue([
-      { name: "محصول سلام", slug: "salam", price: 1000, discountPercent: 0, imageUrl: null, category: { slug: "x" } } as never,
-    ]);
-
+  it("«سلام» احوال‌پرسی برمی‌گرداند و محصولی نمی‌دهد", async () => {
     const { response } = await handleBotMessage("سلام");
 
     expect(response.products).toBeUndefined();
     expect(response.text).toMatch(/بخیر|در خدمت|خوش اومدید/);
-    expect(searchProducts).not.toHaveBeenCalled();
   });
 
   it("«سلام خوبی؟» هم احوال‌پرسی حساب می‌شود", async () => {
@@ -115,14 +103,11 @@ describe("احوال‌پرسی (سلام)", () => {
     expect(response.text).toMatch(/بخیر|در خدمت|خوش اومدید/);
   });
 
-  it("«سلام هدفون می‌خوام» همچنان جستجوی محصول است نه احوال‌پرسی", async () => {
-    vi.mocked(prisma.category.findUnique).mockResolvedValue({ id: 5, slug: "audio" } as never);
-    vi.mocked(prisma.product.findMany).mockResolvedValue(audioProducts as never);
-
+  it("«سلام هدفون می‌خوام» نه احوال‌پرسی است و نه جستجوی محصول — پاسخ پیش‌فرض می‌گیرد", async () => {
     const { response } = await handleBotMessage("سلام هدفون می‌خوام");
 
-    expect(response.products?.length).toBe(3);
-    expect(response.text).toContain("هدفون");
+    expect(response.products).toBeUndefined();
+    expect(response.text).toContain("ببخشید");
   });
 
   it("«درود بر شما» هم سلام است", async () => {
@@ -148,12 +133,11 @@ describe("احوال‌پرسی (سلام)", () => {
 
 // ---------- خداحافظی ----------
 describe("خداحافظی", () => {
-  it("«خداحافظ» را مثل آدم جواب می‌دهد و جستجوی محصول نمی‌کند", async () => {
+  it("«خداحافظ» را مثل آدم جواب می‌دهد و محصولی نمی‌آورد", async () => {
     const { response } = await handleBotMessage("خداحافظ");
 
     expect(response.products).toBeUndefined();
     expect(response.text).toMatch(/خداحافظ|در خدمت|به امید دیدار|همین‌جاییم/);
-    expect(searchProducts).not.toHaveBeenCalled();
   });
 
   it("«مرسی که کمک کردی» را با خداحافظی جواب می‌دهد", async () => {
@@ -208,63 +192,94 @@ describe("ادامه گفتگو (کانتکست سفارش)", () => {
     expect(response.text).toContain("درخواست لغو");
   });
 
-  it("بدون کانتکست سفارش قبلی، «وضعیتش چطوره؟» به سوال‌های دیگر می‌افتد و پیام پیش‌فرض نمی‌دهد", async () => {
+  it("بدون کانتکست سفارش قبلی، «وضعیتش چطوره؟» به پاسخ پیش‌فرض می‌افتد", async () => {
     const { response } = await handleBotMessage("وضعیتش چطوره؟");
 
-    // بدون lastOrderId نباید به برنچ ادامه گفتگو برود — جواب کلی (مثلاً «شعبه نداریم») می‌گیرد
+    // بدون lastOrderId نباید به برنچ ادامه گفتگو برود
     expect(response.text.length).toBeGreaterThan(0);
     expect(response.order).toBeUndefined();
   });
 });
 
-// ---------- نتایج قبلی محصولات ----------
-describe("نتایج قبلی جستجو", () => {
-  it("«هدفون می‌خوام» از دسته audio محصول برمی‌گرداند و کانتکست نتایج را نگه می‌دارد", async () => {
-    vi.mocked(prisma.category.findUnique).mockResolvedValue({ id: 5, slug: "audio" } as never);
-    vi.mocked(prisma.product.findMany).mockResolvedValue(audioProducts as never);
+// ---------- چهار موضوع اصلی ربات (بدون جستجوی محصول) ----------
+describe("چهار موضوع اصلی (بدون جستجو)", () => {
+  it("«تخفیف‌ها» محصولات دارای تخفیف را برمی‌گرداند و سوال پیگیری می‌پرسد", async () => {
+    vi.mocked(prisma.product.findMany).mockResolvedValue(sampleProducts as never);
 
-    const { response, context } = await handleBotMessage("هدفون می‌خوام");
+    const { response, context } = await handleBotMessage("تخفیف‌ها");
 
-    expect(prisma.category.findUnique).toHaveBeenCalledWith({ where: { slug: "audio" } });
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { discountPercent: { gt: 0 } } }),
+    );
     expect(response.products?.length).toBe(3);
-    expect(context.lastProducts?.length).toBe(3);
-  });
-
-  it("«ارزون‌ترینش؟» (بدون نیم‌فاصله) ارزان‌ترین نتیجه قبلی را می‌گوید", async () => {
-    const lastProducts = audioProducts.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
-
-    const { response } = await handleBotMessage("ارزونترینش؟", { lastProducts });
-
-    expect(response.text).toContain("ارزون‌ترینشون «هندزفری QCY T13»");
-    expect(response.text).toContain("۹۸۰٬۰۰۰");
-  });
-
-  it("«ارزون‌ترینش؟» با نیم‌فاصله هم کار می‌کند", async () => {
-    const lastProducts = audioProducts.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
-
-    const { response } = await handleBotMessage("ارزون‌ترینش؟", { lastProducts });
-
-    expect(response.text).toContain("هندزفری QCY T13");
-  });
-
-  it("«گرون‌ترینش؟» گران‌ترین نتیجه قبلی را می‌گوید", async () => {
-    const lastProducts = audioProducts.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
-
-    const { response } = await handleBotMessage("گرون‌ترینش؟", { lastProducts });
-
-    expect(response.text).toContain("ارزون‌ترینشون".replace("ارزون", "گرون"));
-    expect(response.text).toContain("هدفون سونی XM5");
-    expect(response.text).toContain("۲۱٬۰۰۰٬۰۰۰");
-  });
-
-  it("بدون نتایج قبلی، «ارزون‌ترینش؟» به‌جای پیام خطا به برنچ تخفیف می‌رود", async () => {
-    vi.mocked(prisma.product.findMany).mockResolvedValue(audioProducts as never);
-
-    const { response } = await handleBotMessage("ارزون‌ترینش؟");
-
-    // چون کلمه «ارزون» با برنچ تخفیف تطبیق دارد، پاسخ تخفیف می‌گیرد نه پیام پیش‌فرض
-    expect(response.products).toBeDefined();
     expect(response.text).toContain("تخفیف");
+    expect(response.text).toContain("مایلید این محصول رو سفارش بدید؟");
+    expect(context.lastSuggestedProducts?.length).toBe(3);
+  });
+
+  it("«پرفروش‌ترین‌ها» پرفروش‌ترین محصولات را برمی‌گرداند و سوال پیگیری می‌پرسد", async () => {
+    vi.mocked(prisma.product.findMany).mockResolvedValue(sampleProducts as never);
+
+    const { response, context } = await handleBotMessage("پرفروش‌ترین‌ها");
+
+    expect(response.products?.length).toBe(3);
+    expect(response.text).toContain("پرفروش");
+    expect(response.text).toContain("مایلید این محصول رو سفارش بدید؟");
+    expect(context.lastSuggestedProducts?.length).toBe(3);
+  });
+
+  it("«بله» بعد از تخفیف/پرفروش، راهنمای سفارش و دوباره محصولات را می‌دهد", async () => {
+    const suggested = sampleProducts.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      discountPercent: p.discountPercent,
+      imageUrl: p.imageUrl,
+    }));
+
+    const { response } = await handleBotMessage("بله", { lastSuggestedProducts: suggested });
+
+    expect(response.text).toContain("افزودن به سبد");
+    expect(response.products?.length).toBe(3);
+    expect(response.links?.[0]?.href).toBe("/cart");
+  });
+
+  it("«نه» بعد از پیشنهاد، مودبانه پاسخ می‌دهد و محصولی نمی‌دهد", async () => {
+    const suggested = sampleProducts.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      discountPercent: p.discountPercent,
+      imageUrl: p.imageUrl,
+    }));
+
+    const { response } = await handleBotMessage("نه ممنون", { lastSuggestedProducts: suggested });
+
+    expect(response.text).toContain("باشه");
+    expect(response.products).toBeUndefined();
+  });
+
+  it("«بله» بدون پیشنهاد قبلی، پاسخ پیش‌فرض می‌گیرد نه فلوی سفارش", async () => {
+    const { response } = await handleBotMessage("بله");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toContain("ببخشید");
+  });
+
+  it("«شرایط مرجوعی» شرایط بازگشت کالا را توضیح می‌دهد", async () => {
+    const { response } = await handleBotMessage("شرایط مرجوعی");
+
+    expect(response.text).toContain("۷ روز");
+    expect(response.links?.[0]?.href).toBe("/returns");
+  });
+
+  it("«هدفون می‌خوام» جستجو نیست — محصول نمی‌آورد و پاسخ پیش‌فرض با ۴ موضوع می‌دهد", async () => {
+    const { response } = await handleBotMessage("هدفون می‌خوام");
+
+    expect(response.products).toBeUndefined();
+    expect(response.text).toContain("پیگیری سفارشم");
+    expect(response.text).toContain("تخفیف‌ها");
+    expect(prisma.category.findUnique).not.toHaveBeenCalled();
   });
 });
 

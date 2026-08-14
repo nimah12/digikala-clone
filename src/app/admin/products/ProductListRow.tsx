@@ -1,9 +1,10 @@
 "use client";
 
-import type { CategoryOption, Product, TreeCategory } from "./types";
+import type { CategoryOption, MoveResult, Product, TreeCategory } from "./types";
 import GalleryManager from "./GalleryManager";
 import ColorManager from "./ColorManager";
 import ProductEditPanel from "./ProductEditPanel";
+import MoveProductPanel from "./MoveProductPanel";
 
 type Props = {
   product: Product;
@@ -15,13 +16,16 @@ type Props = {
   galleryOpen: boolean;
   colorOpen: boolean;
   editOpen: boolean;
+  moveOpen: boolean;
   onUploadImage: (file: File) => void;
   onDeleteImage: () => void;
   onDelete: () => void;
   onToggleGallery: () => void;
   onToggleColor: () => void;
   onToggleEdit: () => void;
+  onToggleMove: () => void;
   onEditSaved: () => void;
+  onMoved: (result: MoveResult) => void;
 };
 
 export default function ProductListRow({
@@ -34,13 +38,16 @@ export default function ProductListRow({
   galleryOpen,
   colorOpen,
   editOpen,
+  moveOpen,
   onUploadImage,
   onDeleteImage,
   onDelete,
   onToggleGallery,
   onToggleColor,
   onToggleEdit,
+  onToggleMove,
   onEditSaved,
+  onMoved,
 }: Props) {
   return (
     <div
@@ -198,6 +205,20 @@ export default function ProductListRow({
             </button>
             <button
               type="button"
+              onClick={onToggleMove}
+              style={{
+                fontSize: 13,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "1px solid var(--border)",
+                background: moveOpen ? "var(--hover)" : "var(--panel)",
+                cursor: "pointer",
+              }}
+            >
+              {moveOpen ? "بستن انتقال" : "انتقال به دسته دیگر"}
+            </button>
+            <button
+              type="button"
               onClick={onDelete}
               disabled={deleting}
               style={{
@@ -226,6 +247,19 @@ export default function ProductListRow({
           categoryOptions={categoryOptions}
           catTree={catTree}
           onSaved={onEditSaved}
+        />
+      )}
+
+      {moveOpen && (
+        <MoveProductPanel
+          productId={product.id}
+          productName={product.name}
+          currentCategorySlug={product.category?.slug ?? null}
+          currentSubcategorySlug={product.subcategory?.slug ?? null}
+          categoryOptions={categoryOptions}
+          catTree={catTree}
+          onMoved={onMoved}
+          onClose={onToggleMove}
         />
       )}
     </div>

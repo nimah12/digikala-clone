@@ -13,6 +13,8 @@ type CategoryNode = {
   groupId: number | null;
   parentId: number | null;
   productCount: number;
+  // ساب‌دسته‌های واقعی (مدل Subcategory) — همان‌هایی که API ذخیره‌ی محصول می‌پذیرد
+  subs: { name: string; slug: string }[];
   children: CategoryNode[];
 };
 
@@ -90,6 +92,7 @@ export default function AdminCategoriesPage() {
   const [prodImage, setProdImage] = useState("");
   const [prodDescription, setProdDescription] = useState("");
   const [prodSizes, setProdSizes] = useState<{ name: string; stock: string }[]>([]);
+  const [prodSubcategory, setProdSubcategory] = useState("");
   // افزودن بازه‌ای سایزهای عددی (کفش و ...)
   const [prodSizeFrom, setProdSizeFrom] = useState("36");
   const [prodSizeTo, setProdSizeTo] = useState("45");
@@ -270,6 +273,7 @@ export default function AdminCategoriesPage() {
     setProdSizeStep("1");
     setProdSizeStock("3");
     setProdSizeRangeError("");
+    setProdSubcategory("");
     setProdError("");
   }
 
@@ -337,6 +341,7 @@ export default function AdminCategoriesPage() {
           name: prodName.trim(),
           slug,
           categorySlug: category.slug,
+          subcategorySlug: prodSubcategory || null,
           price,
           stock: Number.isInteger(stock) ? stock : 0,
           discountPercent: Number.isInteger(discountPercent) ? discountPercent : 0,
@@ -513,6 +518,23 @@ export default function AdminCategoriesPage() {
               style={{ ...inputStyle, width: 220 }}
             />
           </div>
+          {category.subs.length > 0 && (
+            <div>
+              <div className="text-xs mb-1">ساب‌دسته</div>
+              <select
+                value={prodSubcategory}
+                onChange={(e) => setProdSubcategory(e.target.value)}
+                style={{ ...inputStyle, width: 180 }}
+              >
+                <option value="">بدون ساب‌دسته</option>
+                {category.subs.map((s) => (
+                  <option key={s.slug} value={s.slug}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <div className="mt-2">
           <div className="text-xs mb-1">توضیحات</div>

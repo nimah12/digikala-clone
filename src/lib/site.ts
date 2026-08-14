@@ -1,12 +1,21 @@
 export const CONTACT_INFO = {
   phone: "۰۲۱-۹۱۰۰۱۰۰۰",
   phoneEn: "+982191001000",
-  email: "bbmesiaaw@gmail.com",
+  email: "nima.hasani.dev@gmail.com",
   address: "تهران، خیابان ولیعصر، مجتمع تجاری دیجی‌کلون، طبقه ۳",
   hours: "شنبه تا پنجشنبه، ۹ صبح تا ۹ شب",
 };
 
-export const FOOTER_LINKS: { title: string; links: { label: string; href: string }[] }[] = [
+export const FOOTER_LINKS: {
+  title: string;
+  links: { label: string; href: string }[];
+}[] = [
+  {
+    title: "تماس با ما",
+    links: [
+      { label: "ارسال ایمیل", href: "mailto:nima.hasani.dev@gmail.com" },
+    ],
+  },
   {
     title: "با دیجی‌کلون",
     links: [

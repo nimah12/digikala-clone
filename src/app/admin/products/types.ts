@@ -76,10 +76,20 @@ export type ProductDetail = {
 
 export type CategoryOption = { value: string; label: string };
 
+export type MoveResult = {
+  productName: string;
+  categorySlug: string;
+  subcategorySlug: string | null;
+};
+
 export type TreeCategory = {
   id: number;
   name: string;
   slug: string;
   productCount: number;
+  // تعداد مؤثر محصولات — همان عددی که لیست پنل ادمین برای این دسته نشان می‌دهد
+  effectiveCount: number;
+  // ساب‌دسته‌های واقعی (مدل Subcategory) — همان‌هایی که API ذخیره‌ی محصول می‌پذیرد
+  subs: { name: string; slug: string }[];
   children: TreeCategory[];
 };

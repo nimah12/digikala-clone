@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { slugify } from "@/lib/slugify";
@@ -13,19 +14,60 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const categorySlug = searchParams.get("category");
   const q = searchParams.get("q")?.trim();
+  const subcategorySlug = searchParams.get("subcategory")?.trim() || null;
 
-  // جستجو در همه محصولات (اسم یا slug)؛ در غیر این صورت فیلتر دسته
-  const products = await prisma.product.findMany({
-    where: q
-      ? {
+  // جستجو در همه محصولات (اسم یا slug)؛ در غیر این صورت فیلتر دسته.
+  // فیلتر دسته مثل صفحه‌ی فروشگاه رفتار می‌کند:
+  //  - دسته‌ی ریشه: محصولات خودش + محصولات همه‌ی فرزندانش
+  //  - ساب‌دسته (فرزند): محصولات خودش + محصولاتِ ریشه که نام/ساب‌کتگوری همنام دارند
+  //    (همان رفتاری که سایت برای «سکه»، «شمش»، «انگشتر» و... نشان می‌دهد)
+  let where: Prisma.ProductWhereInput | undefined;
+  if (q) {
+    where = {
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { slug: { contains: q, mode: "insensitive" } },
+      ],
+    };
+  } else if (categorySlug) {
+    const category = await prisma.category.findUnique({
+      where: { slug: categorySlug },
+    });
+    if (category) {
+      if (category.parentId === null) {
+        where = {
           OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { slug: { contains: q, mode: "insensitive" } },
+            { categoryId: category.id },
+            { category: { parentId: category.id } },
           ],
-        }
-      : categorySlug
-        ? { category: { is: { slug: categorySlug } } }
-        : undefined,
+        };
+      } else {
+        where = {
+          OR: [
+            { categoryId: category.id },
+            {
+              categoryId: category.parentId,
+              OR: [
+                { subcategory: { name: category.name } },
+                { name: { contains: category.name } },
+              ],
+            },
+          ],
+        };
+      }
+    }
+  }
+
+  // فیلتر ساب‌دسته (اختیاری): فقط محصولاتِ همان ساب‌دسته — برای بررسی مقصدِ انتقال
+  if (subcategorySlug) {
+    const subFilter: Prisma.ProductWhereInput = {
+      subcategory: { is: { slug: subcategorySlug } },
+    };
+    where = where ? { ...where, ...subFilter } : subFilter;
+  }
+
+  const products = await prisma.product.findMany({
+    where,
     select: {
       id: true,
       name: true,

@@ -6,7 +6,12 @@ export function flattenCategoryTree(
 ): CategoryOption[] {
   let out: CategoryOption[] = [];
   for (const n of nodes) {
-    out.push({ value: n.slug, label: `${"— ".repeat(depth)}${n.name}` });
+    out.push({
+      value: n.slug,
+      label: `${"— ".repeat(depth)}${n.name} (${n.effectiveCount.toLocaleString(
+        "fa-IR",
+      )})`,
+    });
     out = out.concat(flattenCategoryTree(n.children, depth + 1));
   }
   return out;

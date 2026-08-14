@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   authHeaders,
   deleteProduct,
@@ -11,7 +11,7 @@ import {
   uploadProductImage,
 } from "./admin-api";
 import { flattenCategoryTree } from "./category-tree";
-import type { CategoryOption, Product, TreeCategory } from "./types";
+import type { CategoryOption, MoveResult, Product, TreeCategory } from "./types";
 import ProductListRow from "./ProductListRow";
 
 export default function AdminProductsPage() {
@@ -22,8 +22,10 @@ export default function AdminProductsPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [catTree, setCatTree] = useState<TreeCategory[]>([]);
   const [categoryFilter, setCategoryFilter] = useState("");
+  // متن آزاد در باکس جستجو — فقط با Enter یا دکمه‌ی جستجو اعمال می‌شود
+  const [searchInput, setSearchInput] = useState("");
+  // عبارت تأییدشده‌ی جستجو
   const [searchQuery, setSearchQuery] = useState("");
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
@@ -33,6 +35,8 @@ export default function AdminProductsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [colorPanelId, setColorPanelId] = useState<number | null>(null);
   const [editPanelId, setEditPanelId] = useState<number | null>(null);
+  const [movePanelId, setMovePanelId] = useState<number | null>(null);
+  const [moveSuccess, setMoveSuccess] = useState<MoveResult | null>(null);
 
   async function loadProducts(category: string, search = "") {
     try {
@@ -91,14 +95,24 @@ export default function AdminProductsPage() {
     loadProducts(value);
   }
 
-  function handleSearchChange(value: string) {
-    setSearchQuery(value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    const term = value.trim();
-    searchTimer.current = setTimeout(() => {
-      setStatus("loading");
-      loadProducts(term ? "" : categoryFilter, term);
-    }, 300);
+  function runSearch(term: string) {
+    const t = term.trim();
+    setSearchQuery(t);
+    setStatus("loading");
+    // جستجو همیشه روی همه‌ی محصولات انجام می‌شود (مثل قبل)
+    loadProducts(t ? "" : categoryFilter, t);
+  }
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    runSearch(searchInput);
+  }
+
+  function handleClearSearch() {
+    setSearchInput("");
+    setSearchQuery("");
+    setStatus("loading");
+    loadProducts(categoryFilter);
   }
 
   async function handleFileChange(productId: number, file: File) {
@@ -156,6 +170,13 @@ export default function AdminProductsPage() {
     loadProducts(term ? "" : categoryFilter, term);
   }
 
+  function handleMoved(result: MoveResult) {
+    setMoveSuccess(result);
+    setMovePanelId(null);
+    const term = searchQuery.trim();
+    loadProducts(term ? "" : categoryFilter, term);
+  }
+
   if (status === "loading") {
     return <div style={{ padding: 24 }}>در حال بررسی دسترسی...</div>;
   }
@@ -176,47 +197,54 @@ export default function AdminProductsPage() {
       </h1>
 
       <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: 1, minWidth: 220 }}>
+        <form
+          onSubmit={handleSearchSubmit}
+          style={{ position: "relative", flex: 1, minWidth: 220, display: "flex", gap: 8 }}
+        >
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="جستجوی محصول (اسم یا slug)..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="جستجوی محصول (اسم یا slug) — Enter بزن"
             style={{
-              width: "100%",
-              padding: "8px 34px 8px 10px",
+              flex: 1,
+              padding: "8px 10px",
               borderRadius: 6,
               border: "1px solid #ccc",
               boxSizing: "border-box",
             }}
           />
-          {searchQuery && (
+          <button
+            type="submit"
+            style={{
+              padding: "8px 14px",
+              borderRadius: 6,
+              border: "none",
+              background: "#23254e",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            جستجو
+          </button>
+          {searchInput && (
             <button
               type="button"
-              onClick={() => {
-                setSearchQuery("");
-                if (searchTimer.current) clearTimeout(searchTimer.current);
-                setStatus("loading");
-                loadProducts(categoryFilter);
-              }}
+              onClick={handleClearSearch}
               style={{
-                position: "absolute",
-                left: 6,
-                top: "50%",
-                transform: "translateY(-50%)",
-                border: "none",
+                padding: "8px 12px",
+                borderRadius: 6,
+                border: "1px solid #ccc",
                 background: "none",
                 cursor: "pointer",
                 color: "#888",
-                fontSize: 14,
               }}
               title="پاک کردن جستجو"
-              aria-label="پاک کردن جستجو"
             >
               ×
             </button>
           )}
-        </div>
+        </form>
         <select
           value={categoryFilter}
           onChange={(e) => handleCategoryChange(e.target.value)}
@@ -248,6 +276,56 @@ export default function AdminProductsPage() {
 
       {error && <p style={{ color: "#c0392b", marginBottom: 12 }}>{error}</p>}
 
+      {moveSuccess && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexWrap: "wrap",
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "#e8f5e9",
+            border: "1px solid #66bb6a",
+            color: "#1b5e20",
+            marginBottom: 12,
+            fontSize: 13,
+          }}
+        >
+          <span>
+            محصول «{moveSuccess.productName}» با موفقیت منتقل شد.
+          </span>
+          <a
+            href={`/category/${moveSuccess.categorySlug}${
+              moveSuccess.subcategorySlug
+                ? `/${moveSuccess.subcategorySlug}`
+                : ""
+            }`}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#1b5e20", fontWeight: 700 }}
+          >
+            مشاهده در دسته مقصد
+          </a>
+          <button
+            type="button"
+            onClick={() => setMoveSuccess(null)}
+            aria-label="بستن پیام"
+            style={{
+              marginRight: "auto",
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              color: "#1b5e20",
+              fontSize: 16,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {searchQuery.trim() && (
         <p style={{ fontSize: 12, color: "#666", marginBottom: 12 }}>
           نتایج جستجو در همه محصولات برای «{searchQuery.trim()}» — {products.length}{" "}
@@ -275,6 +353,7 @@ export default function AdminProductsPage() {
             galleryOpen={expandedId === product.id}
             colorOpen={colorPanelId === product.id}
             editOpen={editPanelId === product.id}
+            moveOpen={movePanelId === product.id}
             onUploadImage={(file) => handleFileChange(product.id, file)}
             onDeleteImage={() => handleDeleteImage(product.id)}
             onDelete={() => handleDeleteProduct(product.id)}
@@ -287,7 +366,11 @@ export default function AdminProductsPage() {
             onToggleEdit={() =>
               setEditPanelId((prev) => (prev === product.id ? null : product.id))
             }
+            onToggleMove={() =>
+              setMovePanelId((prev) => (prev === product.id ? null : product.id))
+            }
             onEditSaved={handleEditSaved}
+            onMoved={handleMoved}
           />
         ))}
       </div>

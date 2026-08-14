@@ -85,7 +85,7 @@ export default function ColorManager({ productId }: { productId: number }) {
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #ccc",
+            border: "1px solid var(--border)",
             fontSize: 13,
             width: 160,
           }}
@@ -94,7 +94,7 @@ export default function ColorManager({ productId }: { productId: number }) {
           type="color"
           value={hex}
           onChange={(e) => setHex(e.target.value)}
-          style={{ width: 40, height: 32, padding: 0, border: "1px solid #ccc", borderRadius: 6 }}
+          style={{ width: 40, height: 32, padding: 0, border: "1px solid var(--border)", borderRadius: 6 }}
         />
         <input
           type="number"
@@ -105,7 +105,7 @@ export default function ColorManager({ productId }: { productId: number }) {
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #ccc",
+            border: "1px solid var(--border)",
             fontSize: 13,
             width: 90,
           }}
@@ -135,11 +135,11 @@ export default function ColorManager({ productId }: { productId: number }) {
       )}
 
       {loading ? (
-        <p style={{ fontSize: 13, color: "#888" }}>در حال بارگذاری رنگ‌ها...</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>در حال بارگذاری رنگ‌ها...</p>
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           {colors.length === 0 && (
-            <p style={{ fontSize: 13, color: "#888" }}>هنوز رنگی اضافه نشده.</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>هنوز رنگی اضافه نشده.</p>
           )}
           {colors.map((c) => (
             <div
@@ -148,7 +148,7 @@ export default function ColorManager({ productId }: { productId: number }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                border: "1px solid #eee",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "6px 10px",
                 fontSize: 13,
@@ -160,12 +160,12 @@ export default function ColorManager({ productId }: { productId: number }) {
                   height: 16,
                   borderRadius: "50%",
                   background: c.hex,
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border)",
                   display: "inline-block",
                 }}
               />
               <span>{c.name}</span>
-              <span style={{ color: "#888" }}>
+              <span style={{ color: "var(--text-muted)" }}>
                 (موجودی: {c.stock.toLocaleString("fa-IR")})
               </span>
               <button

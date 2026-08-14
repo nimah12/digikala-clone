@@ -116,7 +116,7 @@ export default function ProductEditPanel({
       }}
     >
       {loading ? (
-        <p style={{ fontSize: 13, color: "#888" }}>در حال بارگذاری...</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>در حال بارگذاری...</p>
       ) : (
         <>
           {/* اطلاعات پایه */}
@@ -126,7 +126,7 @@ export default function ProductEditPanel({
               placeholder="اسم محصول"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+              style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
             />
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <input
@@ -135,7 +135,7 @@ export default function ProductEditPanel({
                 placeholder="slug (فقط انگلیسی و خط تیره)"
                 value={form.slug}
                 onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                style={{ flex: 1, minWidth: 200, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ flex: 1, minWidth: 200, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
                 type="text"
@@ -143,7 +143,7 @@ export default function ProductEditPanel({
                 placeholder="عکس (url)"
                 value={form.imageUrl}
                 onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-                style={{ flex: 1, minWidth: 200, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ flex: 1, minWidth: 200, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
             </div>
             <textarea
@@ -151,7 +151,7 @@ export default function ProductEditPanel({
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               rows={3}
-              style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+              style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
             />
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <input
@@ -159,21 +159,21 @@ export default function ProductEditPanel({
                 placeholder="قیمت اصلی (تومان)"
                 value={form.price}
                 onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                style={{ width: 160, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ width: 160, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
                 type="number"
                 placeholder="موجودی"
                 value={form.stock}
                 onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
-                style={{ width: 110, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ width: 110, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
                 type="number"
                 placeholder="٪ تخفیف"
                 value={form.discountPercent}
                 onChange={(e) => setForm((f) => ({ ...f, discountPercent: e.target.value }))}
-                style={{ width: 100, padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ width: 100, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <select
                 value={form.categorySlug}
@@ -184,7 +184,7 @@ export default function ProductEditPanel({
                     subcategorySlug: "",
                   }))
                 }
-                style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               >
                 <option value="">انتخاب دسته</option>
                 {categoryOptions.map((opt) => (
@@ -196,7 +196,7 @@ export default function ProductEditPanel({
               <select
                 value={form.subcategorySlug}
                 onChange={(e) => setForm((f) => ({ ...f, subcategorySlug: e.target.value }))}
-                style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+                style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               >
                 <option value="">بدون ساب‌دسته</option>
                 {/* ساب‌دسته‌های واقعیِ همین دسته (مدل Subcategory) — فقط این‌ها

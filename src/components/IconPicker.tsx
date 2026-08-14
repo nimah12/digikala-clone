@@ -80,7 +80,7 @@ export default function IconPicker({ value, onChange }: Props) {
         style={{
           padding: "6px 10px",
           borderRadius: 6,
-          border: "1px solid #ccc",
+          border: "1px solid var(--border)",
           fontSize: 13,
           width: "100%",
           marginBottom: 8,
@@ -94,10 +94,10 @@ export default function IconPicker({ value, onChange }: Props) {
           gap: 6,
           maxHeight: 240,
           overflowY: "auto",
-          border: "1px solid #e6e6e6",
+          border: "1px solid var(--border)",
           borderRadius: 8,
           padding: 8,
-          background: "#fafafa",
+          background: "var(--bg)",
         }}
       >
         {visible.map((n) => {
@@ -126,12 +126,12 @@ export default function IconPicker({ value, onChange }: Props) {
           );
         })}
         {visible.length === 0 && (
-          <p style={{ fontSize: 12, color: "#888", padding: 8 }}>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", padding: 8 }}>
             آیکونی با این اسم پیدا نشد.
           </p>
         )}
       </div>
-      <div style={{ fontSize: 11, color: "#888", marginTop: 6 }}>
+      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
         {query.trim()
           ? `${visible.length} آیکون یافت شد (از ${allLucide.length} آیکون Lucide)`
           : `${POPULAR_LUCIDE.length} آیکون محبوب — برای جستجو در همه آیکون‌ها تایپ کنید`}

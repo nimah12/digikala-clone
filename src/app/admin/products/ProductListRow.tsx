@@ -52,7 +52,7 @@ export default function ProductListRow({
   return (
     <div
       style={{
-        border: "1px solid #e0e0e0",
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: 12,
       }}
@@ -76,12 +76,12 @@ export default function ProductListRow({
             style={{
               width: 80,
               height: 80,
-              background: "#f2f2f2",
+              background: "var(--hover)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "#999",
+              color: "var(--text-muted)",
               borderRadius: 6,
             }}
           >
@@ -103,7 +103,7 @@ export default function ProductListRow({
           >
             {product.name}
           </a>
-          <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>
             {product.discountPercent > 0 && product.originalPrice ? (
               <>
                 <span style={{ textDecoration: "line-through", opacity: 0.65 }}>
@@ -139,7 +139,7 @@ export default function ProductListRow({
               }}
             />
             {uploading && (
-              <span style={{ fontSize: 13, color: "#555" }}>
+              <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
                 در حال آپلود...
               </span>
             )}
@@ -226,7 +226,7 @@ export default function ProductListRow({
                 padding: "6px 12px",
                 borderRadius: 6,
                 border: "1px solid #c0392b",
-                background: "#fff",
+                background: "var(--panel)",
                 color: "#c0392b",
                 cursor: "pointer",
               }}

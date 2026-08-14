@@ -28,10 +28,16 @@ export default function ArticleCard({ article }: { article: Article }) {
         <h3 className="text-sm font-bold leading-6 line-clamp-2 min-h-[48px]">
           {article.title}
         </h3>
-        <p className="text-xs text-dk-text-secondary leading-5 line-clamp-2">
+        <p
+          className="text-xs leading-5 line-clamp-2"
+          style={{ color: "var(--text-secondary)" }}
+        >
           {article.excerpt}
         </p>
-        <div className="flex items-center justify-between pt-1 text-[11px] text-dk-text-muted">
+        <div
+          className="flex items-center justify-between pt-1 text-[11px]"
+          style={{ color: "var(--text-muted)" }}
+        >
           <span>{article.date}</span>
           <span className="flex items-center gap-1">
             <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

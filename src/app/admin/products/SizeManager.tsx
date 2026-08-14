@@ -115,7 +115,7 @@ export default function SizeManager({ productId }: { productId: number }) {
   const inputSmall: CSSProperties = {
     padding: "6px 8px",
     borderRadius: 6,
-    border: "1px solid #ccc",
+    border: "1px solid var(--border)",
     fontSize: 13,
     width: 70,
   };
@@ -135,12 +135,12 @@ export default function SizeManager({ productId }: { productId: number }) {
           flexWrap: "wrap",
           marginBottom: 10,
           padding: 10,
-          border: "1px solid #e6e6e6",
+          border: "1px solid var(--border)",
           borderRadius: 8,
-          background: "#fafafa",
+          background: "var(--bg)",
         }}
       >
-        <span style={{ fontSize: 12, color: "#666" }}>سایز عددی از</span>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>سایز عددی از</span>
         <input
           type="number"
           step={0.5}
@@ -149,7 +149,7 @@ export default function SizeManager({ productId }: { productId: number }) {
           style={inputSmall}
           aria-label="سایز شروع"
         />
-        <span style={{ fontSize: 12, color: "#666" }}>تا</span>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>تا</span>
         <input
           type="number"
           step={0.5}
@@ -158,7 +158,7 @@ export default function SizeManager({ productId }: { productId: number }) {
           style={inputSmall}
           aria-label="سایز پایان"
         />
-        <span style={{ fontSize: 12, color: "#666" }}>گام</span>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>گام</span>
         <input
           type="number"
           step={0.5}
@@ -168,7 +168,7 @@ export default function SizeManager({ productId }: { productId: number }) {
           style={{ ...inputSmall, width: 60 }}
           aria-label="گام"
         />
-        <span style={{ fontSize: 12, color: "#666" }}>موجودی هر کدوم</span>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>موجودی هر کدوم</span>
         <input
           type="number"
           min={0}
@@ -186,7 +186,7 @@ export default function SizeManager({ productId }: { productId: number }) {
             padding: "6px 12px",
             borderRadius: 6,
             border: "1px solid #23254e",
-            background: "#fff",
+            background: "var(--panel)",
             color: "#23254e",
             cursor: "pointer",
           }}
@@ -206,8 +206,8 @@ export default function SizeManager({ productId }: { productId: number }) {
             padding: "4px 8px",
             borderRadius: 6,
             border: "none",
-            background: "#eee",
-            color: "#555",
+            background: "var(--hover)",
+            color: "var(--text-secondary)",
             cursor: "pointer",
           }}
           title="پیش‌فرض سایز کفش"
@@ -233,7 +233,7 @@ export default function SizeManager({ productId }: { productId: number }) {
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #ccc",
+            border: "1px solid var(--border)",
             fontSize: 13,
             width: 160,
           }}
@@ -247,7 +247,7 @@ export default function SizeManager({ productId }: { productId: number }) {
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #ccc",
+            border: "1px solid var(--border)",
             fontSize: 13,
             width: 90,
           }}
@@ -277,11 +277,11 @@ export default function SizeManager({ productId }: { productId: number }) {
       )}
 
       {loading ? (
-        <p style={{ fontSize: 13, color: "#888" }}>در حال بارگذاری سایزها...</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>در حال بارگذاری سایزها...</p>
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           {sizes.length === 0 && (
-            <p style={{ fontSize: 13, color: "#888" }}>هنوز سایزی اضافه نشده.</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>هنوز سایزی اضافه نشده.</p>
           )}
           {sizes.map((s) => (
             <div
@@ -290,14 +290,14 @@ export default function SizeManager({ productId }: { productId: number }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                border: "1px solid #eee",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "6px 10px",
                 fontSize: 13,
               }}
             >
               <span style={{ fontWeight: 600 }}>{s.name}</span>
-              <span style={{ color: "#888" }}>
+              <span style={{ color: "var(--text-muted)" }}>
                 (موجودی: {s.stock.toLocaleString("fa-IR")})
               </span>
               <button

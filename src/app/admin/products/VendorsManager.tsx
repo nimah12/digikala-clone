@@ -59,7 +59,7 @@ export default function VendorsManager({ productId }: { productId: number }) {
         </p>
       )}
       {vendors.length === 0 ? (
-        <p style={{ fontSize: 13, color: "#888" }}>فروشنده‌ای برای این محصول ثبت نشده.</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>فروشنده‌ای برای این محصول ثبت نشده.</p>
       ) : (
         <div style={{ display: "grid", gap: 8 }}>
           {vendors.map((v) => (
@@ -69,7 +69,7 @@ export default function VendorsManager({ productId }: { productId: number }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                border: "1px solid #eee",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "6px 10px",
                 fontSize: 13,
@@ -77,7 +77,7 @@ export default function VendorsManager({ productId }: { productId: number }) {
               }}
             >
               <span style={{ minWidth: 100 }}>{v.name}</span>
-              <span style={{ color: "#888" }}>{v.city}</span>
+              <span style={{ color: "var(--text-muted)" }}>{v.city}</span>
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 امتیاز:
                 <input
@@ -93,11 +93,11 @@ export default function VendorsManager({ productId }: { productId: number }) {
                     }
                   }}
                   disabled={savingId === v.id}
-                  style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid #ccc" }}
+                  style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid var(--border)" }}
                 />
               </label>
               {savingId === v.id && (
-                <span style={{ color: "#555" }}>در حال ذخیره...</span>
+                <span style={{ color: "var(--text-secondary)" }}>در حال ذخیره...</span>
               )}
               <button
                 type="button"

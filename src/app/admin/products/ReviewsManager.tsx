@@ -85,14 +85,14 @@ export default function ReviewsManager({ productId }: { productId: number }) {
         </p>
       )}
       {reviews.length === 0 ? (
-        <p style={{ fontSize: 13, color: "#888" }}>نظری برای این محصول ثبت نشده.</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>نظری برای این محصول ثبت نشده.</p>
       ) : (
         <div style={{ display: "grid", gap: 8 }}>
           {reviews.map((r) => (
             <div
               key={r.id}
               style={{
-                border: "1px solid #eee",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "8px 10px",
                 fontSize: 13,
@@ -106,7 +106,7 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                     onChange={(e) =>
                       setEditForm((f) => ({ ...f, title: e.target.value }))
                     }
-                    style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid #ccc" }}
+                    style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid var(--border)" }}
                   />
                   <textarea
                     value={editForm.text}
@@ -114,7 +114,7 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                       setEditForm((f) => ({ ...f, text: e.target.value }))
                     }
                     rows={2}
-                    style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid #ccc" }}
+                    style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid var(--border)" }}
                   />
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <input
@@ -125,7 +125,7 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, rating: e.target.value }))
                       }
-                      style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid #ccc" }}
+                      style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid var(--border)" }}
                     />
                     <button
                       type="button"
@@ -148,8 +148,8 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                       style={{
                         padding: "6px 12px",
                         borderRadius: 6,
-                        border: "1px solid #ccc",
-                        background: "#fff",
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
                         cursor: "pointer",
                       }}
                     >
@@ -161,12 +161,12 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <strong>{r.author}</strong>
-                    <span style={{ color: "#888" }}>
+                    <span style={{ color: "var(--text-muted)" }}>
                       امتیاز: {r.rating.toLocaleString("fa-IR")}
                     </span>
                   </div>
                   <div style={{ fontWeight: 600, marginBottom: 4 }}>{r.title}</div>
-                  <p style={{ color: "#555", marginBottom: 6 }}>{r.text}</p>
+                  <p style={{ color: "var(--text-secondary)", marginBottom: 6 }}>{r.text}</p>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button
                       type="button"

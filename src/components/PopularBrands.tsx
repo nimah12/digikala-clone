@@ -46,7 +46,7 @@ export default function PopularBrands() {
           <button
             type="button"
             onClick={() => scroll("right")}
-            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-dk-bg hover:scale-110 transition-all"
+            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-[var(--hover)] hover:scale-110 transition-all"
             style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             aria-label="اسکرول به راست"
           >
@@ -57,7 +57,7 @@ export default function PopularBrands() {
           <button
             type="button"
             onClick={() => scroll("left")}
-            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-dk-bg hover:scale-110 transition-all"
+            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-[var(--hover)] hover:scale-110 transition-all"
             style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             aria-label="اسکرول به چپ"
           >

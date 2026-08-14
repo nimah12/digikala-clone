@@ -53,7 +53,7 @@ export default function ProductRow({
           <button
             type="button"
             onClick={() => scroll("right")}
-            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-dk-bg transition-colors"
+            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-[var(--hover)] transition-colors"
             style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             aria-label="اسکرول به راست"
           >
@@ -64,7 +64,7 @@ export default function ProductRow({
           <button
             type="button"
             onClick={() => scroll("left")}
-            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-dk-bg transition-colors"
+            className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-[var(--hover)] transition-colors"
             style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             aria-label="اسکرول به چپ"
           >

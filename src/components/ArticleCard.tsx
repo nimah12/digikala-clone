@@ -9,7 +9,7 @@ export default function ArticleCard({ article }: { article: Article }) {
       className="group block bg-white rounded-xl border border-dk-border overflow-hidden hover:shadow-lg transition-shadow"
       style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }}
     >
-      <div className="relative aspect-[16/9] bg-dk-bg overflow-hidden">
+      <div className="relative aspect-[16/9] overflow-hidden" style={{ background: "var(--bg)" }}>
         <Image
           src={article.image}
           alt={article.title}

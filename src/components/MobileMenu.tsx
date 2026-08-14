@@ -58,7 +58,7 @@ export default function MobileMenu({
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-dk-bg transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-[var(--hover)] transition-colors"
             aria-label="بستن منو"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@ export default function MobileMenu({
                 key={link.label}
                 href={link.href}
                 onClick={onClose}
-                className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold rounded-xl hover:bg-dk-bg transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold rounded-xl hover:bg-[var(--hover)] transition-colors"
               >
                 <span className="text-dk-red"><Icon name={link.icon} size={18} /></span>
                 {link.label}
@@ -128,7 +128,7 @@ export default function MobileMenu({
                             key={cat.id}
                             href={`/category/${cat.slug}`}
                             onClick={onClose}
-                            className="flex items-center gap-2 px-2 py-2 text-[13px] rounded-lg hover:bg-dk-bg transition-colors"
+                            className="flex items-center gap-2 px-2 py-2 text-[13px] rounded-lg hover:bg-[var(--hover)] transition-colors"
                             style={{ color: "var(--text-secondary)" }}
                           >
                             <span className="text-dk-red"><Icon name={cat.icon} size={16} /></span>

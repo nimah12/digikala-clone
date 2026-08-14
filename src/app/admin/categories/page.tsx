@@ -648,7 +648,7 @@ export default function AdminCategoriesPage() {
           <button
             type="button"
             onClick={() => setProdSizes((prev) => [...prev, { name: "", stock: "" }])}
-            className="text-xs font-bold border rounded-lg px-3 py-1.5 transition-colors hover:bg-dk-bg"
+            className="text-xs font-bold border rounded-lg px-3 py-1.5 transition-colors hover:bg-[var(--hover)]"
             style={{ borderColor: "var(--border)" }}
           >
             + افزودن سایز
@@ -720,7 +720,7 @@ export default function AdminCategoriesPage() {
     return (
       <div key={node.id}>
         <div
-          className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl hover:bg-dk-bg transition-colors"
+          className="flex items-center justify-between gap-3 py-2.5 px-3 rounded-xl hover:bg-[var(--hover)] transition-colors"
           style={depth > 0 ? { marginRight: 20 + (depth - 1) * 18 } : undefined}
         >
           <div className="flex items-center gap-2.5 min-w-0">

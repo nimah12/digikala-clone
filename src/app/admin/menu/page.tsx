@@ -106,9 +106,13 @@ export default function AdminMenuPreviewPage() {
                     type="button"
                     onClick={() => setActiveGroup(i)}
                     className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors ${
-                      isActive ? "text-dk-red font-bold" : "text-dk-text-secondary hover:bg-dk-bg"
+                      isActive ? "text-dk-red font-bold" : "hover:bg-[var(--hover)]"
                     }`}
-                    style={isActive ? { background: "color-mix(in srgb, #ef4050 7%, transparent)" } : undefined}
+                    style={
+                      isActive
+                        ? { background: "color-mix(in srgb, #ef4050 7%, transparent)" }
+                        : { color: "var(--text-secondary)" }
+                    }
                   >
                     <span className="flex items-center gap-2 truncate">
                       <span className="text-dk-red shrink-0">{g.icon}</span>

@@ -185,7 +185,7 @@ export default function CartClient() {
                   type="button"
                   onClick={() => updateQty(key, 1)}
                   disabled={qty >= product!.stock}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-dk-bg transition-colors disabled:opacity-40"
+                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
                   style={{ borderColor: "var(--border)", color: "var(--text)" }}
                   aria-label="افزایش تعداد"
                 >
@@ -196,7 +196,7 @@ export default function CartClient() {
                   type="button"
                   onClick={() => updateQty(key, -1)}
                   disabled={qty <= 1}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-dk-bg transition-colors disabled:opacity-40"
+                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
                   style={{ borderColor: "var(--border)", color: "var(--text)" }}
                   aria-label="کاهش تعداد"
                 >

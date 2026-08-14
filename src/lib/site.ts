@@ -11,12 +11,6 @@ export const FOOTER_LINKS: {
   links: { label: string; href: string }[];
 }[] = [
   {
-    title: "ارتباط با ما",
-    links: [
-      { label: "ارسال ایمیل", href: "mailto:nima.hasani.dev@gmail.com" },
-    ],
-  },
-  {
     title: "با دیجی‌کلون",
     links: [
       { label: "درباره دیجی‌کلون", href: "/about" },

@@ -2,8 +2,20 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, isHashedPassword, verifyPassword } from "@/lib/password";
 import { signAuthToken } from "@/lib/auth";
+import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  // محدودیت: ۱۰ تلاش ناموفق احتمالی در هر ۱۵ دقیقه به ازای هر IP
+  const rl = rateLimit(ipKey(request), { limit: 20, windowMs: 15 * 60 * 1000 });
+  if (!rl.ok) {
+    return Response.json(
+      { success: false, error: "تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((rl.retryAfterMs ?? 0) / 1000)) },
+      },
+    );
+  }
   try {
     const body = await request.json();
     const { identifier, password } = body;
@@ -24,17 +36,20 @@ export async function POST(request: NextRequest) {
       user = await prisma.user.findUnique({ where: { email: identifierStr } });
     }
 
-    if (!user) {
-      return Response.json({ success: false, error: "کاربری با این اطلاعات پیدا نشد" }, { status: 404 });
-    }
+    // چک رمز عبور — پاسخ برای «کاربر ناموجود» و «رمز اشتباه» یکسان است
+    // تا مهاجم نتواند بفهمد کدام ایمیل/شماره ثبت شده (ضد user enumeration)
+    const badCredentials = () =>
+      Response.json(
+        { success: false, error: "ایمیل/شماره موبایل یا رمز عبور اشتباه است" },
+        { status: 401 },
+      );
 
-    // چک رمز عبور
-    if (!user.password) {
-      return Response.json({ success: false, error: "رمز عبور اشتباه است" }, { status: 401 });
+    if (!user || !user.password) {
+      return badCredentials();
     }
     const passwordOk = await verifyPassword(password, user.password);
     if (!passwordOk) {
-      return Response.json({ success: false, error: "رمز عبور اشتباه است" }, { status: 401 });
+      return badCredentials();
     }
 
     // ارتقای رمزهای متنی قدیمی به هش در اولین ورود موفق

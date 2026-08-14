@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { signAuthToken } from "@/lib/auth";
+import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 // اعتبارسنجی رمز عبور: حداقل 6 کاراکتر، شامل یک حرف بزرگ و کاراکتر خاص
 function validatePassword(password: string): string | null {
@@ -13,6 +14,14 @@ function validatePassword(password: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  // محدودیت ثبت‌نام: ۱۰ درخواست در هر ساعت به ازای هر IP (ضد ثبت‌نام انبوه)
+  const rl = rateLimit(ipKey(request), { limit: 10, windowMs: 60 * 60 * 1000 });
+  if (!rl.ok) {
+    return Response.json(
+      { success: false, error: "تعداد ثبت‌نام‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
+      { status: 429 },
+    );
+  }
   try {
     const body = await request.json();
     const { name, email, phone, password } = body;

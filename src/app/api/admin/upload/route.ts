@@ -31,6 +31,25 @@ export async function POST(request: Request) {
   if (!isVideo && !isImage) {
     return NextResponse.json({ error: "file must be an image or video" }, { status: 400 });
   }
+
+  // بلاک SVG: قابلیت اجرای اسکریپت داخل آن = خطر XSS
+  // (بعد از تبدیل به WebP توسط sharp، خروجی امن است ولی ورودی خام را قبول نمی‌کنیم)
+  const isSvg = file.type === "image/svg+xml" || /\.[sS][vV][gG]$/.test(file.name);
+  if (isSvg) {
+    return NextResponse.json({ error: "SVG files are not allowed" }, { status: 400 });
+  }
+
+  // بررسی magic bytes برای اطمینان از اینکه نوع فایل با محتوای واقعی هم‌خوانی دارد
+  // (جلوگیری از آپلود فایل‌های جعلی با پسوند/نوع دستکاری‌شده)
+  const header = Buffer.from(await file.slice(0, 16).arrayBuffer());
+  const looksLikeImage = isImage && looksLikeImageBytes(header);
+  const looksLikeVideo = isVideo && looksLikeVideoBytes(header);
+  if ((isImage && !looksLikeImage) || (isVideo && !looksLikeVideo)) {
+    return NextResponse.json(
+      { error: "file content does not match its type" },
+      { status: 400 },
+    );
+  }
   const sizeLimit = isVideo ? MAX_VIDEO_SIZE : MAX_FILE_SIZE;
   if (file.size > sizeLimit) {
     return NextResponse.json(
@@ -40,6 +59,30 @@ export async function POST(request: Request) {
   }
 
   const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_").replace(/\.[^.]+$/, "");
+
+  // helperها برای تشخیص magic bytes
+  function looksLikeImageBytes(buf: Buffer): boolean {
+    // JPEG, PNG, GIF, WebP, BMP, TIFF, AVIF (heic/heif)
+    return (
+      (buf[0] === 0xff && buf[1] === 0xd8) || // JPEG
+      (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) || // PNG
+      (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) || // GIF
+      (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) || // RIFF (WebP)
+      (buf[0] === 0x42 && buf[1] === 0x4d) || // BMP
+      (buf[0] === 0x49 && buf[1] === 0x49 && buf[2] === 0x2a && buf[3] === 0x00) || // TIFF little
+      (buf[0] === 0x4d && buf[1] === 0x4d && buf[2] === 0x00 && buf[3] === 0x2a) || // TIFF big
+      (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70 &&
+        (buf[8] === 0x61 && buf[9] === 0x76 && buf[10] === 0x69 && buf[11] === 0x66)) // ftypavif
+    );
+  }
+
+  function looksLikeVideoBytes(buf: Buffer): boolean {
+    // MP4/MOV (ftyp), WebM/MKV (EBML 1A45DFA3)
+    return (
+      (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) || // ftyp
+      (buf[0] === 0x1a && buf[1] === 0x45 && buf[2] === 0xdf && buf[3] === 0xa3) // EBML
+    );
+  }
 
   // ویدئو: بدون بهینه‌سازی (فرمت و کیفیت حفظ می‌شود) — فقط در پوشه videos ذخیره می‌شود
   if (isVideo) {

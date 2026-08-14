@@ -2,16 +2,29 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleBotMessage } from "@/lib/support-bot";
 import type { BotContext } from "@/lib/support-bot";
+import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 type StoredMessage = { from: "user" | "bot"; text: string; at: string };
 
 const MAX_HISTORY = 60;
+const MAX_MESSAGE_LENGTH = 500;
 
 export async function POST(request: NextRequest) {
+  // محدودیت: ۳۰ پیام در هر ۲ دقیقه به ازای هر IP (ضد اسپم ربات)
+  const rl = rateLimit(ipKey(request), { limit: 30, windowMs: 2 * 60 * 1000 });
+  if (!rl.ok) {
+    return Response.json(
+      { success: false, error: "تعداد پیام‌ها بیش از حد مجاز است. کمی صبر کنید." },
+      { status: 429 },
+    );
+  }
   try {
     const body = await request.json();
-    const message = typeof body?.message === "string" ? body.message : "";
+    const rawMessage = typeof body?.message === "string" ? body.message : "";
     const sessionId = typeof body?.sessionId === "string" ? body.sessionId : "";
+
+    // محدودیت طول پیام (ضد ارسال داده‌ی سنگین)
+    const message = rawMessage.slice(0, MAX_MESSAGE_LENGTH);
 
     if (!message.trim()) {
       return Response.json({ success: false, error: "پیام خالی است" }, { status: 400 });

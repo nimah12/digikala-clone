@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { verifyResetToken } from "@/lib/reset-token";
+import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 function validatePassword(password: string): string | null {
   if (password.length < 6) return "رمز عبور باید حداقل ۶ کاراکتر باشد.";
@@ -12,6 +13,14 @@ function validatePassword(password: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  // محدودیت: ۱۰ تلاش برای اعمال رمز جدید در هر ۱۵ دقیقه (ضد حدس‌زنی توکن)
+  const rl = rateLimit(ipKey(request), { limit: 10, windowMs: 15 * 60 * 1000 });
+  if (!rl.ok) {
+    return Response.json(
+      { success: false, error: "تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
+      { status: 429 },
+    );
+  }
   try {
     const body = await request.json();
     const { token, password } = body;

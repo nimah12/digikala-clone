@@ -15,7 +15,7 @@ const BRANDS: {
     name: "اپل",
     slug: "apple",
     q: "iphone",
-    icon: "apple",
+    icon: "monitor",
     color: "#e8f0f9",
   },
   {

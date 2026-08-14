@@ -12,237 +12,92 @@
 <h1 align="center">دیجی‌کلون | DigiClone</h1>
 
 <p align="center">
-  <b>یک فروشگاه اینترنتی کامل، فارسی و راست‌چین به سبک دیجی‌کالا</b><br/>
+  <b>یک فروشگاه اینترنتی کامل و فارسی با رابط کاربری راست‌چین، الهام‌گرفته از دیجی‌کالا</b><br/>
   <i>A full-featured Persian RTL e-commerce platform inspired by Digikala</i>
 </p>
 
----
+<div align="center">
 
-# English
+[![Demo (Vercel)](https://img.shields.io/badge/دمو%20–%20Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://digikala-clone-nine.vercel.app)
+[![Demo (Netlify)](https://img.shields.io/badge/دمو%20–%20Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://digicl0ne.netlify.app)
 
-**DigiClone** is a production-grade e-commerce web application built with the **Next.js App Router**, **React 19**, and **TypeScript**. It features a fully Persian, RTL interface styled like Digikala, with a complete product catalog, mega-menu navigation, cart & checkout, user accounts, order tracking, reviews, vendor listings, notifications, and a blog — all backed by **PostgreSQL** via **Prisma**.
-
-## ✨ Features
-
-- **Product catalog** — 1,031 seeded products across 20 categories with images, pricing, discounts, ratings and sales counts
-- **Rich catalog** — every product ships with a full Persian description (intro + specs + warranty/shipping), and every mega-menu subcategory lists 12+ products
-- **Advanced search** — searches product names *and* category names (`/search?q=`)
-- **Curated collections** — dedicated `/deals`, `/bestsellers`, `/newest` listing pages
-- **Digikala-style mega menu** — two-panel group + subcategory navigation with hover interaction
-- **Responsive design** — mobile drawer menu, adaptive grids, sticky header
-- **Shopping experience** — cart (localStorage-backed), multi-step checkout, orders & dashboard
-- **Province & city selector** — searchable Persian province/city dropdown for the receiver info (31 provinces, alphabetically sorted)
-- **Smart checkout** — free shipping to Tehran & Alborz, delivery day/time picker, and one-click reuse of your previous receiver info
-- **Demo payment gateway** — a simulated SADAD / Shaparak-style checkout with a 5-digit security captcha (no real transactions)
-- **Live order tracking** — a graphical 3-hour timeline with status derived from the order time, a ×60 demo speed-up, and a dedicated `/orders/[id]` detail page
-- **User accounts** — register / login / logout, profile, order history, password reset
-- **Product detail pages** — reviews with ratings, vendor (seller) comparisons
-- **Notifications** — functional in-app notification center + bell with unread badges; order notifications link straight to order tracking
-- **Blog** — Persian articles with detail pages
-- **RTL & Persian typography** — Vazirmatn font, full Persian localization
-- **Dark / light themes** — persisted, flash-free switching
-- **Info & support pages** — FAQ, shipping, returns, payment, contact, about, 24/7 support chat with quick replies
-
-## 🛠 Tech Stack
-
-| Layer        | Technology                                    |
-| ------------ | --------------------------------------------- |
-| Framework    | Next.js 16 (App Router, Server Components)    |
-| UI           | React 19, Tailwind CSS v4                     |
-| Language     | TypeScript                                    |
-| Database     | PostgreSQL                                    |
-| ORM          | Prisma 7 (with `@prisma/adapter-pg`)          |
-| Fonts        | Vazirmatn (via `next/font`)                   |
-| Deployment   | Vercel-ready (`vercel.json`)                  |
-| Testing      | Vitest, React Testing Library, Playwright      |
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Node.js** 20+
-- **PostgreSQL** 14+ running locally (or a hosted instance)
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Configure environment
-
-Create a `.env` file from the template:
-
-```bash
-cp .env.example .env
-```
-
-Set the required variables:
-
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/digikala"
-```
-
-### 3. Set up the database
-
-Apply migrations and generate the Prisma client:
-
-```bash
-npx prisma migrate deploy
-npx prisma generate
-```
-
-### 4. Seed the database (optional)
-
-Loads 1,031 products, 20 categories, vendors, reviews and full Persian product descriptions:
-
-```bash
-npx prisma db seed
-```
-
-### 5. Run the app
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## 📂 Project Structure
-
-```
-src/
-├── app/                  # App Router: pages, layouts, route handlers
-│   ├── api/              # REST API (register, login, orders, search, ...)
-│   ├── product/[slug]/   # Product detail
-│   ├── category/[slug]/  # Category listing
-│   ├── deals/            # Discounts collection
-│   ├── bestsellers/      # Best sellers collection
-│   ├── newest/           # New arrivals collection
-│   ├── cart/             # Shopping cart
-│   ├── checkout/         # Checkout flow
-│   ├── orders/           # Order history & graphical detail (/orders/[id])
-│   ├── track-order/      # Order tracking timeline
-│   ├── dashboard/        # User dashboard
-│   ├── articles/         # Blog
-│   └── ...               # Static info pages (FAQ, shipping, contact, ...)
-├── components/           # Reusable UI (Header, ProductCard, Footer, ...)
-├── lib/                  # Utilities: prisma, cart, theme, categories, actions
-prisma/
-├── schema.prisma         # Data model
-├── migrations/           # Versioned SQL migrations
-└── seed/                 # Database seeding scripts
-scripts/                  # Asset generation & dev utilities
-public/images/products/   # Product images (SVG)
-archive/patches/          # Historical dev patches (no longer applied)
-```
-
-## 🔌 API Routes
-
-| Method | Route                    | Description                        |
-| ------ | ------------------------ | ---------------------------------- |
-| POST   | `/api/register`          | Create a user account              |
-| POST   | `/api/login`             | Authenticate a user                |
-| POST   | `/api/forgot-password`   | Request a password reset           |
-| GET    | `/api/products`          | List products (queryable)          |
-| GET    | `/api/search`            | Search products & categories       |
-| GET    | `/api/orders`            | List orders for the current user   |
-| POST   | `/api/orders`            | Create an order                    |
-| POST   | `/api/reviews`           | Submit a product review / rating   |
-| GET    | `/api/notifications`     | Fetch notifications                |
-
-## 📦 Available Scripts
-
-| Command                | Description                      |
-| ---------------------- | -------------------------------- |
-| `npm run dev`          | Start the development server     |
-| `npm run build`        | Production build                 |
-| `npm start`            | Run the production build         |
-| `npm run lint`         | Run ESLint                       |
-| `npm test`            | Run unit & component tests (Vitest) |
-| `npm run test:e2e`    | Run end-to-end tests (Playwright) |
-| `npx prisma studio`    | Browse the database in the browser |
-
-## 🧪 Testing
-
-The project has a comprehensive test suite with **55 tests** across unit, component, and end-to-end layers:
-
-```bash
-npm test           # Run 46 unit/component tests
-npm run test:e2e   # Run 9 E2E tests against the live site
-```
-
-| Layer             | Tool           | What's covered                                           |
-| ----------------- | -------------- | -------------------------------------------------------- |
-| Unit tests        | Vitest         | Format functions, Persian normalization, HMAC auth, password hashing, provinces data |
-| Component tests   | Vitest + RTL   | Rating, PriceBadge, ProductCard, AddToCartButton         |
-| Integration tests | Vitest         | Shipping logic, order timeline, cart localStorage        |
-| E2E tests         | Playwright     | Homepage, search flow, product → cart, category pages    |
-
-## ☁️ Deployment
-
-The repo ships with a `vercel.json` that wires the full build pipeline
-(`prisma migrate deploy → prisma generate → next build`), so it deploys to
-**Vercel** out of the box — just connect your repo and add the `DATABASE_URL`
-environment variable.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/your-feature`)
-3. Commit your changes
-4. Push and open a Pull Request
-
-## 📄 License
-
-This project is released under the **MIT License** — see the [LICENSE](LICENSE) file.
+</div>
 
 ---
 
-# فارسی
+## درباره پروژه
 
-**دیجی‌کلون** یک فروشگاه اینترنتی کامل است که با **Next.js App Router**، **React 19** و **TypeScript** ساخته شده. رابط کاربری کاملاً فارسی و راست‌چین با ظاهری الهام‌گرفته از دیجی‌کالا دارد و شامل کاتالوگ کامل محصولات، منوی مگا، سبد خرید و تسویه، حساب کاربری، پیگیری سفارش، دیدگاه‌ها، فروشنده‌ها، اعلان‌ها و وبلاگ است. دیتابیس پروژه **PostgreSQL** است و از طریق **Prisma** مدیریت می‌شود.
+**دیجی‌کلون** یک پروژه نمونه‌کار (portfolio) کامل و «پروداکشن‌گرید» است که با **Next.js 16 (App Router)**، **React 19** و **TypeScript** ساخته شده و یک فروشگاه اینترنتی تمام‌فارسی و راست‌چین را شبیه‌سازی می‌کند؛ از کاتالوگ محصولات و مگامنو گرفته تا سبد خرید، تسویه چندمرحله‌ای، پیگیری سفارش، دیدگاه‌ها و پنل مدیریت کامل.
 
-## ✨ امکانات
+این پروژه برای نشان دادن توانایی در **معماری وب مدرن، امنیت، تست‌نویسی و دیپلوی** طراحی شده است.
 
-- **کاتالوگ محصولات** — ۱٬۰۳۱ محصول سیدشده در ۲۰ دسته‌بندی با تصویر، قیمت، تخفیف، امتیاز و تعداد فروش
-- **کاتالوگ غنی** — همه محصولات دارای توضیح فارسی کامل (معرفی + ویژگی + ضمانت/ارسال) هستند و هر شاخه از منوی دسته‌بندی حداقل ۱۲ محصول دارد
-- **جستجوی پیشرفته** — جستجو در نام محصول *و* نام دسته‌بندی (`/search?q=`)
-- **مجموعه‌های ویژه** — صفحات اختصاصی `/deals` (تخفیف‌دار)، `/bestsellers` (پرفروش‌ترین) و `/newest` (جدیدترین)
-- **مگامنو به سبک دیجی‌کالا** — پنل دوتایی گروه‌ها و زیردسته‌ها با تعامل هاور
-- **طراحی واکنش‌گرا** — منوی کشویی موبایل، گریدهای تطبیق‌پذیر، هدر چسبان
-- **تجربه خرید** — سبد خرید (ذخیره در localStorage)، تسویه حساب چندمرحله‌ای، سفارش‌ها و داشبورد
-- **انتخابگر استان و شهرستان** — دراپ‌داون جستجوپذیر فارسی برای اطلاعات گیرنده (۳۱ استان، مرتب‌شده به ترتیب الفبا)
-- **تسویه هوشمند** — ارسال رایگان به استان‌های تهران و البرز، انتخاب روز و بازه تحویل، و استفاده یک‌کلیکی از اطلاعات گیرنده سفارش قبلی
-- **درگاه پرداخت نمایشی** — درگاه شبیه‌سازی‌شده سداد / شاپرک با کپچای امنیتی ۵ رقمی (بدون تراکنش واقعی)
-- **پیگیری زنده سفارش** — تایم‌لاین گرافیکی ۳ ساعته با وضعیت محاسبه‌شده از زمان ثبت سفارش، دکمه تسریع دمو ×۶۰ و صفحه جزئیات اختصاصی `/orders/[id]`
-- **حساب کاربری** — ثبت‌نام / ورود / خروج، پروفایل، تاریخچه سفارش‌ها، بازیابی رمز عبور
-- **صفحات محصول** — دیدگاه‌ها با امتیازدهی و مقایسه فروشنده‌ها
-- **اعلان‌ها** — مرکز اعلان درون‌برنامه‌ای + زنگوله با نشانگر پیام‌های نخوانده؛ اعلان سفارش با کلیک مستقیم به صفحه پیگیری همان سفارش می‌رود
-- **وبلاگ** — مقالات فارسی با صفحه جزئیات
-- **راست‌چین و فارسی** — فونت وزیرمتن و بومی‌سازی کامل
-- **حالت شب / روز** — پایدار، بدون فلش هنگام جابه‌جایی
-- **صفحات اطلاعاتی و پشتیبانی** — سوالات متداول، ارسال، بازگشت کالا، پرداخت، تماس، درباره ما، چت پشتیبانی ۲۴ ساعته با پاسخ‌های سریع
+## امکانات
 
-## 🛠 تکنولوژی‌ها
+### فروشگاه
+- **کاتالوگ محصولات** — بیش از ۱٬۰۰۰ محصول در ۱۱۶ دسته و زیردسته با تصویر، قیمت، تخفیف، امتیاز و تعداد فروش
+- **مگامنوی داینامیک** — ساختار گروه/دسته/زیردسته از دیتابیس خوانده می‌شود و از طریق پنل مدیریت قابل ویرایش است
+- **جستجوی پیشرفته** — جستجوی نام محصول و دسته با نرمال‌سازی فارسی (`/search?q=`)
+- **صفحات مجموعه** — `/deals` (تخفیف‌ها)، `/bestsellers` (پرفروش‌ها)، `/newest` (جدیدترین)
+- **صفحه طلای لحظه‌ای** — قیمت لحظه‌ای طلا و سکه با API ناواسان + کش
+- **بلاگ فارسی** — مقاله با صفحه جزئیات و بلوک‌های محتوایی
 
-| لایه         | فناوری                                     |
-| ------------ | ------------------------------------------ |
-| فریم‌ورک     | Next.js 16 (App Router، کامپوننت سرور)     |
-| رابط کاربری  | React 19، Tailwind CSS v4                   |
-| زبان         | TypeScript                                 |
-| دیتابیس      | PostgreSQL                                 |
-| ORM          | Prisma 7 (با `@prisma/adapter-pg`)          |
-| فونت         | وزیرمتن (از طریق `next/font`)              |
-| استقرار      | آماده Vercel (`vercel.json`)               |
-| تست         | Vitest، React Testing Library، Playwright    |
+### خرید
+- **سبد خرید** — مبتنی بر localStorage با مدیریت رنگ/سایز/فروشنده
+- **تسویه چندمرحله‌ای** — انتخاب استان و شهر فارسی (۳۱ استان)، زمان تحویل، استفاده از اطلاعات قبلی گیرنده
+- **پرداخت نمایشی** — شبیه‌ساز درگاه پرداخت (بدون تراکنش واقعی)
+- **پیگیری سفارش** — تایم‌لاین گرافیکی سه‌ساعته با صفحه `/orders/[id]`
+- **دیدگاه و امتیاز** — فقط خریداران سفارش تحویل‌شده می‌توانند دیدگاه ثبت کنند (پیشگیری از نظر جعلی)
 
-## 🚀 شروع کار
+### حساب کاربری
+- ثبت‌نام / ورود / خروج، پروفایل، تاریخچه سفارش‌ها
+- بازیابی رمز عبور با ایمیل (Resend)
+- **قفل امنیتی سمت سرور** — پس از ۵ تلاش ناموفق، حساب به‌مدت ۶۰ ثانیه قفل می‌شود (حتی با رمز درست)
+
+### پنل مدیریت `/admin`
+- داشبورد آمار، مدیریت محصولات (ویرایش، رنگ‌ها، سایزها، فروشندگان، گالری، دیدگاه‌ها، انتقال محصول)
+- مدیریت دسته‌بندی و ساختار مگامنو (گروه‌ها/دسته‌ها/زیردسته‌ها)
+- مدیریت سفارش‌ها (تأیید، وضعیت، کسر موجودی)، کاربران، تیکت‌های پشتیبانی، مقالات
+- آپلود تصویر/ویدئو با بهینه‌سازی sharp و ذخیره در Vercel Blob
+
+### رابط کاربری
+- کاملاً فارسی و راست‌چین با فونت وزیرمتن
+- تم تیره/روشن بدون فلش هنگام بارگذاری
+- چت پشتیبانی ۲۴/۷ با پاسخ‌های سریع
+- طراحی ریسپانسیو کامل (موبایل، تبلت، دسکتاپ)
+
+## امنیت
+
+- رمزنگاری رمز عبور با **scrypt + salt** و مقایسه timing-safe
+- توکن‌های احراز هویت **HMAC-SHA256** با انقضای ۳۰ روزه
+- **قفل سمت سرور** به‌ازای حساب پس از تلاش‌های ناموفق
+- محدودیت نرخ (rate limiting) به‌ازای IP در همه endpoint های حساس
+- محافظت در برابر user enumeration (پاسخ یکسان برای ایمیل ناموجود و رمز اشتباه)
+- آپلود امن: بررسی magic bytes، مسدودسازی SVG، بهینه‌سازی و تبدیل به WebP
+- هدرهای امنیتی و **CSP** روی همه مسیرها
+- `npm audit` : **۰ آسیب‌پذیری**
+
+## تکنولوژی‌ها
+
+| لایه | تکنولوژی |
+| ------------ | ------------------------------------------- |
+| فریم‌ورک | Next.js 16 (App Router، Server Components) |
+| رابط کاربری | React 19، Tailwind CSS v4 |
+| زبان | TypeScript |
+| دیتابیس | PostgreSQL (Neon) |
+| ORM | Prisma 7 (`@prisma/adapter-pg`) |
+| احراز هویت | HMAC-SHA256 (دستی، بدون وابستگی خارجی) |
+| ایمیل | Resend |
+| فایل | Vercel Blob + sharp |
+| فونت | Vazirmatn (via `next/font`) |
+| تست | Vitest، React Testing Library، Playwright |
+| دیپلوی | Vercel و Netlify |
+
+## شروع کار
 
 ### پیش‌نیازها
 
-- **Node.js** 20 به بالا
-- **PostgreSQL** 14 به بالا (محلی یا ابری)
+- **Node.js** 20+
+- **PostgreSQL** 14+ (لوکال یا ابری مثل Neon)
 
 ### ۱. نصب وابستگی‌ها
 
@@ -250,32 +105,30 @@ This project is released under the **MIT License** — see the [LICENSE](LICENSE
 npm install
 ```
 
-### ۲. پیکربندی متغیر محیطی
+### ۲. تنظیم محیط
 
-فایل `.env` را از روی قالب بسازید:
+از روی الگو یک فایل `.env` بسازید:
 
 ```bash
 cp .env.example .env
 ```
 
-و متغیرهای لازم را تنظیم کنید:
+متغیرهای لازم:
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/digikala"
+AUTH_SECRET="یک-مقدار-تصادفی-طولانی"
+SYNC_SECRET="یک-مقدار-تصادفی-طولانی"
 ```
 
 ### ۳. راه‌اندازی دیتابیس
-
-اجرای مایگریشن‌ها و تولید کلاینت Prisma:
 
 ```bash
 npx prisma migrate deploy
 npx prisma generate
 ```
 
-### ۴. سید دیتابیس (اختیاری)
-
-بارگذاری ۱٬۰۳۱ محصول، ۲۰ دسته‌بندی، فروشنده‌ها، دیدگاه‌ها و توضیحات فارسی محصولات:
+### ۴. بارگذاری داده اولیه (اختیاری)
 
 ```bash
 npx prisma db seed
@@ -287,93 +140,65 @@ npx prisma db seed
 npm run dev
 ```
 
-سپس [http://localhost:3000](http://localhost:3000) را باز کنید.
+برنامه روی [http://localhost:3000](http://localhost:3000) در دسترس است.
 
-## 📂 ساختار پروژه
+## ساختار پروژه
 
 ```
 src/
-├── app/                  # App Router: صفحات، لی‌اوت، route handler ها
-│   ├── api/              # REST API (ثبت‌نام، ورود، سفارش‌ها، جستجو، ...)
-│   ├── product/[slug]/   # جزئیات محصول
-│   ├── category/[slug]/  # لیست دسته‌بندی
-│   ├── deals/            # مجموعه تخفیف‌دارها
-│   ├── bestsellers/      # مجموعه پرفروش‌ترین‌ها
-│   ├── newest/           # مجموعه جدیدترین‌ها
-│   ├── cart/             # سبد خرید
-│   ├── checkout/         # فرآیند تسویه حساب
-│   ├── orders/           # تاریخچه سفارش‌ها و جزئیات گرافیکی (/orders/[id])
-│   ├── track-order/      # تایم‌لاین پیگیری سفارش
-│   ├── dashboard/        # داشبورد کاربر
-│   ├── articles/         # وبلاگ
-│   └── ...               # صفحات اطلاعاتی (سوالات متداول، ارسال، تماس، ...)
-├── components/           # کامپوننت‌های قابل استفاده (Header، ProductCard، Footer، ...)
-├── lib/                  # ابزارها: prisma، سبد خرید، تم، دسته‌بندی، actions
+├── app/                  # App Router: صفحات، چیدمان‌ها، route handler ها
+│   ├── api/              # REST API (register, login, orders, search, admin/...)
+│   ├── admin/            # پنل مدیریت
+│   ├── product/[slug]/   # صفحه محصول
+│   ├── category/[slug]/  # صفحه دسته
+│   ├── orders/           # تاریخچه و جزئیات سفارش
+│   └── ...               # صفحات اطلاعاتی (FAQ، تماس، قوانین و...)
+├── components/           # کامپوننت‌های قابل استفاده مجدد
+└── lib/                  # ابزارها: prisma, auth, password, rate-limit, ...
 prisma/
 ├── schema.prisma         # مدل داده
-├── migrations/           # مایگریشن‌های SQL نسخه‌بندی‌شده
-└── seed/                 # اسکریپت‌های سید دیتابیس
-scripts/                  # ابزارهای تولید Asset و توسعه
-public/images/products/   # تصاویر محصولات (SVG)
-archive/patches/          # پچ‌های قدیمی توسعه (دیگر اعمال نمی‌شوند)
+├── migrations/           # مهاجرت‌های نسخه‌بندی‌شده
+└── seed/                 # اسکریپت‌های داده اولیه
+public/images/products/   # تصاویر محصولات
 ```
 
-## 🔌 مسیرهای API
+## اسکریپت‌ها
 
-| متد   | مسیر                      | توضیح                              |
-| ----- | ------------------------- | ---------------------------------- |
-| POST  | `/api/register`           | ساخت حساب کاربری                    |
-| POST  | `/api/login`              | احراز هویت کاربر                    |
-| POST  | `/api/forgot-password`    | درخواست بازیابی رمز عبور            |
-| GET   | `/api/products`           | فهرست محصولات (با امکان فیلتر)      |
-| GET   | `/api/search`             | جستجوی محصولات و دسته‌بندی‌ها       |
-| GET   | `/api/orders`             | سفارش‌های کاربر جاری                |
-| POST  | `/api/orders`             | ثبت سفارش جدید                      |
-| POST  | `/api/reviews`            | ثبت دیدگاه و امتیاز محصول           |
-| GET   | `/api/notifications`      | دریافت اعلان‌ها                      |
+| فرمان | توضیح |
+| ---------------------- | --------------------------------- |
+| `npm run dev` | اجرای سرور توسعه |
+| `npm run build` | ساخت نسخه تولید (با `prisma generate`) |
+| `npm start` | اجرای نسخه تولید |
+| `npm run lint` | اجرای ESLint |
+| `npm test` | اجرای تست‌های واحد و کامپوننت (Vitest) |
+| `npm run test:e2e` | اجرای تست‌های E2E (Playwright) |
+| `npx prisma studio` | مرور دیتابیس در مرورگر |
 
-## 📦 اسکریپت‌ها
+## تست‌ها
 
-| فرمان                 | توضیح                                   |
-| --------------------- | -------------------------------------- |
-| `npm run dev`         | اجرای سرور توسعه                        |
-| `npm run build`       | بیلد نسخه تولید                          |
-| `npm start`           | اجرای نسخه تولید                        |
-| `npm run lint`        | اجرای ESLint                            |
-| `npm test`           | اجرای تست‌های یونیت/کامپوننت (Vitest)  |
-| `npm run test:e2e`   | اجرای تست‌های E2E روی سایت لایو (Playwright) |
-| `npx prisma studio`   | مشاهده دیتابیس در مرورگر                |
-
-## 🧪 تست‌ها
-
-پروژه دارای مجموعه تست جامعی با **۵۵ تست** در سه لایه یونیت، کامپوننت و E2E است:
+پروژه **۱۳۵ تست** در ۲۲ فایل دارد که همه سبز هستند:
 
 ```bash
-npm test           # اجرای ۴۶ تست یونیت/کامپوننت
-npm run test:e2e   # اجرای ۹ تست E2E روی سایت لایو
+npm test
 ```
 
-| لایه              | ابزار          | چه چیزی پوشش داده می‌شود                                    |
-| ----------------- | -------------- | ---------------------------------------------------------- |
-| تست‌های یونیت     | Vitest         | توابع فرمت، نرمال‌سازی فارسی، امضای HMAC، هش رمز، داده استان‌ها |
-| تست‌های کامپوننت  | Vitest + RTL   | Rating، PriceBadge، ProductCard، AddToCartButton           |
-| تست‌های یکپارچه   | Vitest         | منطق ارسال، تایم‌لاین سفارش، localStorage سبد خرید        |
-| تست‌های E2E       | Playwright     | صفحه اصلی، جستجو، محصول → سبد، صفحات دسته‌بندی           |
+| لایه | ابزار | پوشش |
+| ----------------- | -------------- | -------------------------------------------------- |
+| تست واحد | Vitest | توابع قالب‌بندی، نرمال‌سازی فارسی، HMAC auth، هش رمز، قفل ورود، نرخ محدودیت |
+| تست کامپوننت | Vitest + RTL | Rating، PriceBadge، ProductCard، CheckoutForm |
+| تست یکپارچه‌سازی | Vitest | منطق حمل‌ونقل، تایم‌لاین سفارش، سبد خرید localStorage |
+| E2E | Playwright | صفحه اصلی، جستجو، محصول ← سبد، صفحات دسته |
 
-## ☁️ استقرار
+## دیپلوی
 
-پروژه با `vercel.json` عرضه شده که کل مراحل بیلد
-(`prisma migrate deploy → prisma generate → next build`) را خودکار انجام می‌دهد،
-پس بدون تغییر خاصی روی **Vercel** مستقر می‌شود — فقط ریپو را متصل و متغیر
-`DATABASE_URL` را تنظیم کنید.
+پروژه با `vercel.json` آماده دیپلوی است — build pipeline شامل
+`prisma migrate deploy → prisma generate → next build` می‌شود. کافی است ریپو را به **Vercel**
+وصل کنید و `DATABASE_URL` را به‌عنوان environment variable تنظیم کنید.
 
-## 🤝 مشارکت
+نمونه‌های زنده:
+- [Vercel](https://digikala-clone-nine.vercel.app)
+- [Netlify](https://digicl0ne.netlify.app)
 
-1. ریپو را فورک کنید
-2. یک برنچ بسازید (`git checkout -b feat/your-feature`)
-3. تغییرات را کامیت کنید
-4. پوش کنید و یک Pull Request باز کنید
+## لایسنس
 
-## 📄 لایسنس
-
-این پروژه تحت **لایسنس MIT** منتشر می‌شود — فایل [LICENSE](LICENSE) را ببینید.
+این پروژه تحت **لایسنس MIT** منتشر شده است — برای جزئیات به [LICENSE](LICENSE) مراجعه کنید.

@@ -12,11 +12,11 @@ export default function Footer() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-0">
           {FOOTER_LINKS.map((col, i) => (
             <div
               key={col.title}
-              className={i > 0 ? "md:border-s" : undefined}
+              className={`md:px-6 ${i > 0 ? "md:border-s" : ""}`}
               style={i > 0 ? { borderColor: "var(--border)" } : undefined}
             >
               <h3 className="text-sm font-bold mb-3">{col.title}</h3>
@@ -35,7 +35,7 @@ export default function Footer() {
               </ul>
             </div>
           ))}
-          <div className="md:border-s" style={{ borderColor: "var(--border)" }}>
+          <div className="md:px-6 md:border-s" style={{ borderColor: "var(--border)" }}>
             <h3 className="text-sm font-bold mb-3">
               فروشگاه اینترنتی دیجی‌کلون
             </h3>

@@ -10,6 +10,7 @@ export type Article = {
   readTime: string;
   productSlugs: string[];
   content?: string;
+  contentBlocks?: { type: "p" | "img" | "video"; text?: string; src?: string }[] | null;
 };
 
 export type ArticleInput = Omit<Article, "id"> & { id: string };
@@ -130,6 +131,7 @@ export async function getArticles(): Promise<Article[]> {
     readTime: a.readTime,
     productSlugs: (a.productSlugs as string[]) ?? [],
     content: a.content,
+    contentBlocks: a.contentBlocks as Article["contentBlocks"],
   }));
 }
 
@@ -147,5 +149,6 @@ export async function getArticle(id: string): Promise<Article | null> {
     readTime: a.readTime,
     productSlugs: (a.productSlugs as string[]) ?? [],
     content: a.content,
+    contentBlocks: a.contentBlocks as Article["contentBlocks"],
   };
 }

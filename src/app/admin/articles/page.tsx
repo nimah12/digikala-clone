@@ -12,9 +12,28 @@ type Article = {
   image: string;
   readTime: string;
   content: string;
+  contentBlocks?: ContentBlock[] | null;
   productSlugs: string[];
   published: boolean;
 };
+
+// بلاک چیدمان مقاله — پاراگراف، تصویر یا ویدئو بین متن
+type ContentBlock =
+  | { type: "p"; text: string }
+  | { type: "img"; src: string }
+  | { type: "video"; src: string };
+
+// نسخه داخلی ویرایشگر — با شناسه پایدار برای مدیریت درست contentEditable و جابه‌جایی
+type EditorBlock = ContentBlock & { uid: string };
+
+function withUid(b: ContentBlock): EditorBlock {
+  return { ...b, uid: crypto.randomUUID ? crypto.randomUUID() : `b-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+}
+
+function stripUid(b: EditorBlock): ContentBlock {
+  const { uid: _uid, ...rest } = b;
+  return rest as ContentBlock;
+}
 
 const EMPTY: Article = {
   id: "",
@@ -227,6 +246,15 @@ type PickedProduct = {
   price: number;
 };
 
+// تبدیل متن ساده (پاراگراف‌های جدا با خط خالی) به بلاک‌ها
+function plainToBlocks(content: string): ContentBlock[] {
+  return content
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => ({ type: "p" as const, text: p }));
+}
+
 function ArticleForm({
   article,
   saving,
@@ -244,7 +272,21 @@ function ArticleForm({
 }) {
   const [form, setForm] = useState<Article>(article);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [blocks, setBlocks] = useState<EditorBlock[]>(
+    (article.contentBlocks && article.contentBlocks.length > 0
+      ? article.contentBlocks
+      : plainToBlocks(article.content || "")
+    ).map(withUid),
+  );
+  const [uploadingBlockImage, setUploadingBlockImage] = useState(false);
+  const [uploadingBlockVideo, setUploadingBlockVideo] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const blockFileRef = useRef<HTMLInputElement>(null);
+  const blockVideoRef = useRef<HTMLInputElement>(null);
+  // هدف تعویض رسانه: وقتی نوار ابزار یک تصویر/ویدئو را «جایگزین» می‌کند، این uid مشخص می‌کند کدام بلاک
+  const mediaTargetRef = useRef<string | null>(null);
+  // منوی «درج بعد از این بلاک» — ایندکس بلاک مبدأ
+  const [insertAfter, setInsertAfter] = useState<number | null>(null);
 
   // محصولات انتخاب‌شده (با اطلاعات نمایشی — تصویر محصول جدای از تصویر مقاله است)
   const [picked, setPicked] = useState<PickedProduct[]>([]);
@@ -315,6 +357,94 @@ function ArticleForm({
       set("productSlugs", next.map((x) => x.slug));
       return next;
     });
+  }
+
+  function setBlock(uid: string, block: ContentBlock) {
+    setBlocks((prev) => prev.map((b) => (b.uid === uid ? { ...block, uid } : b)));
+  }
+
+  function moveBlock(uid: string, dir: -1 | 1) {
+    setBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.uid === uid);
+      if (idx < 0) return prev;
+      const target = idx + dir;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  }
+
+  function removeBlock(uid: string) {
+    setBlocks((prev) => prev.filter((b) => b.uid !== uid));
+  }
+
+  // درج بلاک جدید — بعد از بلاک مبدأ، یا انتهای لیست اگر null باشد
+  function insertBlock(uid: string | null, block: ContentBlock) {
+    setBlocks((prev) => {
+      if (!uid) return [...prev, withUid(block)];
+      const idx = prev.findIndex((b) => b.uid === uid);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      next.splice(idx + 1, 0, withUid(block));
+      return next;
+    });
+    setInsertAfter(null);
+  }
+
+  // آپلود تصویر — اگر mediaTarget تعیین شده باشد جایگزین همان بلاک می‌شود، وگرنه به انتها اضافه می‌شود
+  async function uploadBlockImage(file: File) {
+    setUploadingBlockImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "articles");
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("dk-token") ?? ""}` },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("آپلود ناموفق بود");
+      const { url } = await res.json();
+      const target = mediaTargetRef.current;
+      mediaTargetRef.current = null;
+      if (target !== null) {
+        setBlocks((prev) => prev.map((b) => (b.uid === target ? { ...b, type: "img", src: url } : b)));
+      } else {
+        setBlocks((prev) => [...prev, withUid({ type: "img", src: url })]);
+      }
+    } catch {
+      alert("آپلود تصویر ناموفق بود — دوباره تلاش کنید.");
+    } finally {
+      setUploadingBlockImage(false);
+    }
+  }
+
+  async function uploadBlockVideo(file: File) {
+    setUploadingBlockVideo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "videos");
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("dk-token") ?? ""}` },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("آپلود ناموفق بود");
+      const { url } = await res.json();
+      const target = mediaTargetRef.current;
+      mediaTargetRef.current = null;
+      if (target !== null) {
+        setBlocks((prev) => prev.map((b) => (b.uid === target ? { ...b, type: "video", src: url } : b)));
+      } else {
+        setBlocks((prev) => [...prev, withUid({ type: "video", src: url })]);
+      }
+    } catch {
+      alert("آپلود ویدئو ناموفق بود — حجم فایل را بررسی کنید (حداکثر ۲۰۰MB).");
+    } finally {
+      setUploadingBlockVideo(false);
+    }
   }
 
   async function uploadImage(file: File) {
@@ -507,9 +637,105 @@ function ArticleForm({
         )}
       </div>
 
-      <div className="mt-4">
-        <label className="block text-xs font-bold mb-1">متن مقاله (هر پاراگراف با یک خط خالی جدا می‌شود)</label>
-        <textarea rows={8} value={form.content} onChange={(e) => set("content", e.target.value)} placeholder={"پاراگراف اول...\n\nپاراگراف دوم..."} style={{ ...inputStyle, resize: "vertical" }} />
+      {/* ---- چیدمان مقاله: ویرایشگر WYSIWYG — همان‌طور که در سایت نمایش داده می‌شود ---- */}
+      <div className="mt-5 rounded-xl border p-4" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <label className="block text-xs font-bold">چیدمان مقاله (WYSIWYG)</label>
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+              دقیقاً همان چیزی که در سایت نمایش داده می‌شود — روی متن کلیک کنید تا ویرایش شود. با هاور روی هر بلاک ابزارها ظاهر می‌شوند.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => insertBlock(null, { type: "p", text: "" })}
+              className="text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors hover:border-dk-red hover:text-dk-red"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              + پاراگراف
+            </button>
+            <input
+              ref={blockFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBlockImage(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploadingBlockImage}
+              onClick={() => blockFileRef.current?.click()}
+              className="text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors hover:border-dk-red hover:text-dk-red"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              {uploadingBlockImage ? "در حال آپلود..." : "+ تصویر"}
+            </button>
+            <input
+              ref={blockVideoRef}
+              type="file"
+              accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBlockVideo(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploadingBlockVideo}
+              onClick={() => blockVideoRef.current?.click()}
+              className="text-[11px] font-bold px-3 py-1.5 rounded-lg text-white bg-dk-red hover:bg-dk-red-dark transition-colors disabled:opacity-60"
+            >
+              {uploadingBlockVideo ? "در حال آپلود..." : "+ ویدئو"}
+            </button>
+          </div>
+        </div>
+
+        {/* سند — همان چیدمان صفحه نمایش مقاله */}
+        <div
+          className="rounded-xl border overflow-hidden"
+          style={{ borderColor: "var(--border)", background: "var(--panel)" }}
+        >
+          <div
+            className="px-5 py-6 md:px-8 md:py-8 space-y-4 text-sm leading-8"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {blocks.length === 0 && (
+              <p className="text-[11px] text-center py-4" style={{ color: "var(--text-muted)" }}>
+                هنوز بلاکی اضافه نشده — با دکمه‌های بالا شروع کنید.
+              </p>
+            )}
+            {blocks.map((b) => (
+              <BlockEditor
+                key={b.uid}
+                block={b}
+                index={blocks.findIndex((x) => x.uid === b.uid)}
+                total={blocks.length}
+                insertAfter={insertAfter === blocks.findIndex((x) => x.uid === b.uid)}
+                onInsertAfter={() => setInsertAfter(blocks.findIndex((x) => x.uid === b.uid))}
+                onCloseInsert={() => setInsertAfter(null)}
+                onChange={(block) => setBlock(b.uid, block)}
+                onMove={(dir) => moveBlock(b.uid, dir)}
+                onRemove={() => removeBlock(b.uid)}
+                onInsert={(block) => insertBlock(b.uid, block)}
+                onUploadImage={() => {
+                  mediaTargetRef.current = b.uid;
+                  blockFileRef.current?.click();
+                }}
+                onUploadVideo={() => {
+                  mediaTargetRef.current = b.uid;
+                  blockVideoRef.current?.click();
+                }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
       <div className="flex items-center justify-end gap-2 mt-4">
         <button type="button" onClick={onCancel} className="text-sm font-bold px-4 py-2.5 rounded-xl border" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
@@ -518,11 +744,195 @@ function ArticleForm({
         <button
           type="button"
           disabled={saving}
-          onClick={() => onSave({ ...form, productSlugs: picked.map((x) => x.slug) })}
+          onClick={() =>
+            onSave({
+              ...form,
+              content: blocks
+                .filter((b) => b.type === "p" && b.text.trim())
+                .map((b) => (b as { type: "p"; text: string }).text)
+                .join("\n\n"),
+              productSlugs: picked.map((x) => x.slug),
+              contentBlocks: blocks
+                .filter((b) => (b.type === "p" ? b.text.trim() : b.src.trim()))
+                .map(stripUid),
+            })
+          }
           className="text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark rounded-xl px-5 py-2.5 transition-colors disabled:opacity-60"
         >
           {saving ? "در حال ذخیره..." : "ذخیره مقاله"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// یک بلاک در ویرایشگر WYSIWYG — پاراگراف قابل‌ویرایش مستقیم، یا تصویر/ویدئو با همان ظاهر سایت
+function BlockEditor({
+  block,
+  index,
+  total,
+  insertAfter,
+  onInsertAfter,
+  onCloseInsert,
+  onChange,
+  onMove,
+  onRemove,
+  onInsert,
+  onUploadImage,
+  onUploadVideo,
+}: {
+  block: EditorBlock;
+  index: number;
+  total: number;
+  insertAfter: boolean;
+  onInsertAfter: () => void;
+  onCloseInsert: () => void;
+  onChange: (b: ContentBlock) => void;
+  onMove: (dir: -1 | 1) => void;
+  onRemove: () => void;
+  onInsert: (b: ContentBlock) => void;
+  onUploadImage: () => void;
+  onUploadVideo: () => void;
+}) {
+  return (
+    <div className="wysiwyg-block">
+      {/* نوار ابزار هاور */}
+      <div className="wysiwyg-toolbar">
+        <span className="px-1.5 text-[9px] font-bold text-white/80">
+          {block.type === "p" ? "متن" : block.type === "img" ? "تصویر" : "ویدئو"} {index + 1}
+        </span>
+        <button
+          type="button"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+          className="w-6 h-6 rounded-md text-[11px] text-white hover:bg-white/20 disabled:opacity-30 transition-colors"
+          title="انتقال به بالا"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          onClick={() => onMove(1)}
+          disabled={index === total - 1}
+          className="w-6 h-6 rounded-md text-[11px] text-white hover:bg-white/20 disabled:opacity-30 transition-colors"
+          title="انتقال به پایین"
+        >
+          ↓
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="w-6 h-6 rounded-md text-[11px] text-white hover:bg-dk-red transition-colors"
+          title="حذف بلاک"
+        >
+          ✕
+        </button>
+      </div>
+
+      {block.type === "p" ? (
+        <p
+          contentEditable
+          suppressContentEditableWarning
+          spellCheck={false}
+          data-placeholder="متن پاراگراف را بنویسید..."
+          className="wysiwyg-para whitespace-pre-line"
+          onInput={(e) => onChange({ type: "p", text: e.currentTarget.textContent ?? "" })}
+          onBlur={(e) => onChange({ type: "p", text: (e.currentTarget.textContent ?? "").trim() })}
+          ref={(el) => {
+            // همگام‌سازی اولیه و هنگام تغییر از بیرون (بدون جابه‌جایی مکان‌نما هنگام تایپ)
+            if (el && el.textContent !== block.text) el.textContent = block.text;
+          }}
+        />
+      ) : block.type === "video" ? (
+        <figure className="wysiwyg-media aspect-video">
+          {block.src ? (
+            <video src={block.src} controls preload="metadata" className="w-full h-full" />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+              <span className="text-2xl">🎬</span>
+              <span className="text-[11px]">ویدئو — روی «جایگزینی» کلیک کنید</span>
+            </div>
+          )}
+          {block.src && (
+            <button
+              type="button"
+              onClick={onUploadVideo}
+              className="absolute bottom-2 left-2 z-10 text-[10px] font-bold text-white bg-black/60 hover:bg-dk-red rounded-lg px-2.5 py-1 transition-colors"
+            >
+              جایگزینی ویدئو
+            </button>
+          )}
+        </figure>
+      ) : (
+        <figure className="wysiwyg-media aspect-[16/9]">
+          {block.src ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={block.src} alt="تصویر داخل مقاله" />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+              <span className="text-2xl">🖼️</span>
+              <span className="text-[11px]">تصویر — روی «جایگزینی» کلیک کنید</span>
+            </div>
+          )}
+          {block.src && (
+            <button
+              type="button"
+              onClick={onUploadImage}
+              className="absolute bottom-2 left-2 z-10 text-[10px] font-bold text-white bg-black/60 hover:bg-dk-red rounded-lg px-2.5 py-1 transition-colors"
+            >
+              جایگزینی تصویر
+            </button>
+          )}
+        </figure>
+      )}
+
+      {/* خط «درج بعد از این بلاک» */}
+      <div className="wysiwyg-addline">
+        {insertAfter ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onInsert({ type: "p", text: "" })}
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-dk-red text-white hover:bg-dk-red-dark transition-colors"
+            >
+              + متن
+            </button>
+            <button
+              type="button"
+              onClick={onUploadImage}
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors hover:border-dk-red hover:text-dk-red"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              + تصویر
+            </button>
+            <button
+              type="button"
+              onClick={onUploadVideo}
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors hover:border-dk-red hover:text-dk-red"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              + ویدئو
+            </button>
+            <button
+              type="button"
+              onClick={onCloseInsert}
+              className="text-[10px] px-2 py-1 rounded-full text-[var(--text-muted)] hover:bg-dk-red/10 hover:text-dk-red transition-colors"
+            >
+              بستن
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onInsertAfter}
+            className="w-7 h-7 rounded-full border text-sm font-bold transition-all hover:scale-110 hover:border-dk-red hover:text-dk-red"
+            style={{ borderColor: "var(--border)", color: "var(--text-muted)", background: "var(--panel)" }}
+            title="درج بلاک جدید بعد از این"
+            aria-label="درج بلاک جدید"
+          >
+            +
+          </button>
+        )}
       </div>
     </div>
   );

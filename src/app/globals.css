@@ -533,6 +533,78 @@ html[data-theme="dark"] .cat-tile {
   contain-intrinsic-size: auto 340px;
 }
 
+/* ---- WYSIWYG ویرایشگر مقاله: پاراگراف‌های قابل ویرایش مثل متن سایت ---- */
+.wysiwyg-para {
+  outline: none;
+  min-height: 1.6em;
+  transition: box-shadow 0.15s ease, border-radius 0.15s ease;
+  border-radius: 6px;
+}
+.wysiwyg-para:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.wysiwyg-para:hover {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dk-red, #ef4050) 18%, transparent);
+}
+.wysiwyg-para:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dk-red, #ef4050) 45%, transparent);
+}
+.wysiwyg-block {
+  position: relative;
+  border-radius: 12px;
+  transition: box-shadow 0.15s ease;
+}
+.wysiwyg-block:hover {
+  box-shadow: 0 0 0 1px var(--border);
+}
+.wysiwyg-media {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.wysiwyg-media img,
+.wysiwyg-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wysiwyg-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.72);
+  border-radius: 10px;
+  padding: 3px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.wysiwyg-block:hover .wysiwyg-toolbar,
+.wysiwyg-toolbar--active {
+  opacity: 1;
+}
+.wysiwyg-addline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+.wysiwyg-addline::before,
+.wysiwyg-addline::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 /* ---- کاهش حرکت برای کاربرانی که آن را غیرفعال کرده‌اند ---- */
 @media (prefers-reduced-motion: reduce) {
   html {

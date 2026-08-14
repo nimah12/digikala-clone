@@ -202,6 +202,29 @@ export async function handleBotMessage(
     }
   }
 
+  // ۱.۷) سوال درباره نتایج محصول قبلی — «ارزون‌ترینش؟»، «گرون‌ترینش؟»، «کدومش بهتره؟»
+  // (نیم‌فاصله در نوشته کاربر اختیاری است — هم «ارزون‌ترین» و هم «ارزونترین» را می‌گیرد)
+  if (context.lastProducts && context.lastProducts.length > 0 && /(ارزون(?:‌)?ترین|گرون(?:‌)?ترین|گران(?:‌)?ترین|کدومش بهتره|کدومشون|بهترینش|قیمتش)/.test(q)) {
+    const sorted = [...context.lastProducts].sort((a, b) => a.price - b.price);
+    const isCheapest = /(ارزون(?:‌)?ترین|قیمتش)/.test(q);
+    const target = isCheapest ? sorted[0] : sorted[sorted.length - 1];
+    return {
+      response: {
+        text: isCheapest
+          ? `ارزون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`
+          : `گرون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`,
+        products: context.lastProducts.map((p) => ({
+          name: p.name,
+          slug: p.slug,
+          price: p.price,
+          discountPercent: 0,
+          imageUrl: null,
+        })),
+      },
+      context: nextContext,
+    };
+  }
+
   // ۲) پیگیری سفارش (درخواست شماره سفارش)
   if (/(پیگیری|رهگیری|وضعیت سفارش|کد رهگیری|ردیابی|سفارشم کجاست|سفارش رو|پیگیری سفارش)/.test(q)) {
     nextContext.awaitingOrderId = true;
@@ -271,28 +294,6 @@ export async function handleBotMessage(
           imageUrl: p.imageUrl,
         })),
         links: [{ label: "مشاهده همه", href: "/bestsellers" }],
-      },
-      context: nextContext,
-    };
-  }
-
-  // ۴.۵) سوال درباره نتایج قبلی — «ارزون‌ترینش؟»، «گرون‌ترینش؟»
-  if (context.lastProducts && context.lastProducts.length > 0 && /(ارزون‌ترین|گرون‌ترین|گران‌ترین|کدومش بهتره|کدومشون|بهترینش|قیمتش)/.test(q)) {
-    const sorted = [...context.lastProducts].sort((a, b) => a.price - b.price);
-    const isCheapest = /(ارزون‌ترین|قیمتش)/.test(q);
-    const target = isCheapest ? sorted[0] : sorted[sorted.length - 1];
-    return {
-      response: {
-        text: isCheapest
-          ? `ارزون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`
-          : `گرون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`,
-        products: context.lastProducts.map((p) => ({
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
-          discountPercent: 0,
-          imageUrl: null,
-        })),
       },
       context: nextContext,
     };

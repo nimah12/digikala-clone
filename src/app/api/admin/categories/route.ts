@@ -12,6 +12,12 @@ type CategoryNode = {
   groupId: number | null;
   parentId: number | null;
   productCount: number;
+  // تعداد مؤثر محصولات — همان عددی که لیست محصولات پنل ادمین برای این دسته نشان می‌دهد
+  // (ریشه = خودش + فرزندانش؛ ساب‌دسته = خودش + محصولاتِ ریشه با نام/ساب‌کتگوری همنام)
+  effectiveCount: number;
+  // ساب‌دسته‌های واقعیِ مدل Subcategory (همان‌هایی که محصولات به آن‌ها وصل‌اند
+  // و API ذخیره‌ی محصول فقط این اسلاگ‌ها را می‌پذیرد)
+  subs: { name: string; slug: string }[];
   children: CategoryNode[];
 };
 
@@ -25,7 +31,8 @@ function buildTree(
     groupId: number | null;
     parentId: number | null;
     _count: { products: number };
-  }[]
+  }[],
+  subsByCategory: Map<number, { name: string; slug: string }[]>,
 ): CategoryNode[] {
   const nodeById = new Map<number, CategoryNode>();
   for (const c of flat) {
@@ -38,6 +45,8 @@ function buildTree(
       groupId: c.groupId,
       parentId: c.parentId,
       productCount: c._count.products,
+      effectiveCount: 0,
+      subs: subsByCategory.get(c.id) ?? [],
       children: [],
     });
   }
@@ -72,7 +81,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const [categories, groups] = await Promise.all([
+  const [categories, groups, subcategories] = await Promise.all([
     prisma.category.findMany({
       orderBy: [{ order: "asc" }, { id: "asc" }],
       select: {
@@ -96,9 +105,58 @@ export async function GET(request: Request) {
         _count: { select: { categories: true } },
       },
     }),
+    prisma.subcategory.findMany({
+      orderBy: [{ id: "asc" }],
+      select: { name: true, slug: true, categoryId: true },
+    }),
   ]);
 
-  return NextResponse.json({ tree: buildTree(categories), groups });
+  const subsByCategory = new Map<number, { name: string; slug: string }[]>();
+  for (const s of subcategories) {
+    const list = subsByCategory.get(s.categoryId) ?? [];
+    list.push({ name: s.name, slug: s.slug });
+    subsByCategory.set(s.categoryId, list);
+  }
+
+  const tree = buildTree(categories, subsByCategory);
+
+  // تعداد مؤثر: همان منطق فیلترِ لیست محصولات پنل ادمین، تا عددِ دراپ‌داون
+  // همیشه با چیزی که بعد از انتخاب دیده می‌شود یکی باشد.
+  const allProducts = await prisma.product.findMany({
+    select: {
+      categoryId: true,
+      name: true,
+      subcategory: { select: { name: true } },
+    },
+  });
+  const directCounts = new Map<number, number>();
+  for (const p of allProducts) {
+    directCounts.set(p.categoryId, (directCounts.get(p.categoryId) ?? 0) + 1);
+  }
+  const fillEffective = (nodes: CategoryNode[]) => {
+    for (const node of nodes) {
+      if (node.parentId === null) {
+        let n = directCounts.get(node.id) ?? 0;
+        for (const child of node.children) {
+          n += directCounts.get(child.id) ?? 0;
+        }
+        node.effectiveCount = n;
+      } else {
+        let n = directCounts.get(node.id) ?? 0;
+        for (const p of allProducts) {
+          if (p.categoryId !== node.parentId) continue;
+          if (p.subcategory?.name === node.name || p.name.includes(node.name)) {
+            n++;
+          }
+        }
+        node.effectiveCount = n;
+      }
+      fillEffective(node.children);
+    }
+  };
+  fillEffective(tree);
+
+  return NextResponse.json({ tree, groups });
 }
 
 export async function POST(request: Request) {

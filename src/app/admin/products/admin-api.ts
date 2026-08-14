@@ -198,6 +198,19 @@ export async function fetchProductDetail(
   return data.product as ProductDetail;
 }
 
+export async function moveProduct(
+  productId: number,
+  input: { categorySlug: string; subcategorySlug: string | null },
+) {
+  const res = await fetch(`/api/admin/products/${productId}`, {
+    method: "PATCH",
+    headers: jsonHeaders(),
+    body: JSON.stringify(input),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "انتقال ناموفق بود");
+}
+
 export async function deleteProductImage(productId: number) {
   const res = await fetch(`/api/admin/products/${productId}`, {
     method: "PATCH",

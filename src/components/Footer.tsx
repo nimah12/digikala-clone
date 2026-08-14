@@ -12,7 +12,7 @@ export default function Footer() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
           {FOOTER_LINKS.map((col) => (
             <div key={col.title}>
               <h3 className="text-sm font-bold mb-3">{col.title}</h3>
@@ -44,7 +44,7 @@ export default function Footer() {
             </p>
             <div className="mt-4 flex flex-col gap-2">
               <a
-                href="mailto:bbmesiaaw@gmail.com"
+                href="mailto:nima.hasani.dev@gmail.com"
                 className="inline-flex items-center gap-2 text-xs hover:text-dk-red transition-colors"
                 style={{ color: "var(--text-secondary)" }}
               >
@@ -59,7 +59,7 @@ export default function Footer() {
                   <rect x="2" y="4" width="20" height="16" rx="2" />
                   <path d="m2 7 10 7 10-7" />
                 </svg>
-                bbmesiaaw@gmail.com
+                nima.hasani.dev@gmail.com
               </a>
               <a
                 href="https://github.com/nimah12"

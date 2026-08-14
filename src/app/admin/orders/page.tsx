@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatSizeName } from "@/lib/format";
+import { formatIranDate } from "@/lib/iran-time";
 
 type OrderItem = {
   id: number;
@@ -136,14 +137,9 @@ export default function AdminOrdersPage() {
     return `${n.toLocaleString("fa-IR")} تومان`;
   }
 
+  // تاریخ و ساعت ثبت سفارش به وقت ایران (هماهنگ با ساعت هدر و تقویم شمسی)
   function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString("fa-IR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatIranDate(new Date(iso), { withTime: true });
   }
 
   // خروجی اکسل (فایل .xls با جدول HTML — پشتیبانی کامل فارسی و اعداد)

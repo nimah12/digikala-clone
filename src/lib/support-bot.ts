@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { faNormalize } from "@/lib/normalize";
 import { searchProducts } from "@/lib/search";
 import { formatPrice } from "@/lib/format";
+import { formatIranDate, getIranHour } from "@/lib/iran-time";
 import { BOT_CONFIG, renderText, pick, type BotLink } from "@/lib/support-bot-config";
 
 export type BotResponse = {
@@ -51,7 +52,7 @@ function orderReply(order: { id: number; status: string; total: number; receiver
     status: statusLabels[order.status] ?? order.status,
     receiver: order.receiverName,
     total: formatPrice(order.total),
-    date: new Date(order.createdAt).toLocaleDateString("fa-IR"),
+    date: formatIranDate(new Date(order.createdAt)),
   });
 }
 
@@ -266,7 +267,8 @@ export async function handleBotMessage(
     GREETING_RE.test(q) &&
     greetingTokens.every((t) => GREETING_RE.test(t) || GREETING_EXTRAS_RE.test(t));
   if (isGreeting) {
-    const h = new Date().getHours();
+    // ساعت به وقت ایران — تا نصف‌شب پیام بدی «شب بخیر» بگوید نه «صبح بخیر»
+    const h = getIranHour();
     const salutation = h >= 5 && h < 12 ? "صبح‌تون بخیر" : h >= 12 && h < 17 ? "ظهر بخیر" : h >= 17 && h < 22 ? "عصرتون بخیر" : "شب بخیر";
     return {
       response: {

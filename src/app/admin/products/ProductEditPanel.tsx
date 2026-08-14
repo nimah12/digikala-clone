@@ -199,7 +199,9 @@ export default function ProductEditPanel({
                 style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc" }}
               >
                 <option value="">بدون ساب‌دسته</option>
-                {(findTreeCategory(catTree, form.categorySlug)?.children ?? []).map((s) => (
+                {/* ساب‌دسته‌های واقعیِ همین دسته (مدل Subcategory) — فقط این‌ها
+                    توسط API ذخیره پذیرفته می‌شوند و با صفحه‌ی فروشگاه هماهنگ‌اند */}
+                {(findTreeCategory(catTree, form.categorySlug)?.subs ?? []).map((s) => (
                   <option key={s.slug} value={s.slug}>
                     {s.name}
                   </option>

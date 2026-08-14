@@ -13,6 +13,7 @@ import SearchBox from "./SearchBox";
 import Logo from "./Logo";
 import NotificationBell from "./NotificationBell";
 import MobileMenu from "./MobileMenu";
+import IranClock from "./IranClock";
 import Icon from "./Icon";
 
 type HeaderProps = {
@@ -254,8 +255,11 @@ export default function Header({ menuGroups }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile search bar (below header) */}
-      <div className="md:hidden border-b px-4 py-2" style={{ borderColor: "var(--border)" }}>
+      {/* Mobile: ساعت ایران + جستجو (زیر هدر) */}
+      <div className="md:hidden border-b px-4 pt-2 pb-2" style={{ borderColor: "var(--border)" }}>
+        <div className="flex items-center justify-end mb-1.5">
+          <IranClock compact />
+        </div>
         <SearchBox />
       </div>
 
@@ -298,6 +302,11 @@ export default function Header({ menuGroups }: HeaderProps) {
                 </Fragment>
               );
             })}
+
+            {/* ساعت و تاریخ ایران — لایو، برای کل سایت */}
+            <span className="ms-auto shrink-0">
+              <IranClock />
+            </span>
           </div>
 
           {/* Mega menu panel: group rail + subcategory panel (digikala-style) */}

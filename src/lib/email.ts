@@ -12,7 +12,9 @@ export async function sendEmail(opts: {
 }): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log(`[email] (بدون کلید) ایمیل به ${opts.to}: ${opts.subject}`);
+    // ماسک ایمیل در لاگ (ضد نشت اطلاعات شخصی)
+    const masked = opts.to.replace(/^(.)(.+)(.@.*)$/, "$1***$3");
+    console.log(`[email] (بدون کلید) ایمیل به ${masked}: ${opts.subject}`);
     return { ok: false, error: "RESEND_API_KEY تنظیم نشده است" };
   }
 
@@ -37,6 +39,16 @@ export async function sendEmail(opts: {
     console.error("[email] Resend exception:", err);
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+/** escape محتوای کاربر در HTML ایمیل (ضد HTML injection از طرف کاربر) */
+export function escapeHtml(input: string): string {
+  return String(input)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /** قالب ساده HTML برای ایمیل‌ها */

@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
   if (!rl.ok) {
     return Response.json(
       { success: false, error: "تعداد ثبت‌نام‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
-      { status: 429 },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((rl.retryAfterMs ?? 0) / 1000)) },
+      },
     );
   }
   try {

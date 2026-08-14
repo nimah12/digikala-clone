@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
+import { useRateLimitCooldown, getRetryAfterSeconds, formatCooldown } from "@/lib/use-rate-limit";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ function ResetPasswordForm() {
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { cooldown, setCooldown } = useRateLimitCooldown();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +42,10 @@ function ResetPasswordForm() {
         setDone(true);
       } else {
         setError(data.error || "خطا در تغییر رمز عبور.");
+        if (res.status === 429) {
+          const secs = getRetryAfterSeconds(res);
+          if (secs > 0) setCooldown(secs);
+        }
       }
     } catch {
       setError("خطا در اتصال به سرور.");
@@ -164,12 +170,25 @@ function ResetPasswordForm() {
           </p>
         )}
 
+        {cooldown > 0 && (
+          <div
+            className="p-3 rounded-xl text-xs font-bold text-center"
+            style={{ background: "rgba(255,152,0,0.12)", color: "#e65100", border: "1px solid rgba(255,152,0,0.4)" }}
+          >
+            ⏳ دکمه تغییر رمز تا {formatCooldown(cooldown)} دیگر فعال می‌شود
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || cooldown > 0}
           className="w-full text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark rounded-xl px-4 py-3 transition-colors disabled:opacity-60"
         >
-          {loading ? "در حال ذخیره..." : "تغییر رمز عبور"}
+          {cooldown > 0
+            ? `لطفاً ${formatCooldown(cooldown)} صبر کنید`
+            : loading
+              ? "در حال ذخیره..."
+              : "تغییر رمز عبور"}
         </button>
       </form>
     </div>

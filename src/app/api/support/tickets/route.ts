@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { readAuthToken } from "@/lib/auth";
-import { sendEmail, emailLayout } from "@/lib/email";
+import { sendEmail, emailLayout, escapeHtml } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
         `<p>یک تیکت جدید در سیستم پشتیبانی ثبت شده است:</p>
          <table style="width:100%;border-collapse:collapse;font-size:13px">
            <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold;width:90px">شماره تیکت</td><td style="padding:6px 8px">#${ticket.id}</td></tr>
-           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">فرستنده</td><td style="padding:6px 8px">${ticket.name} (${ticket.email})</td></tr>
-           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">موضوع</td><td style="padding:6px 8px">${ticket.subject}</td></tr>
-           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">متن</td><td style="padding:6px 8px">${ticket.message}</td></tr>
+           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">فرستنده</td><td style="padding:6px 8px">${escapeHtml(ticket.name)} (${escapeHtml(ticket.email)})</td></tr>
+           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">موضوع</td><td style="padding:6px 8px">${escapeHtml(ticket.subject)}</td></tr>
+           <tr><td style="padding:6px 8px;background:#f5f5f5;font-weight:bold">متن</td><td style="padding:6px 8px">${escapeHtml(ticket.message)}</td></tr>
          </table>
          <p style="text-align:center;margin:20px 0">
            <a href="${request.nextUrl.origin}/admin/tickets" style="display:inline-block;background:#ef4050;color:#ffffff;text-decoration:none;padding:10px 24px;border-radius:12px;font-weight:bold">مشاهده تیکت‌ها در پنل</a>

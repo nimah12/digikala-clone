@@ -11,7 +11,13 @@ const BRANDS: {
   icon: IconName;
   color: string;
 }[] = [
-  { name: "اپل", slug: "apple", q: "iphone", icon: "apple", color: "#e8f0f9" },
+  {
+    name: "اپل",
+    slug: "apple",
+    q: "iphone",
+    icon: "apple",
+    color: "#e8f0f9",
+  },
   {
     name: "سامسونگ",
     slug: "samsung",

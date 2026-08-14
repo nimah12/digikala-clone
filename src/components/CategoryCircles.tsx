@@ -29,7 +29,7 @@ export default function CategoryCircles() {
         className="rounded-2xl border p-4"
         style={{ background: "var(--panel)", borderColor: "var(--border)" }}
       >
-        <div className="flex gap-3.5 overflow-x-auto no-scrollbar">
+        <div className="scroll-row flex gap-3.5">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}

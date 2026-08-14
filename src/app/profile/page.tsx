@@ -26,6 +26,8 @@ export default function ProfilePage() {
   // password tab
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
+  const [showOldPass, setShowOldPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
   const [passError, setPassError] = useState("");
   const [passSaved, setPassSaved] = useState(false);
 
@@ -208,15 +210,37 @@ export default function ProfilePage() {
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold mb-1.5">رمز فعلی</label>
-                  <input type="password" value={oldPass} onChange={(e) => setOldPass(e.target.value)}
-                    className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
-                    style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
+                  <div className="relative">
+                    <input type={showOldPass ? "text" : "password"} value={oldPass} onChange={(e) => setOldPass(e.target.value)}
+                      className="w-full h-11 pl-10 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
+                      style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPass((v) => !v)}
+                      aria-label={showOldPass ? "پنهان کردن رمز فعلی" : "نمایش رمز فعلی"}
+                      className="absolute inset-y-0 left-0 flex items-center justify-center w-10 transition-colors hover:text-dk-red"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      <Icon name={showOldPass ? "eye-off" : "eye"} size={18} strokeWidth={1.8} />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold mb-1.5">رمز جدید</label>
-                  <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="حداقل ۶ کاراکتر با @ و حرف بزرگ"
-                    className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
-                    style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
+                  <div className="relative">
+                    <input type={showNewPass ? "text" : "password"} value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="حداقل ۶ کاراکتر با @ و حرف بزرگ"
+                      className="w-full h-11 pl-10 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
+                      style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPass((v) => !v)}
+                      aria-label={showNewPass ? "پنهان کردن رمز جدید" : "نمایش رمز جدید"}
+                      className="absolute inset-y-0 left-0 flex items-center justify-center w-10 transition-colors hover:text-dk-red"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      <Icon name={showNewPass ? "eye-off" : "eye"} size={18} strokeWidth={1.8} />
+                    </button>
+                  </div>
                   <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
                     حداقل ۶ کاراکتر، شامل حرف بزرگ و کاراکتر خاص
                   </p>

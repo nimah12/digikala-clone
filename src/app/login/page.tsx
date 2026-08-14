@@ -9,6 +9,7 @@ import { pushEvent } from "@/lib/notifications";
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -105,14 +106,25 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-xs font-bold mb-1.5">رمز عبور</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="رمز عبور"
-              className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
-              style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="رمز عبور"
+                className="w-full h-11 pl-10 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
+                style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
+                className="absolute inset-y-0 left-0 flex items-center justify-center w-10 transition-colors hover:text-dk-red"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <Icon name={showPassword ? "eye-off" : "eye"} size={18} strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
 
           {error && (

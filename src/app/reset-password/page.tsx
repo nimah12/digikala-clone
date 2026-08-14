@@ -11,6 +11,8 @@ function ResetPasswordForm() {
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -111,25 +113,49 @@ function ResetPasswordForm() {
       >
         <div>
           <label className="block text-xs font-bold mb-1.5">رمز عبور جدید</label>
-          <input
-            type="password"
-            dir="ltr"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="حداقل ۶ کاراکتر با حرف بزرگ و علامت"
-            style={inputStyle}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              dir="ltr"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="حداقل ۶ کاراکتر با حرف بزرگ و علامت"
+              className="w-full pl-10"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
+              className="absolute inset-y-0 left-0 flex items-center justify-center w-10 transition-colors hover:text-dk-red"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              <Icon name={showPassword ? "eye-off" : "eye"} size={18} strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-xs font-bold mb-1.5">تکرار رمز عبور</label>
-          <input
-            type="password"
-            dir="ltr"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            placeholder="تکرار رمز عبور"
-            style={inputStyle}
-          />
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              dir="ltr"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="تکرار رمز عبور"
+              className="w-full pl-10"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((v) => !v)}
+              aria-label={showConfirm ? "پنهان کردن تکرار رمز" : "نمایش تکرار رمز"}
+              className="absolute inset-y-0 left-0 flex items-center justify-center w-10 transition-colors hover:text-dk-red"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              <Icon name={showConfirm ? "eye-off" : "eye"} size={18} strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
 
         {error && (

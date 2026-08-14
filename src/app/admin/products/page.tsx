@@ -210,7 +210,7 @@ export default function AdminProductsPage() {
               flex: 1,
               padding: "8px 10px",
               borderRadius: 6,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border)",
               boxSizing: "border-box",
             }}
           />
@@ -234,10 +234,10 @@ export default function AdminProductsPage() {
               style={{
                 padding: "8px 12px",
                 borderRadius: 6,
-                border: "1px solid #ccc",
+                border: "1px solid var(--border)",
                 background: "none",
                 cursor: "pointer",
-                color: "#888",
+                color: "var(--text-muted)",
               }}
               title="پاک کردن جستجو"
             >
@@ -285,9 +285,9 @@ export default function AdminProductsPage() {
             flexWrap: "wrap",
             padding: "10px 14px",
             borderRadius: 8,
-            background: "#e8f5e9",
+            background: "color-mix(in srgb, #66bb6a 15%, var(--panel))",
             border: "1px solid #66bb6a",
-            color: "#1b5e20",
+            color: "var(--text)",
             marginBottom: 12,
             fontSize: 13,
           }}
@@ -303,7 +303,7 @@ export default function AdminProductsPage() {
             }`}
             target="_blank"
             rel="noreferrer"
-            style={{ color: "#1b5e20", fontWeight: 700 }}
+            style={{ color: "var(--text)", fontWeight: 700 }}
           >
             مشاهده در دسته مقصد
           </a>
@@ -316,7 +316,7 @@ export default function AdminProductsPage() {
               border: "none",
               background: "none",
               cursor: "pointer",
-              color: "#1b5e20",
+              color: "var(--text)",
               fontSize: 16,
               lineHeight: 1,
             }}
@@ -327,7 +327,7 @@ export default function AdminProductsPage() {
       )}
 
       {searchQuery.trim() && (
-        <p style={{ fontSize: 12, color: "#666", marginBottom: 12 }}>
+        <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
           نتایج جستجو در همه محصولات برای «{searchQuery.trim()}» — {products.length}{" "}
           محصول
         </p>

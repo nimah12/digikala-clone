@@ -100,7 +100,7 @@ export default function MoveProductPanel({
   const selectStyle: React.CSSProperties = {
     padding: "8px 10px",
     borderRadius: 6,
-    border: "1px solid #ccc",
+    border: "1px solid var(--border)",
     background: "var(--panel)",
     color: "var(--text)",
   };
@@ -183,11 +183,11 @@ export default function MoveProductPanel({
               ? "1px solid #e6a23c"
               : "1px solid #e0e0e0",
             background: duplicate
-              ? "#fdf6ec"
+              ? "color-mix(in srgb, #f9a825 14%, var(--panel))"
               : checking
                 ? "var(--bg)"
-                : "#f7f7f7",
-            color: duplicate ? "#b88230" : "#666",
+                : "var(--bg)",
+            color: duplicate ? "var(--text)" : "var(--text-secondary)",
           }}
         >
           {checking ? (

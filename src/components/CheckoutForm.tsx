@@ -356,7 +356,7 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
           </h2>
           <div
             className="flex items-center gap-2 mb-4 p-2.5 rounded-lg text-[11px] font-bold"
-            style={{ background: "rgba(249,168,37,0.1)", color: "#b26a00" }}
+            style={{ background: "rgba(249,168,37,0.12)", color: "var(--text)" }}
           >
             <Icon name="truck" size={15} />
             ارسال رایگان برای ساکنین استان‌های تهران و البرز (کرج)
@@ -607,7 +607,7 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
           {isFreeShipping && (
             <div
               className="mt-2 p-3 rounded-lg text-[11px] font-bold"
-              style={{ background: "rgba(38,166,91,0.1)", color: "#26a65b" }}
+              style={{ background: "rgba(38,166,91,0.12)", color: "var(--text)" }}
             >
               <Icon name="check" size={13} className="inline-block ml-1" />
               ارسال به {form.province} رایگان است

@@ -77,11 +77,11 @@ export default function GalleryManager({ productId }: { productId: number }) {
           }}
         />
         {uploading && (
-          <span style={{ marginRight: 8, fontSize: 13, color: "#555" }}>
+          <span style={{ marginRight: 8, fontSize: 13, color: "var(--text-secondary)" }}>
             در حال آپلود گالری...
           </span>
         )}
-        <p style={{ fontSize: 11, color: "#888", marginTop: 6 }}>
+        <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
           می‌تونی چند عکس (حداکثر ۵ مگابایت هر کدام) و ویدیو (حداکثر ۱۰۰ مگابایت هر کدام) هم‌زمان انتخاب کنی.
         </p>
       </div>
@@ -93,7 +93,7 @@ export default function GalleryManager({ productId }: { productId: number }) {
       )}
 
       {loading ? (
-        <p style={{ fontSize: 13, color: "#888" }}>در حال بارگذاری گالری...</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>در حال بارگذاری گالری...</p>
       ) : (
         <div
           style={{
@@ -103,14 +103,14 @@ export default function GalleryManager({ productId }: { productId: number }) {
           }}
         >
           {media.length === 0 && (
-            <p style={{ fontSize: 13, color: "#888" }}>هنوز رسانه‌ای اضافه نشده.</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>هنوز رسانه‌ای اضافه نشده.</p>
           )}
           {media.map((m) => (
             <div
               key={m.id}
               style={{
                 position: "relative",
-                border: "1px solid #eee",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 overflow: "hidden",
               }}

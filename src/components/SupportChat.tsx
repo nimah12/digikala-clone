@@ -374,7 +374,7 @@ export default function SupportChat() {
           </div>
 
           {/* Quick replies — بالای باکس پیام */}
-          <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto border-t whitespace-nowrap" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+          <div className="chat-scroll flex items-center gap-2 px-3 py-2 overflow-x-auto border-t whitespace-nowrap" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
             {QUICK_REPLIES.map((q) => (
               <button
                 key={q.label}

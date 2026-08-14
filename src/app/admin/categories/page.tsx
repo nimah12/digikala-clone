@@ -549,7 +549,7 @@ export default function AdminCategoriesPage() {
           <div className="text-xs mb-1">سایزها (اختیاری — متنی مثل S/M/L یا عددی مثل ۳۸/۴۰/۴۲)</div>
           <div
             className="flex flex-wrap items-center gap-2 mb-2 rounded-lg border p-2"
-            style={{ borderColor: "#e0e0e0", background: "var(--bg)" }}
+            style={{ borderColor: "var(--border)", background: "var(--bg)" }}
           >
             <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
               افزودن بازه‌ی عددی:
@@ -607,7 +607,7 @@ export default function AdminCategoriesPage() {
                 setProdSizeStock("3");
               }}
               className="text-[11px] font-bold rounded-lg px-2 py-1 transition-colors"
-              style={{ border: "none", background: "#eee", color: "#555" }}
+              style={{ border: "none", background: "var(--hover)", color: "var(--text-secondary)" }}
             >
               پیش‌فرض کفش
             </button>

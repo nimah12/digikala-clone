@@ -266,14 +266,15 @@ export default function Header({ menuGroups }: HeaderProps) {
       {/* Sub-header: category trigger + curated quick links (digikala-style) */}
       <div className="hidden md:block border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-7xl mx-auto px-4 relative" ref={megaRef}>
-          <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap" style={{ scrollbarWidth: "none" }}>
+          <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap chat-scroll" style={{ scrollbarWidth: "thin" }}>
             <button
               type="button"
               onMouseEnter={() => setMegaOpen(true)}
               onClick={() => setMegaOpen((o) => !o)}
               className={`flex items-center gap-1.5 pl-3 h-10 text-sm font-medium transition-colors shrink-0 ${
-                megaOpen ? "text-dk-red" : "text-dk-text-secondary hover:text-dk-red"
+                megaOpen ? "text-dk-red" : "hover:text-dk-red"
               }`}
+              style={megaOpen ? undefined : { color: "var(--text-secondary)" }}
               aria-expanded={megaOpen}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -293,8 +294,9 @@ export default function Header({ menuGroups }: HeaderProps) {
                   <Link
                     href={link.href}
                     className={`sub-header-link flex items-center gap-1.5 px-3 h-10 text-[13px] transition-colors shrink-0 ${
-                      isActive ? "text-dk-red font-semibold" : "text-dk-text-secondary hover:text-dk-red"
+                      isActive ? "text-dk-red font-semibold" : "hover:text-dk-red"
                     }`}
+                    style={isActive ? undefined : { color: "var(--text-secondary)" }}
                   >
                     <span className="text-dk-red"><Icon name={link.icon} size={16} /></span>
                     {link.label}
@@ -338,9 +340,13 @@ export default function Header({ menuGroups }: HeaderProps) {
                         onMouseEnter={() => setActiveGroup(i)}
                         onClick={() => setActiveGroup(i)}
                         className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors ${
-                          isActive ? "text-dk-red font-bold" : "text-dk-text-secondary hover:bg-dk-bg"
+                          isActive ? "text-dk-red font-bold" : "hover:bg-dk-bg"
                         }`}
-                        style={isActive ? { background: "color-mix(in srgb, #ef4050 7%, transparent)" } : undefined}
+                        style={
+                          isActive
+                            ? { background: "color-mix(in srgb, #ef4050 7%, transparent)" }
+                            : { color: "var(--text-secondary)" }
+                        }
                       >
                         <span className="flex items-center gap-2">
                           <span className="text-dk-red"><Icon name={group.icon} size={18} /></span>

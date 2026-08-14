@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { faNormalize } from "@/lib/normalize";
 import { searchProducts } from "@/lib/search";
 import { formatPrice } from "@/lib/format";
+import { BOT_CONFIG, renderText, pick, type BotLink } from "@/lib/support-bot-config";
 
 export type BotResponse = {
   text: string;
   products?: { name: string; slug: string; price: number; discountPercent: number; imageUrl: string | null }[];
   order?: { id: number; status: string; total: number; receiverName: string; createdAt: string } | null;
   askOrderId?: boolean;
-  links?: { label: string; href: string }[];
+  links?: BotLink[];
 };
 
 // کانتکست گفتگو — بین پیام‌های یک جلسه حفظ می‌شود
@@ -21,106 +22,12 @@ export type BotContext = {
   lastProducts?: { name: string; slug: string; price: number }[];
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "در انتظار تایید",
-  processing: "در حال آماده‌سازی",
-  shipped: "تحویل به پست",
-  delivered: "تحویل شده",
-  cancelled: "لغو شده",
-};
+const { statusLabels, generalAnswers, categoryQueries } = BOT_CONFIG;
 
-// پاسخ‌های ثابت برای موضوعات عمومی
-const GENERAL_ANSWERS: { keywords: string[]; answer: string; links?: BotResponse["links"] }[] = [
-  {
-    keywords: ["ارسال", "تحویل", "پست", "تیپاکس", "گنجه"],
-    answer:
-      "ارسال سفارش‌ها با سه روش انجام می‌شه: پست پیشتاز (۲ تا ۳ روز)، تیپاکس (۱ تا ۲ روز) و پیک گنجه در تهران (همان روز). بعد از انتخاب روش، می‌تونی روز تحویل و بازه زمانی (صبح یا عصر) رو هم خودت انتخاب کنی.",
-    links: [{ label: "رویه‌های ارسال", href: "/shipping" }],
-  },
-  {
-    keywords: ["بازگشت", "مرجوع", "پس‌داد"],
-    answer:
-      "تا ۷ روز بعد از تحویل، اگه از خریدت راضی نبودی می‌تونی کالا رو مرجوع کنی. کالا باید بدون استفاده و با بسته‌بندی اصلی باشه. کالاهای دسته سلامت و بهداشت به دلایل بهداشتی قابل مرجوعی نیستن.",
-    links: [{ label: "رویه‌های بازگرداندن", href: "/returns" }],
-  },
-  {
-    keywords: ["پرداخت", "پول", "درگاه", "کارت", "کسر", "پرداخت در محل"],
-    answer:
-      "در حال حاضر زیرساخت‌های پرداخت آنلاین فعال نیستن و پرداخت صرفاً به‌صورت آزمایشی نمایش داده می‌شه. گزینه «پرداخت در محل» هم در بعضی شهرها فعاله.",
-    links: [{ label: "شیوه‌های پرداخت", href: "/payment" }],
-  },
-  {
-    keywords: ["گارانتی", "ضمانت", "اصالت", "اورجینال", "واقعی"],
-    answer:
-      "تمام کالاهای دیجی‌کلون اصل و دارای گارانتی معتبر هستن. برگه گارانتی داخل جعبه محصول قرار داره و شامل خدمات گارانتی ۱۸ ماهه برای کالاهای دیجیتال هست.",
-  },
-  {
-    keywords: ["ثبت‌نام", "ورود", "رمز", "پروفایل", "اکانت", "حساب کاربری"],
-    answer:
-      "برای ثبت‌نام فقط به یک شماره موبایل معتبر نیاز داری. با ورود به حساب می‌تونی سفارشاتت رو پیگیری کنی، آدرس‌هات رو مدیریت کنی و از تخفیف‌های ویژه اعضا استفاده کنی.",
-    links: [{ label: "ورود / ثبت‌نام", href: "/login" }],
-  },
-  {
-    keywords: ["امتیاز", "دیجی‌کوین", "مگنت", "اعتبار", "کیف پول"],
-    answer:
-      "با هر خرید، امتیاز مگنت و دیجی‌کوین دریافت می‌کنی که می‌تونی ازشون برای خریدهای بعدی استفاده کنی. موجودی کیف‌پولت رو تو صفحه «حساب کاربری» ببین.",
-    links: [{ label: "حساب کاربری", href: "/profile" }],
-  },
-  {
-    keywords: ["تماس", "تلفن", "شماره", "پیگیری شکایت", "ساعت کاری"],
-    answer:
-      "برای تماس مستقیم: ۰۲۱-۹۱۰۰۱۰۰۰ (شنبه تا پنجشنبه، ۹ صبح تا ۹ شب). می‌تونی از طریق صفحه «تماس با ما» هم پیام بدی.",
-    links: [{ label: "تماس با ما", href: "/contact" }],
-  },
-  {
-    keywords: ["ساعت", "زمان تحویل", "کجا", "شعبه", "آدرس فروشگاه"],
-    answer:
-      "فروشگاه ما فقط به‌صورت آنلاین فعالیت می‌کنه و شعبه حضوری نداره. ارسال‌ها از انبار تهران انجام می‌شه.",
-  },
-];
-
-// دسته‌بندی‌هایی که ربات می‌تونه برای جستجوی محصول تشخیص بده
-const CATEGORY_QUERIES: { keywords: string[]; query: string; title: string; category?: string }[] = [
-  { keywords: ["موبایل", "گوشی", "آیفون", "سامسونگ", "شیائومی", "هوآوی"], query: "", title: "موبایل", category: "mobile" },
-  { keywords: ["لپ‌تاپ", "مک‌بوک", "ایسوس", "لنوو", "ایسر", "دفتر"], query: "", title: "لپ‌تاپ", category: "laptop" },
-  { keywords: ["هدفون", "ایرپاد", "اسپیکر", "هندزفری", "جی‌بی‌ال", "سونی"], query: "", title: "صوتی و هدفون", category: "audio" },
-  { keywords: ["ساعت", "واچ", "اپل واچ", "گلکسی واچ"], query: "", title: "ساعت هوشمند", category: "smartwatch" },
-  { keywords: ["تبلت", "آیپد", "گلکسی تب"], query: "", title: "تبلت", category: "tablet" },
-  { keywords: ["کفش", "پوشاک", "لباس", "تیشرت", "هودی", "شلوار", "نایک", "آدیداس"], query: "", title: "پوشاک", category: "clothing" },
-  { keywords: ["کارت گرافیک", "گرافیک", "گیمینگ", "کنسول", "پلی‌استیشن", "مادربرد", "پلی استیشن", "کامپیوتر"], query: "", title: "قطعات و گیمینگ", category: "gpu" },
-  { keywords: ["عطر", "ادکلن", "بادی اسپلش"], query: "", title: "عطر و ادکلن", category: "perfume" },
-  { keywords: ["کتاب", "رمان", "دفتر"], query: "", title: "کتاب و لوازم تحریر", category: "books" },
-  { keywords: ["اسباب‌بازی", "لگو", "عروسک", "پازل"], query: "", title: "اسباب‌بازی", category: "toys" },
-  { keywords: ["پلوپز", "کتری", "مایکروویو", "جارو", "سشوار", "لباسشویی", "یخچال", "لوازم خانگی"], query: "", title: "لوازم خانگی", category: "home-appliances" },
-  { keywords: ["طلا", "نقره", "سکه", "شمش"], query: "", title: "طلا و نقره", category: "gold-silver" },
-  { keywords: ["ماشین لباسشویی"], query: "ماشین لباسشویی", title: "ماشین لباسشویی" },
-  { keywords: ["پلوپز"], query: "پلوپز", title: "پلوپز" },
-];
-
-// جملات معرفی نتایج — متغیر تا پاسخ‌ها یکنواخت نباشن
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+// کلمات پرکننده برای تشخیص جستجوی معنادار
+function meaningfulTokens(q: string): string[] {
+  return q.split(" ").filter((t) => t.length >= 2 && !BOT_CONFIG.fillerWords.includes(t));
 }
-
-const CATEGORY_INTROS = [
-  (t: string) => `از دسته «${t}» این‌ها رو براتون پیدا کردم:`,
-  (t: string) => `چند تا از بهترین‌های «${t}» رو براتون گذاشتم:`,
-  (t: string) => `این‌ها رو توی دسته «${t}» داریم، ببینید به‌دردتون می‌خوره:`,
-];
-
-const SEARCH_INTROS = [
-  (q: string) => `برای «${q}» این نتایج رو پیدا کردم:`,
-  (q: string) => `چند تا گزینه خوب برای «${q}» داریم:`,
-  (q: string) => `این‌ها نزدیک‌ترین چیزها به «${q}» هستن:`,
-];
-
-// کلمات پرکننده که در عبارت جستجو بی‌معنی هستن
-const FILLER_WORDS = [
-  "میخوام", "می‌خوام", "می‌خوایم", "دارید", "دارین", "داره", "هست", "هستن", "یه", "یک", "یکی",
-  "بخر", "بخرم", "می‌شه", "میشه", "چیه", "چیست", "لطفا", "لطفاً", "بهترین", "خوب", "خوبه", "عالی",
-  "بده", "پیشنهاد", "کن", "بفرست", "نشون", "بگو", "ببین", "دنبال", "دنبالشم", "دنبالش", "برای", "من",
-  "توی", "تو", "در", "و", "با", "از", "را", "رو", "می", "بدم", "بم", "برام", "بهم", "یه", "یه‌چیز",
-];
 
 export async function lookupOrderById(id: number): Promise<BotResponse["order"]> {
   const order = await prisma.order.findUnique({
@@ -139,7 +46,13 @@ export async function lookupOrderById(id: number): Promise<BotResponse["order"]>
 
 // ساخت پاسخ برای سفارش — هم در پاسخ اولیه و هم در ادامه گفتگو استفاده می‌شود
 function orderReply(order: { id: number; status: string; total: number; receiverName: string; createdAt: string }): string {
-  return `سفارش #${order.id.toLocaleString("fa-IR")} با موفقیت پیدا شد.\nوضعیت فعلی: ${STATUS_LABELS[order.status] ?? order.status}\nگیرنده: ${order.receiverName}\nمبلغ: ${formatPrice(order.total)}\nثبت شده در: ${new Date(order.createdAt).toLocaleDateString("fa-IR")}`;
+  return renderText(BOT_CONFIG.orderReplyTemplate, {
+    id: order.id.toLocaleString("fa-IR"),
+    status: statusLabels[order.status] ?? order.status,
+    receiver: order.receiverName,
+    total: formatPrice(order.total),
+    date: new Date(order.createdAt).toLocaleDateString("fa-IR"),
+  });
 }
 
 export async function handleBotMessage(
@@ -147,7 +60,8 @@ export async function handleBotMessage(
   context: BotContext = {},
 ): Promise<{ response: BotResponse; context: BotContext }> {
   const q = faNormalize(message);
-  const nextContext: BotContext = { ...context };  // ۱) اگر پیام فقط یک عدد است (شماره سفارش) — صرف‌نظر از تعداد ارقام
+  const nextContext: BotContext = { ...context };
+  // ۱) اگر پیام فقط یک عدد است (شماره سفارش) — صرف‌نظر از تعداد ارقام
   const digitsOnly = q.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[^0-9]/g, "");
   const isOnlyDigits = digitsOnly.length > 0 && digitsOnly.length === q.length;
   if (isOnlyDigits && digitsOnly.length <= 6) {
@@ -157,8 +71,8 @@ export async function handleBotMessage(
       nextContext.awaitingOrderId = false;
       return {
         response: {
-          text: `سفارشی با شماره ${id.toLocaleString("fa-IR")} پیدا نکردم. مطمئن شو عدد سفارش درست وارد شده یا سفارش رو از طریق صفحه «پیگیری سفارش» چک کن.`,
-          links: [{ label: "پیگیری سفارش", href: "/track-order" }],
+          text: renderText(BOT_CONFIG.orderNotFound, { id: id.toLocaleString("fa-IR") }),
+          links: [BOT_CONFIG.orderNotFoundLink],
         },
         context: nextContext,
       };
@@ -177,8 +91,8 @@ export async function handleBotMessage(
       if (/(بازگشت|مرجوع|پس‌داد)/.test(q)) {
         return {
           response: {
-            text: `برای مرجوعی سفارش #${order.id.toLocaleString("fa-IR")}، تا ۷ روز بعد از تحویل فرصت دارید. کالا باید بدون استفاده و با بسته‌بندی اصلی باشه. می‌تونید از صفحه سفارشات اقدام کنید.`,
-            links: [{ label: "سفارشات من", href: "/profile?tab=orders" }],
+            text: renderText(BOT_CONFIG.orderReturn, { id: order.id.toLocaleString("fa-IR") }),
+            links: [BOT_CONFIG.orderReturnLink],
           },
           context: nextContext,
         };
@@ -186,15 +100,21 @@ export async function handleBotMessage(
       if (/(لغو)/.test(q)) {
         return {
           response: {
-            text: `سفارش #${order.id.toLocaleString("fa-IR")} الان در وضعیت «${STATUS_LABELS[order.status] ?? order.status}» هست. اگه هنوز ارسال نشده، می‌تونید از صفحه سفارشات درخواست لغو بدید.`,
-            links: [{ label: "سفارشات من", href: "/profile?tab=orders" }],
+            text: renderText(BOT_CONFIG.orderCancel, {
+              id: order.id.toLocaleString("fa-IR"),
+              status: statusLabels[order.status] ?? order.status,
+            }),
+            links: [BOT_CONFIG.orderCancelLink],
           },
           context: nextContext,
         };
       }
       return {
         response: {
-          text: `سفارش #${order.id.toLocaleString("fa-IR")} که قبلاً براتون پیدا کردم: \n${orderReply(order)}`,
+          text: renderText(BOT_CONFIG.orderFollowUp, {
+            id: order.id.toLocaleString("fa-IR"),
+            reply: orderReply(order),
+          }),
           order,
         },
         context: nextContext,
@@ -210,9 +130,10 @@ export async function handleBotMessage(
     const target = isCheapest ? sorted[0] : sorted[sorted.length - 1];
     return {
       response: {
-        text: isCheapest
-          ? `ارزون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`
-          : `گرون‌ترینشون «${target.name}» با قیمت ${formatPrice(target.price)} تومان هست.`,
+        text: renderText(isCheapest ? BOT_CONFIG.cheapestResult : BOT_CONFIG.expensiveResult, {
+          name: target.name,
+          price: formatPrice(target.price),
+        }),
         products: context.lastProducts.map((p) => ({
           name: p.name,
           slug: p.slug,
@@ -230,9 +151,9 @@ export async function handleBotMessage(
     nextContext.awaitingOrderId = true;
     return {
       response: {
-        text: "بریم سفارشت رو پیگیری کنیم! عدد سفارش رو برام بفرست (مثلاً ۱۲۳۴۵).",
+        text: BOT_CONFIG.askOrderId,
         askOrderId: true,
-        links: [{ label: "صفحه پیگیری سفارش", href: "/track-order" }],
+        links: [BOT_CONFIG.askOrderIdLink],
       },
       context: nextContext,
     };
@@ -242,9 +163,9 @@ export async function handleBotMessage(
   if (context.awaitingOrderId && meaningfulTokens(q).length === 0) {
     return {
       response: {
-        text: "منتظر شماره سفارش هستم (فقط عدد، مثلاً ۱۲۳۴۵). یا اگه حوصله نداری، از صفحه «پیگیری سفارش» استفاده کن.",
+        text: BOT_CONFIG.awaitingOrderId,
         askOrderId: true,
-        links: [{ label: "پیگیری سفارش", href: "/track-order" }],
+        links: [BOT_CONFIG.awaitingOrderIdLink],
       },
       context: nextContext,
     };
@@ -261,7 +182,7 @@ export async function handleBotMessage(
       nextContext.lastProducts = deals.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
         response: {
-          text: `در حال حاضر ${deals.length} محصول با تخفیف ویژه داریم. چند تا از بهترینشون:` + (q.includes("کد تخفیف") ? "\n\nنکته: برای اعمال کد تخفیف، کد رو در مرحله تسویه حساب در کادر مخصوص وارد کن." : ""),
+          text: renderText(BOT_CONFIG.dealsIntro, { count: deals.length }) + (q.includes("کد تخفیف") ? BOT_CONFIG.dealsCouponNote : ""),
           products: deals.map((p) => ({
             name: p.name,
             slug: p.slug,
@@ -269,7 +190,7 @@ export async function handleBotMessage(
             discountPercent: p.discountPercent,
             imageUrl: p.imageUrl,
           })),
-          links: [{ label: "همه تخفیف‌ها", href: "/deals" }],
+          links: [BOT_CONFIG.dealsLink],
         },
         context: nextContext,
       };
@@ -285,7 +206,7 @@ export async function handleBotMessage(
     nextContext.lastProducts = best.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
     return {
       response: {
-        text: "این‌ها پرفروش‌ترین محصولات دیجی‌کلون هستن:",
+        text: BOT_CONFIG.bestsellersIntro,
         products: best.map((p) => ({
           name: p.name,
           slug: p.slug,
@@ -293,14 +214,14 @@ export async function handleBotMessage(
           discountPercent: p.discountPercent,
           imageUrl: p.imageUrl,
         })),
-        links: [{ label: "مشاهده همه", href: "/bestsellers" }],
+        links: [BOT_CONFIG.bestsellersLink],
       },
       context: nextContext,
     };
   }
 
   // ۵) جستجوی محصول بر اساس دسته‌بندی یا عبارت آزاد
-  for (const c of CATEGORY_QUERIES) {
+  for (const c of categoryQueries) {
     if (c.keywords.some((k) => q.includes(k))) {
       let products;
       if (c.category) {
@@ -320,7 +241,7 @@ export async function handleBotMessage(
       nextContext.lastProducts = products.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
         response: {
-          text: pick(CATEGORY_INTROS)(c.title),
+          text: pick(BOT_CONFIG.categoryIntros.map((tpl) => renderText(tpl, { title: c.title }))),
           products: products.map((p) => ({
             name: p.name,
             slug: p.slug,
@@ -334,7 +255,55 @@ export async function handleBotMessage(
     }
   }
 
-  // ۶) جستجوی آزاد: اگر کلمه‌ای غیر از پرکننده‌ها داشت
+  // ۶) احوال‌پرسی — قبل از جستجو تا «سلام» به‌جای محصول، سلام برگرداند
+  // فقط وقتی واقعاً احوال‌پرسی است: حتماً کلمه سلام دارد و بقیه کلماتش هم سلام/خوش‌آمد است
+  const GREETING_RE = /(سلام|درود|علیک|hello|\bhi\b|صبح(تون)? بخیر|ظهر(تون)? بخیر|عصر(تون)? بخیر|شب(تون)? بخیر)/;
+  // نکته: برای کلمات فارسی از \b استفاده نمی‌شود چون boundary فقط برای حروف لاتین کار می‌کند؛
+  // توکن‌ها از قبل با فاصله جدا شده‌اند پس کافی است زیررشته باشد
+  const GREETING_EXTRAS_RE = /(خوبی|چطوری|چطورید|چطور|حالت|حال|چه خبر|ممنون|مرسی|بر|شما|خوش اومدی|خوش آمدید|علیکم|خسته نباشی|خسته نباشید)/;
+  const greetingTokens = meaningfulTokens(q);
+  const isGreeting =
+    GREETING_RE.test(q) &&
+    greetingTokens.every((t) => GREETING_RE.test(t) || GREETING_EXTRAS_RE.test(t));
+  if (isGreeting) {
+    const h = new Date().getHours();
+    const salutation = h >= 5 && h < 12 ? "صبح‌تون بخیر" : h >= 12 && h < 17 ? "ظهر بخیر" : h >= 17 && h < 22 ? "عصرتون بخیر" : "شب بخیر";
+    return {
+      response: {
+        text: pick(BOT_CONFIG.greetings.map((tpl) => renderText(tpl, { salutation, agent: BOT_CONFIG.agentName }))),
+      },
+      context: nextContext,
+    };
+  }
+
+  // ۷) خداحافظی — قبل از تشکر تا «مرسی که کمک کردی» هم خداحافظی جواب بدهد
+  if (BOT_CONFIG.farewellKeywords.some((k) => q.includes(k))) {
+    return {
+      response: {
+        text: pick(BOT_CONFIG.farewells.map((tpl) => renderText(tpl, { agent: BOT_CONFIG.agentName }))),
+      },
+      context: nextContext,
+    };
+  }
+
+  // ۸) تشکر
+  if (/(تشکر|ممنون|مرسی|دمت|خسته نباشی|ممنونم|ممنونم)/.test(q)) {
+    return {
+      response: {
+        text: pick(BOT_CONFIG.thanks),
+      },
+      context: nextContext,
+    };
+  }
+
+  // ۹) پاسخ‌های ثابت عمومی
+  for (const item of generalAnswers) {
+    if (item.keywords.some((k) => q.includes(k))) {
+      return { response: { text: item.answer, links: item.links }, context: nextContext };
+    }
+  }
+
+  // ۱۰) جستجوی آزاد: اگر کلمه‌ای غیر از پرکننده‌ها داشت
   const meaningful = meaningfulTokens(q);
   if (meaningful.length > 0) {
     const query = meaningful.join(" ");
@@ -343,7 +312,7 @@ export async function handleBotMessage(
       nextContext.lastProducts = results.map((p) => ({ name: p.name, slug: p.slug, price: p.price }));
       return {
         response: {
-          text: pick(SEARCH_INTROS)(query),
+          text: pick(BOT_CONFIG.searchIntros.map((tpl) => renderText(tpl, { query }))),
           products: results.map((p) => ({
             name: p.name,
             slug: p.slug,
@@ -357,41 +326,11 @@ export async function handleBotMessage(
     }
   }
 
-  // ۷) پاسخ‌های ثابت عمومی
-  for (const item of GENERAL_ANSWERS) {
-    if (item.keywords.some((k) => q.includes(k))) {
-      return { response: { text: item.answer, links: item.links }, context: nextContext };
-    }
-  }
-
-  // ۸) احوال‌پرسی
-  if (/(سلام|درود|hi|hello|علیک|صبح بخیر|عصر بخیر|شب بخیر)/.test(q)) {
-    return {
-      response: {
-        text: "سلام! به پشتیبانی آنلاین دیجی‌کلون خوش اومدی. چطور می‌تونم کمکت کنم؟ می‌تونی درباره ارسال، مرجوعی، پرداخت، گارانتی، پیگیری سفارش بپرسی یا اسم محصول موردنظرت رو بنویسی تا برات پیدا کنم.",
-      },
-      context: nextContext,
-    };
-  }
-
-  // ۹) تشکر
-  if (/(تشکر|ممنون|مرسی|دمت|خسته نباشی|ممنونم)/.test(q)) {
-    return {
-      response: { text: "خواهش می‌کنم! اگه سوال دیگه‌ای داشتی همیشه در خدمتم. روز خوبی داشته باشی. 🌟" },
-      context: nextContext,
-    };
-  }
-
-  // ۱۰) پاسخ پیش‌فرض
+  // ۱۱) پاسخ پیش‌فرض
   return {
     response: {
-      text: "ببخشید، متوجه سوالتون نشدم. 🙏 می‌تونید از دکمه‌های سریع بالا استفاده کنید یا این موارد رو امتحان کنید:\n• «پیگیری سفارشم»\n• «هدفون می‌خوام»\n• «تخفیف‌ها»\n• «پرفروش‌ترین‌ها»\n• «شرایط مرجوعی»\nاگه عجله دارید، با ۰۲۱-۹۱۰۰۱۰۰۰ تماس بگیرید.",
+      text: BOT_CONFIG.defaultReply,
     },
     context: nextContext,
   };
-}
-
-// کلمات پرکننده برای تشخیص جستجوی معنادار
-function meaningfulTokens(q: string): string[] {
-  return q.split(" ").filter((t) => t.length >= 2 && !FILLER_WORDS.includes(t));
 }

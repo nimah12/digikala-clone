@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import { useRateLimitCooldown, getRetryAfterSeconds, formatCooldown } from "@/lib/use-rate-limit";
 
 export default function ForgotPasswordPage() {
   const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { cooldown, setCooldown } = useRateLimitCooldown();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,6 +32,10 @@ export default function ForgotPasswordPage() {
         setSent(true);
       } else {
         setError(data.error || "خطا در ارسال. دوباره تلاش کنید.");
+        if (res.status === 429) {
+          const secs = getRetryAfterSeconds(res);
+          if (secs > 0) setCooldown(secs);
+        }
       }
     } catch {
       setError("خطا در اتصال به سرور. دوباره تلاش کنید.");
@@ -89,12 +95,25 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
+          {cooldown > 0 && (
+            <div
+              className="p-3 rounded-lg text-xs font-bold text-center"
+              style={{ background: "rgba(255,152,0,0.12)", color: "#e65100", border: "1px solid rgba(255,152,0,0.4)" }}
+            >
+              ⏳ دکمه ارسال تا {formatCooldown(cooldown)} دیگر فعال می‌شود
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || cooldown > 0}
             className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            {loading ? "در حال ارسال..." : "ارسال لینک بازیابی"}
+            {cooldown > 0
+              ? `لطفاً ${formatCooldown(cooldown)} صبر کنید`
+              : loading
+                ? "در حال ارسال..."
+                : "ارسال لینک بازیابی"}
           </button>
         </form>
 

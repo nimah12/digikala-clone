@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createResetToken } from "@/lib/reset-token";
-import { sendEmail, emailLayout } from "@/lib/email";
+import { sendEmail, emailLayout, escapeHtml } from "@/lib/email";
 import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
@@ -10,7 +10,10 @@ export async function POST(request: NextRequest) {
   if (!rl.ok) {
     return Response.json(
       { success: false, error: "تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
-      { status: 429 },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((rl.retryAfterMs ?? 0) / 1000)) },
+      },
     );
   }
   try {
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const html = emailLayout(
       "بازیابی رمز عبور",
-      `<p>سلام ${user.name ?? "کاربر عزیز"}،</p>
+      `<p>سلام ${escapeHtml(user.name ?? "کاربر عزیز")}،</p>
        <p>برای بازیابی رمز عبور حساب خود در دیجی‌کلون، روی دکمه زیر کلیک کنید:</p>
        <p style="text-align:center;margin:24px 0">
          <a href="${resetUrl}" style="display:inline-block;background:#ef4050;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:12px;font-weight:bold">بازیابی رمز عبور</a>
@@ -54,8 +57,11 @@ export async function POST(request: NextRequest) {
 
     const result = await sendEmail({ to: user.email, subject: "بازیابی رمز عبور — دیجی‌کلون", html });
     if (!result.ok) {
-      // در حالت بدون کلید/دامنه تأییدنشده، لینک در لاگ ثبت می‌شود تا توسعه ادامه پیدا کند
-      console.log(`[forgot-password] لینک بازیابی برای ${user.email}: ${resetUrl}`);
+      // هرگز توکن کامل را در لاگ ثبت نمی‌کنیم — فقط در dev و بدون داده‌ی حساس
+      if (process.env.NODE_ENV !== "production") {
+        const masked = user.email.replace(/^(.)(.+)(.@.*)$/, "$1***$3");
+        console.log(`[forgot-password] ایمیل بازیابی برای ${masked} ارسال نشد (${result.error ?? "unknown"})`);
+      }
     }
 
     return Response.json({ success: true });

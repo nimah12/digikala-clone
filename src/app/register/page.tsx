@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useHydrated } from "@/lib/hydration";
 import Icon from "@/components/Icon";
+import { useRateLimitCooldown, getRetryAfterSeconds, formatCooldown } from "@/lib/use-rate-limit";
 
 type Method = "email" | "phone";
 
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [captcha, setCaptcha] = useState("");
   const [captchaNum, setCaptchaNum] = useState(() => Math.floor(10 + Math.random() * 89));
+  const { cooldown, setCooldown } = useRateLimitCooldown();
   const hydrated = useHydrated();
 
   function handleSubmit(e: React.FormEvent) {
@@ -76,27 +78,32 @@ export default function RegisterPage() {
         password,
       }),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          try {
-            localStorage.setItem(
-              "dk-user",
-              JSON.stringify({
-                id: data.user?.id,
-                name: data.user?.name || name.trim(),
-                email: data.user?.email,
-                phone: data.user?.phone,
-              }),
-            );
-            if (data.token) localStorage.setItem("dk-token", data.token);
-            window.dispatchEvent(new Event("dk-user-changed"));
-          } catch {}
-          setSuccess(true);
-        } else {
-          setError(data.error || "خطا در ثبت‌نام. دوباره تلاش کنید.");
-        }
-      })
+      .then((res) =>
+        res.json().then((data) => {
+          if (data.success) {
+            try {
+              localStorage.setItem(
+                "dk-user",
+                JSON.stringify({
+                  id: data.user?.id,
+                  name: data.user?.name || name.trim(),
+                  email: data.user?.email,
+                  phone: data.user?.phone,
+                }),
+              );
+              if (data.token) localStorage.setItem("dk-token", data.token);
+              window.dispatchEvent(new Event("dk-user-changed"));
+            } catch {}
+            setSuccess(true);
+          } else {
+            setError(data.error || "خطا در ثبت‌نام. دوباره تلاش کنید.");
+            if (res.status === 429) {
+              const secs = getRetryAfterSeconds(res);
+              if (secs > 0) setCooldown(secs);
+            }
+          }
+        }),
+      )
       .catch(() => setError("خطا در اتصال به سرور. دوباره تلاش کنید."));
   }
 
@@ -302,11 +309,21 @@ export default function RegisterPage() {
             </div>
           )}
 
+          {cooldown > 0 && (
+            <div
+              className="p-3 rounded-lg text-xs font-bold text-center"
+              style={{ background: "rgba(255,152,0,0.12)", color: "#e65100", border: "1px solid rgba(255,152,0,0.4)" }}
+            >
+              ⏳ دکمه ثبت‌نام تا {formatCooldown(cooldown)} دیگر فعال می‌شود
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors"
+            disabled={cooldown > 0}
+            className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            ثبت‌نام
+            {cooldown > 0 ? `لطفاً ${formatCooldown(cooldown)} صبر کنید` : "ثبت‌نام"}
           </button>
         </form>
 

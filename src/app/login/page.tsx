@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import { pushEvent } from "@/lib/notifications";
+import { useRateLimitCooldown, getRetryAfterSeconds, formatCooldown } from "@/lib/use-rate-limit";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { cooldown, setCooldown } = useRateLimitCooldown();
   const router = useRouter();
 
   async function handleDemoLogin() {
@@ -33,6 +35,12 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function applyRateLimit(res: Response, fallback: string) {
+    const secs = getRetryAfterSeconds(res);
+    if (secs > 0) setCooldown(secs);
+    setError(fallback);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,6 +79,9 @@ export default function LoginPage() {
         router.push("/");
       } else {
         setError(data.error || "اطلاعات وارد شده صحیح نیست.");
+        if (res.status === 429) {
+          applyRateLimit(res, "تعداد درخواست‌ها بیش از حد مجاز است. کمی صبر کنید و دوباره تلاش کنید.");
+        }
       }
     } catch {
       setError("خطا در اتصال به سرور. دوباره تلاش کنید.");
@@ -133,12 +144,25 @@ export default function LoginPage() {
             </div>
           )}
 
+          {cooldown > 0 && (
+            <div
+              className="p-3 rounded-lg text-xs font-bold text-center"
+              style={{ background: "rgba(255,152,0,0.12)", color: "#e65100", border: "1px solid rgba(255,152,0,0.4)" }}
+            >
+              ⏳ دکمه ورود تا {formatCooldown(cooldown)} دیگر فعال می‌شود
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || cooldown > 0}
             className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            {loading ? "در حال ورود..." : "ورود"}
+            {cooldown > 0
+              ? `لطفاً ${formatCooldown(cooldown)} صبر کنید`
+              : loading
+                ? "در حال ورود..."
+                : "ورود"}
           </button>
         </form>
 

@@ -31,6 +31,27 @@
 
 این پروژه برای نشان دادن توانایی در **معماری وب مدرن، امنیت، تست‌نویسی و دیپلوی** طراحی شده است.
 
+## اسکرین‌شات‌ها
+
+<table>
+  <tr>
+    <td align="center"><b>صفحه اصلی</b></td>
+    <td align="center"><b>مگامنوی دسته‌بندی</b></td>
+  </tr>
+  <tr>
+    <td><img src="public/screenshots/hero.jpg" alt="صفحه اصلی" width="100%"/></td>
+    <td><img src="public/screenshots/megamenu.jpg" alt="مگامنو" width="100%"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>صفحه محصول</b></td>
+    <td align="center"><b>قیمت لحظه‌ای طلا</b></td>
+  </tr>
+  <tr>
+    <td><img src="public/screenshots/product.jpg" alt="صفحه محصول" width="100%"/></td>
+    <td><img src="public/screenshots/gold-price.jpg" alt="قیمت طلا" width="100%"/></td>
+  </tr>
+</table>
+
 ## امکانات
 
 ### فروشگاه

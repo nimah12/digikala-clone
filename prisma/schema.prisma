@@ -241,6 +241,7 @@ model Article {
   readTime     String
   productSlugs Json
   content      String   @default("") // پاراگراف‌ها با خط خالی جدا می‌شوند
+  contentBlocks Json? // ساختار چیدمان مقاله: [{ type: "p" | "img", ... }] — برای چیدمان پاراگراف‌ها و تصاویر بین متن
   published    Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

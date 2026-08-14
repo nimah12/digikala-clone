@@ -54,9 +54,12 @@ export default async function ArticlePage({ params }: Props) {
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const body = article.content
-    ? article.content.split(/\n\s*\n/).filter(Boolean)
-    : BODY[slug] ?? ["متن کامل این مقاله به‌زودی منتشر می‌شود."];
+  // چیدمان مقاله: بلاک‌های ساخت‌یافته (پاراگراف + تصویر + ویدئو) اگر موجود باشد، وگرنه متن ساده
+  const body = article.contentBlocks && article.contentBlocks.length > 0
+    ? article.contentBlocks
+    : (article.content
+        ? article.content.split(/\n\s*\n/).filter(Boolean).map((p) => ({ type: "p" as const, text: p }))
+        : BODY[slug]?.map((p) => ({ type: "p" as const, text: p })) ?? [{ type: "p" as const, text: "متن کامل این مقاله به‌زودی منتشر می‌شود." }]);
   const relatedProducts =
     article.productSlugs.length > 0
       ? await prisma.product.findMany({
@@ -120,9 +123,33 @@ export default async function ArticlePage({ params }: Props) {
             className="space-y-4 text-sm leading-8"
             style={{ color: "var(--text-secondary)" }}
           >
-            {body.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
+            {body.map((b, i) =>
+              b.type === "img" ? (
+                <figure key={i} className="my-2">
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden" style={{ background: "var(--bg)" }}>
+                    <Image
+                      src={b.src || ""}
+                      alt="تصویر مقاله"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 48rem"
+                      className="object-cover"
+                    />
+                  </div>
+                </figure>
+              ) : b.type === "video" ? (
+                <figure key={i} className="my-2">
+                  <video
+                    src={b.src || ""}
+                    controls
+                    preload="metadata"
+                    className="w-full aspect-video rounded-xl border bg-black"
+                    style={{ borderColor: "var(--border)" }}
+                  />
+                </figure>
+              ) : (
+                <p key={i}>{b.text}</p>
+              ),
+            )}
           </div>
         </div>
       </article>

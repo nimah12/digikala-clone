@@ -11,6 +11,14 @@ function parseBody(body: Record<string, unknown>) {
   const image = String(body.image ?? "").trim();
   const readTime = String(body.readTime ?? "").trim();
   const content = String(body.content ?? "");
+  // ساختار چیدمان مقاله — آرایه‌ای از بلاک‌های متن/تصویر/ویدئو (اختیاری)
+  const contentBlocks = Array.isArray(body.contentBlocks)
+    ? (body.contentBlocks as unknown[]).filter(
+        (b): b is { type: "p" | "img" | "video"; text?: unknown; src?: unknown } =>
+          !!b && typeof b === "object" &&
+          (["p", "img", "video"] as string[]).includes((b as { type?: unknown }).type as string),
+      )
+    : null;
   const productSlugs = Array.isArray(body.productSlugs)
     ? body.productSlugs.map(String)
     : [];
@@ -23,7 +31,7 @@ function parseBody(body: Record<string, unknown>) {
   if (!/^[a-z0-9-]+$/.test(id)) {
     throw new Error("شناسه مقاله فقط می‌تواند حروف انگلیسی کوچک، عدد و خط تیره باشد.");
   }
-  return { id, title, excerpt, category, date, image, readTime, content, productSlugs, published };
+  return { id, title, excerpt, category, date, image, readTime, content, contentBlocks, productSlugs, published };
 }
 
 export async function GET(request: NextRequest) {
@@ -60,6 +68,7 @@ export async function POST(request: NextRequest) {
         image: data.image,
         readTime: data.readTime || "۵ دقیقه",
         content: data.content,
+        contentBlocks: (data.contentBlocks ?? undefined) as object | undefined,
         productSlugs: data.productSlugs,
         published: data.published,
       },
@@ -93,6 +102,7 @@ export async function PATCH(request: NextRequest) {
         image: data.image,
         readTime: data.readTime,
         content: data.content,
+        contentBlocks: (data.contentBlocks ?? undefined) as object | undefined,
         productSlugs: data.productSlugs,
         published: data.published,
       },

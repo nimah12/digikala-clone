@@ -6,7 +6,41 @@ import Icon from "./Icon";
 import PriceBadge from "./PriceBadge";
 import { faNormalize } from "@/lib/normalize";
 
-type Message = { from: "user" | "bot"; text: string };
+type Message = { from: "user" | "bot"; text: string; at?: string };
+
+// نمایش زمان پیام مثل چت واقعی (ساعت:دقیقه به فارسی)
+function formatTime(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// برچسب روز برای جداکننده‌های تاریخ — «امروز»، «دیروز» یا تاریخ کامل
+function dayLabel(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+  if (diff <= 0) return "امروز";
+  if (diff === 1) return "دیروز";
+  return d.toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric" });
+}
+
+// زمان نسبی مثل چت واقعی — «همین الان»، «۵ دقیقه پیش»، «۳ ساعت پیش»؛ برای قدیمی‌ترها روز + ساعت
+function relativeTime(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
+  if (diffMin < 1) return "همین الان";
+  if (diffMin < 60) return `${diffMin.toLocaleString("fa-IR")} دقیقه پیش`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour.toLocaleString("fa-IR")} ساعت پیش`;
+  // قدیمی‌تر از یک روز: برچسب روز + ساعت دقیق
+  const day = dayLabel(iso);
+  if (day === "امروز" || day === "دیروز") return `${day}، ${formatTime(iso)}`;
+  return `${d.toLocaleDateString("fa-IR", { day: "numeric", month: "long" })}، ${formatTime(iso)}`;
+}
 
 type BotProduct = {
   name: string;
@@ -72,14 +106,17 @@ function getOrCreateSessionId(): string {
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { from: "bot", text: greetingText() },
+    { from: "bot", text: greetingText(), at: new Date().toISOString() },
   ]);
+  const [lastSeen, setLastSeen] = useState<string | null>(null); // «آخرین بازدید» اپراتور
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false); // نشانگر «در حال تایپ...»
   const [reveal, setReveal] = useState<string | null>(null); // متن در حال تایپ شدن
   const [extra, setExtra] = useState<{ products?: BotProduct[]; order?: BotResponse["order"]; links?: BotLink[] } | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [resumed, setResumed] = useState(false); // تاریخچه جلسه قبلی بازیابی شد
+  const [, setTick] = useState(0); // برای آپدیت زنده زمان‌های نسبی
+  const tickRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
 
   // بازیابی تاریخچه جلسه قبلی (شناسه از localStorage)
@@ -90,11 +127,16 @@ export default function SupportChat() {
       const data = await res.json();
       setSessionId(sid);
       const msgs = Array.isArray(data.messages)
-        ? (data.messages as { from: string; text: string }[]).filter((m) => m && m.text)
+        ? (data.messages as { from: string; text: string; at?: string }[]).filter((m) => m && m.text)
         : [];
       if (msgs.length > 0) {
-        setMessages(msgs.map((m) => ({ from: m.from === "user" ? ("user" as const) : ("bot" as const), text: m.text })));
+        setMessages(msgs.map((m) => ({ from: m.from === "user" ? ("user" as const) : ("bot" as const), text: m.text, at: m.at })));
+        // آخرین فعالیت اپراتور = زمان آخرین پیام ربات
+        const lastBot = [...msgs].reverse().find((m) => m.from === "bot");
+        if (lastBot?.at) setLastSeen(lastBot.at);
         setResumed(true);
+      } else {
+        setLastSeen(new Date().toISOString());
       }
     } catch {
       setSessionId(sid);
@@ -115,6 +157,16 @@ export default function SupportChat() {
     }
   }, [messages, typing, reveal, extra, open]);
 
+  // آپدیت زنده برچسب‌های نسبی — هر ۳۰ ثانیه رندر می‌شود تا «۵ دقیقه پیش» به‌موقع به‌روز بماند
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(() => {
+      tickRef.current += 1;
+      setTick(tickRef.current);
+    }, 30000);
+    return () => clearInterval(t);
+  }, [open]);
+
   // زمان «خواندن» پیام کاربر — هرچه پیام طولانی‌تر، بیشتر (مثل آدم واقعی)
   function readingDelay(userText: string): number {
     return Math.min(2000, Math.max(500, 350 + userText.length * 14));
@@ -128,7 +180,7 @@ export default function SupportChat() {
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
-    setMessages((m) => [...m, { from: "user", text: trimmed }]);
+    setMessages((m) => [...m, { from: "user", text: trimmed, at: new Date().toISOString() }]);
     setExtra(null);
     setTyping(true);
     let data: BotResponse | null = null;
@@ -139,7 +191,15 @@ export default function SupportChat() {
         body: JSON.stringify({ message: faNormalize(trimmed), sessionId: sessionId ?? undefined }),
       });
       const json = (await res.json()) as BotResponse & { sessionId?: string };
-      if (json.sessionId) setSessionId(json.sessionId);
+      if (json.sessionId) {
+        setSessionId(json.sessionId);
+        // شناسه واقعی جلسه را در localStorage نگه می‌داریم تا دفعه بعد همین جلسه بازیابی شود
+        try {
+          localStorage.setItem("dk-chat-session", json.sessionId);
+        } catch {
+          // ignore
+        }
+      }
       data = json;
     } catch {
       data = { text: "یه مشکل کوچیک پیش اومد، یه بار دیگه تلاش کنید. 🙏" };
@@ -166,7 +226,9 @@ export default function SupportChat() {
       await new Promise((r) => setTimeout(r, 28 + Math.random() * 40));
     }
     setReveal(null);
-    setMessages((m) => [...m, { from: "bot", text: finalText }]);
+    const botAt = new Date().toISOString();
+    setMessages((m) => [...m, { from: "bot", text: finalText, at: botAt }]);
+    setLastSeen(botAt);
     setExtra({ products: data.products, order: data.order, links: data.links });
   }
 
@@ -211,12 +273,19 @@ export default function SupportChat() {
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><Icon name="headphones" size={20} /></div>
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-dk-green border-2 border-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="text-sm font-bold">نگار | پشتیبانی دیجی‌کلون</div>
-              <div className="text-[11px] text-white/80 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-dk-green animate-pulse" />
-                آنلاین — پاسخگو در چند ثانیه
-              </div>
+              {typing || reveal ? (
+                <div className="text-[11px] text-white/80 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-dk-green animate-pulse" />
+                  در حال تایپ...
+                </div>
+              ) : (
+                <div className="text-[11px] text-white/80 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-dk-green" />
+                  آنلاین — آخرین بازدید: {relativeTime(lastSeen ?? new Date().toISOString())}
+                </div>
+              )}
               <Link
                 href="/support"
                 onClick={() => setOpen(false)}
@@ -261,24 +330,48 @@ export default function SupportChat() {
                 <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
               </div>
             )}
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.from === "user" ? "justify-start" : "justify-end"}`}>
-                <div
-                  className={`max-w-[80%] px-3 py-2 rounded-xl text-xs leading-5 whitespace-pre-line ${
-                    m.from === "user"
-                      ? "bg-white border border-dk-border"
-                      : "bg-dk-red text-white"
-                  }`}
-                  style={
-                    m.from === "user"
-                      ? { background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }
-                      : {}
-                  }
-                >
-                  {m.text}
+            {messages.map((m, i) => {
+              // جداکننده روز — مثل چت واقعی قبل از اولین پیام هر روز
+              const prev = messages[i - 1];
+              const showDay = !prev || dayLabel(prev.at) !== dayLabel(m.at);
+              return (
+                <div key={i}>
+                  {showDay && (
+                    <div className="flex items-center gap-2 my-2">
+                      <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: "var(--text-muted)", background: "var(--panel)" }}>
+                        {dayLabel(m.at)}
+                      </span>
+                      <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                    </div>
+                  )}
+                  <div className={`flex ${m.from === "user" ? "justify-start" : "justify-end"}`}>
+                    <div
+                      className={`max-w-[80%] px-3 py-2 rounded-xl text-xs leading-5 whitespace-pre-line ${
+                        m.from === "user"
+                          ? "bg-white border border-dk-border"
+                          : "bg-dk-red text-white"
+                      }`}
+                      style={
+                        m.from === "user"
+                          ? { background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }
+                          : {}
+                      }
+                    >
+                      {m.text}
+                      {m.at && (
+                        <span
+                          className={`block mt-1 text-[9px] ${m.from === "user" ? "" : "text-white/70"}`}
+                          style={m.from === "user" ? { color: "var(--text-muted)" } : {}}
+                        >
+                          {relativeTime(m.at)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Rich results after the last bot message */}
             {extra && !typing && (

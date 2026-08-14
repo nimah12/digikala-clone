@@ -2,8 +2,17 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createResetToken } from "@/lib/reset-token";
 import { sendEmail, emailLayout } from "@/lib/email";
+import { ipKey, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  // محدودیت: ۵ ایمیل بازیابی در هر ۱۵ دقیقه به ازای هر IP (ضد email bombing)
+  const rl = rateLimit(ipKey(request), { limit: 5, windowMs: 15 * 60 * 1000 });
+  if (!rl.ok) {
+    return Response.json(
+      { success: false, error: "تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید." },
+      { status: 429 },
+    );
+  }
   try {
     const body = await request.json();
     const { identifier } = body;

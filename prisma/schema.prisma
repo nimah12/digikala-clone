@@ -12,13 +12,17 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  phone     String?  @unique
-  name      String?
-  password  String?
-  role      String   @default("user")
-  createdAt DateTime @default(now())
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
+  phone            String?   @unique
+  name             String?
+  password         String?
+  role             String    @default("user")
+  createdAt        DateTime  @default(now())
+
+  // امنیت: شمارنده‌ی تلاش‌های ناموفق ورود و زمان قفل موقت حساب
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
 
   cart   Cart?
   orders Order[]

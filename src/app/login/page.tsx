@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import { pushEvent } from "@/lib/notifications";
-import { useRateLimitCooldown, getRetryAfterSeconds, formatCooldown } from "@/lib/use-rate-limit";
+import {
+  useRateLimitCooldown,
+  useFailedAttemptLock,
+  getRetryAfterSeconds,
+  formatCooldown,
+  MAX_FAILS,
+} from "@/lib/use-rate-limit";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -14,6 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { cooldown, setCooldown } = useRateLimitCooldown();
+  const { failCount, locked, remaining, recordFailure, reset } = useFailedAttemptLock();
   const router = useRouter();
 
   async function handleDemoLogin() {
@@ -76,11 +83,15 @@ export default function LoginPage() {
           });
           window.dispatchEvent(new Event("dk-user-changed"));
         } catch {}
+        reset();
         router.push("/");
       } else {
         setError(data.error || "اطلاعات وارد شده صحیح نیست.");
         if (res.status === 429) {
           applyRateLimit(res, "تعداد درخواست‌ها بیش از حد مجاز است. کمی صبر کنید و دوباره تلاش کنید.");
+        } else if (res.status === 401) {
+          // بعد از ۵ تلاش ناموفق پشت‌سرهم، فرم به مدت ۶۰ ثانیه قفل می‌شود
+          recordFailure();
         }
       }
     } catch {
@@ -153,16 +164,33 @@ export default function LoginPage() {
             </div>
           )}
 
+          {locked && (
+            <div
+              className="p-3 rounded-lg text-xs font-bold text-center"
+              style={{ background: "rgba(255,152,0,0.12)", color: "#e65100", border: "1px solid rgba(255,152,0,0.4)" }}
+            >
+              🔒 بعد از ۵ تلاش ناموفق، فرم ورود به مدت {formatCooldown(remaining)} قفل شد
+            </div>
+          )}
+
+          {failCount > 0 && !locked && (
+            <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>
+              {failCount} تلاش ناموفق از {MAX_FAILS} — بعد از ۵ تلاش، فرم موقتاً قفل می‌شود
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={loading || cooldown > 0}
+            disabled={loading || cooldown > 0 || locked}
             className="w-full h-11 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-60"
           >
-            {cooldown > 0
-              ? `لطفاً ${formatCooldown(cooldown)} صبر کنید`
-              : loading
-                ? "در حال ورود..."
-                : "ورود"}
+            {locked
+              ? `لطفاً ${formatCooldown(remaining)} صبر کنید`
+              : cooldown > 0
+                ? `لطفاً ${formatCooldown(cooldown)} صبر کنید`
+                : loading
+                  ? "در حال ورود..."
+                  : "ورود"}
           </button>
         </form>
 

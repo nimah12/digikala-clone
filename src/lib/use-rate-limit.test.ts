@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { formatCooldown, getRetryAfterSeconds } from "./use-rate-limit";
+import {
+  formatCooldown,
+  getRetryAfterSeconds,
+  computeLockState,
+  MAX_FAILS,
+  LOCK_SECONDS,
+} from "./use-rate-limit";
 
 describe("formatCooldown", () => {
   it("seconds only", () => {
@@ -27,5 +33,29 @@ describe("getRetryAfterSeconds", () => {
   it("returns 0 for invalid value", () => {
     const res = new Response(null, { headers: { "Retry-After": "abc" } });
     expect(getRetryAfterSeconds(res)).toBe(0);
+  });
+});
+
+describe("computeLockState (قفل بعد از تلاش‌های ناموفق)", () => {
+  const now = 1_000_000_000_000;
+
+  it("counts consecutive failures", () => {
+    expect(computeLockState(0, MAX_FAILS, LOCK_SECONDS, now)).toEqual({ count: 1, lockUntil: 0 });
+    expect(computeLockState(3, MAX_FAILS, LOCK_SECONDS, now)).toEqual({ count: 4, lockUntil: 0 });
+  });
+
+  it("locks after 5th failure and resets counter", () => {
+    const st = computeLockState(4, MAX_FAILS, LOCK_SECONDS, now);
+    expect(st.count).toBe(0);
+    expect(st.lockUntil).toBe(now + LOCK_SECONDS * 1000);
+  });
+
+  it("lock duration matches LOCK_SECONDS", () => {
+    const st = computeLockState(4, MAX_FAILS, LOCK_SECONDS, now);
+    expect((st.lockUntil - now) / 1000).toBe(LOCK_SECONDS);
+  });
+
+  it("custom thresholds", () => {
+    expect(computeLockState(2, 3, 30, now)).toEqual({ count: 0, lockUntil: now + 30_000 });
   });
 });

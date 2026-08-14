@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Icon from "./Icon";
 import PriceBadge from "./PriceBadge";
@@ -89,67 +89,19 @@ function randomFiller(): string {
   return SEARCH_FILLERS[Math.floor(Math.random() * SEARCH_FILLERS.length)];
 }
 
-// شناسه پایدار جلسه — در localStorage ذخیره می‌شود تا تاریخچه گفتگو بین باز و بسته شدن حفظ شود
-function getOrCreateSessionId(): string {
-  try {
-    let sid = localStorage.getItem("dk-chat-session");
-    if (!sid) {
-      sid = crypto.randomUUID ? crypto.randomUUID() : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      localStorage.setItem("dk-chat-session", sid);
-    }
-    return sid;
-  } catch {
-    return `s-${Date.now()}`;
-  }
-}
-
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { from: "bot", text: greetingText(), at: new Date().toISOString() },
   ]);
-  const [lastSeen, setLastSeen] = useState<string | null>(null); // «آخرین بازدید» اپراتور
+  const [lastSeen, setLastSeen] = useState<string>(() => new Date().toISOString()); // «آخرین بازدید» اپراتور
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false); // نشانگر «در حال تایپ...»
   const [reveal, setReveal] = useState<string | null>(null); // متن در حال تایپ شدن
   const [extra, setExtra] = useState<{ products?: BotProduct[]; order?: BotResponse["order"]; links?: BotLink[] } | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [resumed, setResumed] = useState(false); // تاریخچه جلسه قبلی بازیابی شد
   const [, setTick] = useState(0); // برای آپدیت زنده زمان‌های نسبی
   const tickRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
-
-  // بازیابی تاریخچه جلسه قبلی (شناسه از localStorage)
-  const restoreSession = useCallback(async () => {
-    const sid = getOrCreateSessionId();
-    try {
-      const res = await fetch(`/api/chat?sessionId=${encodeURIComponent(sid)}`);
-      const data = await res.json();
-      setSessionId(sid);
-      const msgs = Array.isArray(data.messages)
-        ? (data.messages as { from: string; text: string; at?: string }[]).filter((m) => m && m.text)
-        : [];
-      if (msgs.length > 0) {
-        setMessages(msgs.map((m) => ({ from: m.from === "user" ? ("user" as const) : ("bot" as const), text: m.text, at: m.at })));
-        // آخرین فعالیت اپراتور = زمان آخرین پیام ربات
-        const lastBot = [...msgs].reverse().find((m) => m.from === "bot");
-        if (lastBot?.at) setLastSeen(lastBot.at);
-        setResumed(true);
-      } else {
-        setLastSeen(new Date().toISOString());
-      }
-    } catch {
-      setSessionId(sid);
-    }
-  }, []);
-
-  // هنگام باز شدن چت: تاریخچه قبلی را بازیابی می‌کنیم
-  useEffect(() => {
-    if (!open || sessionId) return;
-    // بازیابی تاریخچه جلسه (setState داخل callback غیرهمگام پس از fetch)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    restoreSession();
-  }, [open, sessionId, restoreSession]);
 
   useEffect(() => {
     if (listRef.current) {
@@ -188,19 +140,9 @@ export default function SupportChat() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: faNormalize(trimmed), sessionId: sessionId ?? undefined }),
+        body: JSON.stringify({ message: faNormalize(trimmed) }),
       });
-      const json = (await res.json()) as BotResponse & { sessionId?: string };
-      if (json.sessionId) {
-        setSessionId(json.sessionId);
-        // شناسه واقعی جلسه را در localStorage نگه می‌داریم تا دفعه بعد همین جلسه بازیابی شود
-        try {
-          localStorage.setItem("dk-chat-session", json.sessionId);
-        } catch {
-          // ignore
-        }
-      }
-      data = json;
+      data = (await res.json()) as BotResponse;
     } catch {
       data = { text: "یه مشکل کوچیک پیش اومد، یه بار دیگه تلاش کنید. 🙏" };
     }
@@ -305,16 +247,7 @@ export default function SupportChat() {
           </div>
 
           {/* Messages */}
-          <div ref={listRef} className="h-80 overflow-y-auto p-3 space-y-2" style={{ background: "var(--bg)" }}>
-            {resumed && (
-              <div className="flex items-center gap-2 my-1">
-                <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
-                <span className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>
-                  ادامه گفتگوی قبلی
-                </span>
-                <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
-              </div>
-            )}
+          <div ref={listRef} className="chat-scroll h-80 overflow-y-auto p-3 space-y-2" style={{ background: "var(--bg)" }}>
             {messages.map((m, i) => {
               // جداکننده روز — مثل چت واقعی قبل از اولین پیام هر روز
               const prev = messages[i - 1];

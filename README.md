@@ -39,8 +39,8 @@
     <td align="center"><b>مگامنوی دسته‌بندی</b></td>
   </tr>
   <tr>
-    <td><img src="public/screenshots/hero.jpg" alt="صفحه اصلی" width="100%"/></td>
-    <td><img src="public/screenshots/megamenu.jpg" alt="مگامنو" width="100%"/></td>
+    <td><img src="public/screenshots/hero.png" alt="صفحه اصلی" width="100%"/></td>
+    <td><img src="public/screenshots/megamenu.png" alt="مگامنو" width="100%"/></td>
   </tr>
   <tr>
     <td align="center"><b>صفحه محصول</b></td>

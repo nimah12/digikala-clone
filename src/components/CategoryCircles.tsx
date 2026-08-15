@@ -19,7 +19,6 @@ const CATEGORIES = [
   { icon: "gift", label: "اسباب‌بازی", slug: "toys", color: "#eef7ec" },
   { icon: "lamp", label: "دکوراتیو", slug: "decor", color: "#f5f0e8" },
   { icon: "tag", label: "لباس و مد", slug: "fashion", color: "#f9e8f4" },
-  { icon: "camera", label: "دوربین", slug: "camera", color: "#eef4fa" },
 ] as const;
 
 export default function CategoryCircles() {

@@ -2,17 +2,17 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
-import Icon, { type IconName } from "@/components/Icon";
+import BrandLogo, { type BrandLogoName } from "@/components/BrandLogo";
 
 export const dynamic = "force-dynamic";
 
 const BRANDS: Record<
   string,
-  { name: string; icon: IconName; keywords: string[] }
+  { name: string; logo: BrandLogoName; keywords: string[] }
 > = {
   apple: {
     name: "اپل",
-    icon: "monitor",
+    logo: "apple",
     keywords: [
       "iphone",
       "airpod",
@@ -23,29 +23,29 @@ const BRANDS: Record<
       "apple",
     ],
   },
-  samsung: { name: "سامسونگ", icon: "phone", keywords: ["samsung", "galaxy"] },
+  samsung: { name: "سامسونگ", logo: "samsung", keywords: ["samsung", "galaxy"] },
   xiaomi: {
     name: "شیائومی",
-    icon: "tag",
+    logo: "xiaomi",
     keywords: ["xiaomi", "redmi", "mi-"],
   },
   lenovo: {
     name: "لنوو",
-    icon: "laptop",
+    logo: "lenovo",
     keywords: ["lenovo", "thinkpad", "ideapad", "legion"],
   },
-  nike: { name: "نایک", icon: "shoe", keywords: ["nike"] },
-  adidas: { name: "آدیداس", icon: "t-shirt", keywords: ["adidas"] },
-  sony: { name: "سونی", icon: "headphones", keywords: ["sony", "ps4", "ps5"] },
-  bosch: { name: "بوش", icon: "wrench", keywords: ["bosch"] },
-  jbl: { name: "جی‌بی‌ال", icon: "megaphone", keywords: ["jbl"] },
+  nike: { name: "نایک", logo: "nike", keywords: ["nike"] },
+  adidas: { name: "آدیداس", logo: "adidas", keywords: ["adidas"] },
+  sony: { name: "سونی", logo: "sony", keywords: ["sony", "ps4", "ps5"] },
+  bosch: { name: "بوش", logo: "bosch", keywords: ["bosch"] },
+  jbl: { name: "جی‌بی‌ال", logo: "jbl", keywords: ["jbl"] },
   asus: {
     name: "ایسوس",
-    icon: "gamepad",
+    logo: "asus",
     keywords: ["asus", "rog", "vivobook"],
   },
-  tefal: { name: "تفال", icon: "pan", keywords: ["tefal"] },
-  panasonic: { name: "پاناسونیک", icon: "tv", keywords: ["panasonic"] },
+  tefal: { name: "تفال", logo: "tefal", keywords: ["tefal"] },
+  panasonic: { name: "پاناسونیک", logo: "panasonic", keywords: ["panasonic"] },
 };
 
 type Props = { params: Promise<{ slug: string }> };
@@ -81,10 +81,10 @@ export default async function BrandPage({ params }: Props) {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-4 mb-6">
         <span
-          className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "var(--bg)", color: "#23254e" }}
+          className="w-16 h-16 rounded-2xl flex items-center justify-center border"
+          style={{ background: "#111113", borderColor: "var(--border)" }}
         >
-          <Icon name={brand.icon} size={30} strokeWidth={1.5} />
+          <BrandLogo name={brand.logo} size={40} />
         </span>
         <div>
           <h1 className="text-2xl font-extrabold">محصولات {brand.name}</h1>

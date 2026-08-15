@@ -13,9 +13,13 @@ export async function POST(request: NextRequest) {
   // محدودیت: ۳۰ پیام در هر ۲ دقیقه به ازای هر IP (ضد اسپم ربات)
   const rl = rateLimit(ipKey(request), { limit: 30, windowMs: 2 * 60 * 1000 });
   if (!rl.ok) {
+    const retryAfterSec = Math.ceil((rl.retryAfterMs ?? 120000) / 1000);
     return Response.json(
       { success: false, error: "تعداد پیام‌ها بیش از حد مجاز است. کمی صبر کنید." },
-      { status: 429 },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSec) },
+      },
     );
   }
   try {

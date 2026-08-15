@@ -5,6 +5,11 @@ import Link from "next/link";
 import Icon from "./Icon";
 import PriceBadge from "./PriceBadge";
 import { faNormalize } from "@/lib/normalize";
+import {
+  formatCooldown,
+  getRetryAfterSeconds,
+  useRateLimitCooldown,
+} from "@/lib/use-rate-limit";
 
 type Message = { from: "user" | "bot"; text: string; at?: string };
 
@@ -102,6 +107,7 @@ export default function SupportChat() {
   const [, setTick] = useState(0); // برای آپدیت زنده زمان‌های نسبی
   const tickRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const { cooldown, setCooldown } = useRateLimitCooldown(); // شمارش معکوس محدودیت پیام (۳۰ پیام/۲ دقیقه)
 
   useEffect(() => {
     if (listRef.current) {
@@ -131,7 +137,7 @@ export default function SupportChat() {
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || cooldown > 0) return;
     setMessages((m) => [...m, { from: "user", text: trimmed, at: new Date().toISOString() }]);
     setExtra(null);
     setTyping(true);
@@ -142,6 +148,23 @@ export default function SupportChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: faNormalize(trimmed) }),
       });
+      if (res.status === 429) {
+        // محدودیت پیام — پیام هشدار + شمارش معکوس زنده
+        const wait = getRetryAfterSeconds(res) || 120;
+        setCooldown(wait);
+        setTyping(false);
+        const at = new Date().toISOString();
+        setMessages((m) => [
+          ...m,
+          {
+            from: "bot",
+            text: `اینقدر سریع پیام نفرستید 😅؛ لطفاً تا ${formatCooldown(wait)} صبر کنید تا دوباره بتونم پاسخ بدم.`,
+            at,
+          },
+        ]);
+        setLastSeen(at);
+        return;
+      }
       data = (await res.json()) as BotResponse;
     } catch {
       data = { text: "یه مشکل کوچیک پیش اومد، یه بار دیگه تلاش کنید. 🙏" };
@@ -380,7 +403,7 @@ export default function SupportChat() {
                 key={q.label}
                 type="button"
                 onClick={() => sendMessage(q.text)}
-                disabled={typing}
+                disabled={typing || cooldown > 0}
                 className="h-7 px-3 rounded-full border text-[11px] font-bold shrink-0 transition-colors hover:text-dk-red hover:border-dk-red disabled:opacity-50"
                 style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text-secondary)" }}
               >
@@ -388,6 +411,27 @@ export default function SupportChat() {
               </button>
             ))}
           </div>
+
+          {/* باکس شمارش معکوس محدودیت پیام (۳۰ پیام/۲ دقیقه) */}
+          {cooldown > 0 && (
+            <div
+              className="flex items-center justify-between gap-2 px-3 py-2 border-t text-[11px] font-bold"
+              style={{
+                borderColor: "var(--border)",
+                background: "rgba(245, 158, 11, 0.14)",
+                color: "#d97706",
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              <span className="flex items-center gap-1.5">
+                ⏳ محدودیت پیام — تا {formatCooldown(cooldown)} دوباره فعال می‌شود
+              </span>
+              <span dir="ltr" className="digits tabular-nums">
+                {formatCooldown(cooldown)}
+              </span>
+            </div>
+          )}
 
           {/* Input */}
           <div className="flex items-center gap-2 p-3 border-t" style={{ borderColor: "var(--border)" }}>
@@ -398,15 +442,16 @@ export default function SupportChat() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") send();
               }}
-              placeholder="پیام خود را بنویسید..."
-              className="flex-1 h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
+              placeholder={cooldown > 0 ? "لطفاً صبر کنید..." : "پیام خود را بنویسید..."}
+              disabled={typing || cooldown > 0}
+              className="flex-1 h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 disabled:opacity-60"
               style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
               aria-label="پیام به پشتیبانی"
             />
             <button
               type="button"
               onClick={send}
-              disabled={typing}
+              disabled={typing || cooldown > 0}
               className="h-10 px-4 rounded-lg bg-dk-red text-white text-sm font-bold hover:bg-dk-red-dark transition-colors disabled:opacity-50"
               aria-label="ارسال پیام"
             >

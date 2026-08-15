@@ -16,6 +16,16 @@ import MobileMenu from "./MobileMenu";
 import IranClock from "./IranClock";
 import Icon from "./Icon";
 
+// دانه‌های طلایی — مقادیر قطعی (بدون رندم) تا SSR/هیدریشن ثابت بمونه
+const GOLD_SPARKS = Array.from({ length: 14 }, (_, i) => ({
+  left: 4 + ((i * 37) % 92),
+  top: 5 + ((i * 41) % 70),
+  size: 3 + ((i * 7) % 4),
+  dur: 1.7 + ((i * 13) % 9) / 10,
+  delay: ((i * 17) % 22) / 10,
+  drift: ((i * 29) % 26) - 13,
+}));
+
 type HeaderProps = {
   menuGroups?: MenuGroupForRender[];
 };
@@ -212,6 +222,26 @@ export default function Header({ menuGroups }: HeaderProps) {
             >
               {/* درخشش طلایی هنگام هاور */}
               <span className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-t from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-200" />
+              {/* دانه‌های طلایی که از لوگوی سکه بالا می‌رن */}
+              <span className="gold-spark-wrap" aria-hidden="true">
+                {GOLD_SPARKS.map((s, i) => (
+                  <span
+                    key={i}
+                    className="gold-spark"
+                    style={
+                      {
+                        left: `${s.left}%`,
+                        top: `${s.top}%`,
+                        width: s.size,
+                        height: s.size,
+                        animationDuration: `${s.dur}s`,
+                        animationDelay: `${s.delay}s`,
+                        "--drift": `${s.drift}px`,
+                      } as React.CSSProperties
+                    }
+                  />
+                ))}
+              </span>
               <Icon
                 name="coins"
                 size={18}

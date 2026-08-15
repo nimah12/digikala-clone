@@ -635,6 +635,42 @@ html[data-theme="dark"] .cat-tile {
   background: var(--border);
 }
 
+/* ---- دانه‌های طلایی که از لوگوی سکه هدر بالا می‌رن ---- */
+.gold-spark-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.gold-spark {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ffe9a3 0%, #ffd34d 45%, #e8a400 100%);
+  box-shadow: 0 0 6px 1.5px rgba(255, 205, 60, 0.9);
+  opacity: 0;
+  animation: gold-fall 2.2s ease-in infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes gold-fall {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--drift, 0px), 52px) scale(0.3);
+    opacity: 0;
+  }
+}
+
 /* ---- کاهش حرکت برای کاربرانی که آن را غیرفعال کرده‌اند ---- */
 @media (prefers-reduced-motion: reduce) {
   html {

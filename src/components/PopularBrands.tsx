@@ -2,73 +2,74 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import Icon, { type IconName } from "./Icon";
+import Icon from "./Icon";
+import BrandLogo, { type BrandLogoName } from "./BrandLogo";
 
 const BRANDS: {
   name: string;
   slug: string;
   q: string;
-  icon: IconName;
+  logo: BrandLogoName;
   color: string;
 }[] = [
   {
     name: "اپل",
     slug: "apple",
     q: "iphone",
-    icon: "monitor",
+    logo: "apple",
     color: "#e8f0f9",
   },
   {
     name: "سامسونگ",
     slug: "samsung",
     q: "samsung",
-    icon: "phone",
+    logo: "samsung",
     color: "#dcebfa",
   },
   {
     name: "شیائومی",
     slug: "xiaomi",
     q: "xiaomi",
-    icon: "tag",
+    logo: "xiaomi",
     color: "#fdeeda",
   },
   {
     name: "لنوو",
     slug: "lenovo",
     q: "lenovo",
-    icon: "laptop",
+    logo: "lenovo",
     color: "#e6eef7",
   },
-  { name: "نایک", slug: "nike", q: "nike", icon: "shoe", color: "#e8e8ef" },
+  { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef" },
   {
     name: "آدیداس",
     slug: "adidas",
     q: "adidas",
-    icon: "t-shirt",
+    logo: "adidas",
     color: "#e0f3e9",
   },
   {
     name: "سونی",
     slug: "sony",
     q: "sony",
-    icon: "headphones",
+    logo: "sony",
     color: "#f7e3f0",
   },
-  { name: "بوش", slug: "bosch", q: "bosch", icon: "wrench", color: "#fdeeda" },
+  { name: "بوش", slug: "bosch", q: "bosch", logo: "bosch", color: "#fdeeda" },
   {
     name: "جی‌بی‌ال",
     slug: "jbl",
     q: "jbl",
-    icon: "megaphone",
+    logo: "jbl",
     color: "#fdeeda",
   },
-  { name: "ایسوس", slug: "asus", q: "asus", icon: "gamepad", color: "#e6eef7" },
-  { name: "تفال", slug: "tefal", q: "tefal", icon: "pan", color: "#f3e6f8" },
+  { name: "ایسوس", slug: "asus", q: "asus", logo: "asus", color: "#e6eef7" },
+  { name: "تفال", slug: "tefal", q: "tefal", logo: "tefal", color: "#f3e6f8" },
   {
     name: "پاناسونیک",
     slug: "panasonic",
     q: "panasonic",
-    icon: "tv",
+    logo: "panasonic",
     color: "#e2eef7",
   },
 ];
@@ -166,18 +167,18 @@ export default function PopularBrands() {
               className="flex flex-col items-center gap-2.5 group shrink-0 w-[104px]"
             >
               <span
-                className="brand-tile brand-item w-[88px] h-[88px] rounded-2xl flex items-center justify-center border shadow-sm"
+                className="brand-tile brand-item w-[92px] h-[92px] rounded-2xl flex items-center justify-center border shadow-sm"
                 style={
                   {
-                    background: `linear-gradient(150deg, ${brand.color} 0%, color-mix(in srgb, ${brand.color} 62%, #ffffff) 100%)`,
+                    background: "#111113",
                     borderColor: "var(--border)",
                     animationDelay: `${i * 60}ms`,
                     "--glow": brand.color,
                   } as React.CSSProperties
                 }
               >
-                <span className="brand-icon" style={{ color: "#23254e" }}>
-                  <Icon name={brand.icon} size={40} strokeWidth={1.4} />
+                <span className="brand-icon">
+                  <BrandLogo name={brand.logo} size={52} />
                 </span>
               </span>
               <span className="text-sm font-bold flex items-center gap-1 group-hover:text-dk-red transition-colors">

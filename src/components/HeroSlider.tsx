@@ -235,7 +235,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
       aria-label="بنرهای تبلیغاتی"
     >
       {/* لایه‌ها */}
-      <div className="relative min-h-[430px] md:min-h-[480px]">
+      <div className="relative min-h-[340px] md:min-h-[480px]">
         {slides.map((s, i) => {
           const t = THEMES[s.theme];
           const p = s.product;
@@ -243,7 +243,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
             <div
               key={s.id}
               aria-hidden={i !== current}
-              className={`w-full min-h-[430px] md:min-h-[480px] flex items-center overflow-hidden transition-opacity duration-700 ${
+              className={`w-full min-h-[340px] md:min-h-[480px] flex items-center overflow-hidden transition-opacity duration-700 ${
                 i === current ? "opacity-100 relative" : "opacity-0 absolute pointer-events-none"
               }`}
               style={{ background: t.bg, inset: 0 }}
@@ -275,9 +275,9 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                 }}
               />
 
-              <div className="relative w-full max-w-7xl mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-6 md:gap-10 items-center">
+              <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 items-center">
                 {/* متن */}
-                <div className="space-y-4 md:space-y-5 py-8 md:py-10 text-center md:text-right">
+                <div className="space-y-3 sm:space-y-4 md:space-y-5 py-5 sm:py-8 md:py-10 text-center md:text-right">
                   <div className={i === current ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
                     <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -286,7 +286,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
 
                   <h2
-                    className={`text-white text-3xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
+                    className={`text-white text-2xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "90ms" }}
@@ -295,7 +295,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </h2>
 
                   <p
-                    className={`text-white/85 text-sm md:text-base leading-7 max-w-md mx-auto md:mx-0 ${
+                    className={`text-white/85 text-xs sm:text-sm md:text-base leading-6 sm:leading-7 max-w-md mx-auto md:mx-0 ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "180ms" }}
@@ -312,7 +312,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   >
                     <Link
                       href={s.href}
-                      className="group inline-flex items-center gap-2 bg-white text-gray-900 text-sm font-extrabold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-[1.04] active:scale-95 overflow-hidden relative"
+                      className="group inline-flex items-center gap-2 bg-white text-gray-900 text-xs sm:text-sm font-extrabold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-[1.04] active:scale-95 overflow-hidden relative"
                     >
                       <span className="hero-shine absolute inset-0 bg-gradient-to-l from-transparent via-white/60 to-transparent pointer-events-none" />
                       <span className="relative">مشاهده محصولات</span>
@@ -330,7 +330,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                     </Link>
                     <Link
                       href={s.secondaryHref ?? s.href}
-                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-white text-sm font-bold px-5 py-3 rounded-full border border-white/25 hover:bg-white/20 transition-all hover:scale-[1.04] active:scale-95"
+                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-white text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full border border-white/25 hover:bg-white/20 transition-all hover:scale-[1.04] active:scale-95"
                     >
                       جزئیات بیشتر
                     </Link>

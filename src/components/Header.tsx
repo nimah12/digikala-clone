@@ -104,7 +104,7 @@ export default function Header({ menuGroups }: HeaderProps) {
               <SearchBox />
             </div>
 
-          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Theme toggle */}
             <button
               type="button"

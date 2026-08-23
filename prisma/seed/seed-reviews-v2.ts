@@ -49,12 +49,13 @@ async function main() {
           productId,
           author: r.author,
           date: `${1403 - (i % 2)}/${String(1 + ((productId + i) % 12)).padStart(2, '0')}/${String(2 + i * 6).padStart(2, '0')}`,
-          rating: r.rating,
-          title: r.title,
-          text: r.text,
-          verified: r.verified,
-        },
-      })
+            rating: r.rating,
+            title: r.title,
+            text: r.text,
+            verified: r.verified,
+            approved: true,
+          },
+        })
       count++
     }
   }

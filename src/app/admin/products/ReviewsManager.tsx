@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { deleteReview, errorMessage, fetchReviews, saveReview } from "./admin-api";
+import { deleteReview, errorMessage, fetchReviews, saveReview, setReviewApproved } from "./admin-api";
 import type { ReviewItem } from "./types";
 
 export default function ReviewsManager({ productId }: { productId: number }) {
@@ -69,6 +69,19 @@ export default function ReviewsManager({ productId }: { productId: number }) {
     try {
       await deleteReview(productId, reviewId);
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    } catch (err) {
+      setError(errorMessage(err, "خطای نامشخص"));
+    }
+  }
+
+  async function handleToggleApproved(review: ReviewItem) {
+    setError("");
+    const next = !review.approved;
+    try {
+      const updated = await setReviewApproved(productId, review.id, next);
+      setReviews((prev) =>
+        prev.map((r) => (r.id === review.id ? updated : r)),
+      );
     } catch (err) {
       setError(errorMessage(err, "خطای نامشخص"));
     }
@@ -158,44 +171,99 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                   </div>
                 </div>
               ) : (
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <strong>{r.author}</strong>
-                    <span style={{ color: "var(--text-muted)" }}>
-                      امتیاز: {r.rating.toLocaleString("fa-IR")}
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{r.title}</div>
-                  <p style={{ color: "var(--text-secondary)", marginBottom: 6 }}>{r.text}</p>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <button
-                      type="button"
-                      onClick={() => startEdit(r)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#23254e",
-                        cursor: "pointer",
-                        fontSize: 12,
-                      }}
-                    >
-                      ویرایش
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(r.id)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#c0392b",
-                        cursor: "pointer",
-                        fontSize: 12,
-                      }}
-                    >
-                      حذف
-                    </button>
-                  </div>
-                </div>
+                 <div>
+                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                     <strong>{r.author}</strong>
+                     <span style={{ color: "var(--text-muted)" }}>
+                       امتیاز: {r.rating.toLocaleString("fa-IR")}
+                     </span>
+                     {r.approved ? (
+                       <span
+                         style={{
+                           fontSize: 11,
+                           color: "#2ab57d",
+                           border: "1px solid #2ab57d",
+                           borderRadius: 999,
+                           padding: "1px 8px",
+                         }}
+                       >
+                         تأییدشده
+                       </span>
+                     ) : (
+                       <span
+                         style={{
+                           fontSize: 11,
+                           color: "#c0392b",
+                           border: "1px solid #c0392b",
+                           borderRadius: 999,
+                           padding: "1px 8px",
+                         }}
+                       >
+                         در انتظار تأیید
+                       </span>
+                     )}
+                   </div>
+                   <div style={{ fontWeight: 600, marginBottom: 4 }}>{r.title}</div>
+                   <p style={{ color: "var(--text-secondary)", marginBottom: 6 }}>{r.text}</p>
+                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                     {!r.approved && (
+                       <button
+                         type="button"
+                         onClick={() => handleToggleApproved(r)}
+                         style={{
+                           background: "none",
+                           border: "none",
+                           color: "#2ab57d",
+                           cursor: "pointer",
+                           fontSize: 12,
+                         }}
+                       >
+                         تأیید و نمایش
+                       </button>
+                     )}
+                     {r.approved && (
+                       <button
+                         type="button"
+                         onClick={() => handleToggleApproved(r)}
+                         style={{
+                           background: "none",
+                           border: "none",
+                           color: "#c0392b",
+                           cursor: "pointer",
+                           fontSize: 12,
+                         }}
+                       >
+                         ردّ و پنهان‌سازی
+                       </button>
+                     )}
+                     <button
+                       type="button"
+                       onClick={() => startEdit(r)}
+                       style={{
+                         background: "none",
+                         border: "none",
+                         color: "#23254e",
+                         cursor: "pointer",
+                         fontSize: 12,
+                       }}
+                     >
+                       ویرایش
+                     </button>
+                     <button
+                       type="button"
+                       onClick={() => handleDelete(r.id)}
+                       style={{
+                         background: "none",
+                         border: "none",
+                         color: "#c0392b",
+                         cursor: "pointer",
+                         fontSize: 12,
+                       }}
+                     >
+                       حذف
+                     </button>
+                   </div>
+                 </div>
               )}
             </div>
           ))}

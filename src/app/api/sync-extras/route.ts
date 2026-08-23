@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
               title: r.title,
               text: r.text,
               verified: r.verified,
+              approved: true,
             },
           });
           reviewCount++;

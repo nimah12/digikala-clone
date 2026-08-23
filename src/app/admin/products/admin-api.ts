@@ -310,5 +310,21 @@ export async function deleteReview(productId: number, reviewId: number) {
   if (!res.ok) throw new Error("حذف نظر ناموفق بود");
 }
 
+// تأیید یا ردّ نظر توسط ادمین
+export async function setReviewApproved(
+  productId: number,
+  reviewId: number,
+  approved: boolean,
+): Promise<ReviewItem> {
+  const res = await fetch(`/api/admin/products/${productId}/reviews`, {
+    method: "PATCH",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ reviewId, approved }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "تغییر وضعیت نظر ناموفق بود");
+  return data.review as ReviewItem;
+}
+
 export { errorMessage };
 

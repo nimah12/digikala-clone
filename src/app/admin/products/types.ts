@@ -58,6 +58,7 @@ export type ReviewItem = {
   title: string;
   text: string;
   verified: boolean;
+  approved: boolean;
 };
 
 export type ProductDetail = {

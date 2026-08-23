@@ -38,7 +38,7 @@ function ratingBreakdown(reviews: { rating: number }[]): { star: number; pct: nu
 
 export default async function Reviews({ productId, rating, ratingCount }: { productId: number; rating: number; ratingCount: number }) {
   const reviews = await prisma.review.findMany({
-    where: { productId },
+    where: { productId, approved: true },
     orderBy: { id: "asc" },
   });
 

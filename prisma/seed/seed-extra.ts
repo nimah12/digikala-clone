@@ -563,12 +563,13 @@ async function main() {
         productId: product.id,
         author: r.author,
         date: r.date,
-        rating: r.rating,
-        title: r.title,
-        text: r.text,
-        verified: r.verified,
-      },
-    });
+          rating: r.rating,
+          title: r.title,
+          text: r.text,
+          verified: r.verified,
+          approved: true,
+        },
+      });
     reviewCount++;
   }
 

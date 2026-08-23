@@ -104,7 +104,7 @@ export default function Header({ menuGroups }: HeaderProps) {
               <SearchBox />
             </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Theme toggle */}
             <button
               type="button"
@@ -197,7 +197,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             ) : (
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:gap-1.5 rounded-lg text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 sm:w-auto sm:px-4 sm:gap-1.5 sm:h-10 rounded-lg text-sm font-bold text-white bg-dk-red hover:bg-dk-red-dark transition-colors"
                 aria-label="ورود / ثبت‌نام"
                 title="ورود / ثبت‌نام"
               >
@@ -212,7 +212,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             {/* قیمت روز طلا — لینک مستقیم با تم طلایی */}
             <Link
               href="/gold-price"
-              className="group relative inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-10 sm:px-3 rounded-lg shrink-0 overflow-visible
+              className="group relative inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-10 sm:px-3 rounded-lg shrink-0 overflow-hidden sm:overflow-visible
                 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500
                 text-amber-950 shadow-lg shadow-amber-400/60 ring-1 ring-amber-400/70
                 hover:shadow-xl hover:shadow-amber-500/80 hover:brightness-110 hover:scale-105

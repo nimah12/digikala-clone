@@ -18,7 +18,7 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
           <path d="M3 6h18" />
           <path d="M16 10a4 4 0 0 1-8 0" />
         </svg>
-        <span className="hidden sm:inline">دیجی‌کلون</span>
+        <span className="inline">دیجی‌کلون</span>
       </span>
     </Link>
   );

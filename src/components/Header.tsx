@@ -109,7 +109,7 @@ export default function Header({ menuGroups }: HeaderProps) {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
               aria-label={theme === "dark" ? "حالت روز" : "حالت شب"}
               title={theme === "dark" ? "حالت روز" : "حالت شب"}
             >

@@ -235,7 +235,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
       aria-label="بنرهای تبلیغاتی"
     >
       {/* لایه‌ها */}
-      <div className="relative min-h-[340px] md:min-h-[480px]">
+      <div className="relative min-h-[260px] md:min-h-[480px]">
         {slides.map((s, i) => {
           const t = THEMES[s.theme];
           const p = s.product;
@@ -243,7 +243,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
             <div
               key={s.id}
               aria-hidden={i !== current}
-              className={`w-full min-h-[340px] md:min-h-[480px] flex items-center overflow-hidden transition-opacity duration-700 ${
+              className={`w-full min-h-[260px] md:min-h-[480px] flex items-center overflow-hidden transition-opacity duration-700 ${
                 i === current ? "opacity-100 relative" : "opacity-0 absolute pointer-events-none"
               }`}
               style={{ background: t.bg, inset: 0 }}
@@ -277,7 +277,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
               <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 items-center">
                 {/* متن */}
-                <div className="space-y-3 sm:space-y-4 md:space-y-5 py-5 sm:py-8 md:py-10 text-center md:text-right">
+                  <div className="space-y-3 sm:space-y-4 md:space-y-5 py-4 sm:py-8 md:py-10 text-center md:text-right">
                   <div className={i === current ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
                     <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -286,7 +286,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
 
                   <h2
-                    className={`text-white text-2xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
+                    className={`text-white text-xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "90ms" }}
@@ -368,7 +368,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                       <>
                         <Link
                           href={s.href}
-                          className="hero-float relative block w-28 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2 md:p-3.5 shadow-2xl ring-1 ring-white/40"
+                          className="hero-float relative block w-24 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2 md:p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
                           <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -402,10 +402,10 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                         </Link>
 
                         {/* چیپ‌های شناور — موبایل کوچک، دسکتاپ بزرگ */}
-                        <span className="hero-float-delayed absolute -top-2 -right-2 md:-top-4 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                        <span className="hero-float-delayed absolute -top-2 -right-2 md:-top-4 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-1">
                           <span className="text-dk-green">✓</span> ضمانت اصالت
                         </span>
-                        <span className="hero-float-delayed absolute -bottom-2 -left-2 md:-bottom-4 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                        <span className="hero-float-delayed absolute -bottom-2 -left-2 md:-bottom-4 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-1">
                           <span className="text-dk-red">🚚</span> ارسال رایگان
                         </span>
                       </>

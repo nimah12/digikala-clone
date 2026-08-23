@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     const product = await prisma.product.findUnique({
       where: { id: productIdToReview },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!product) {
       return Response.json({ success: false, error: "محصول یافت نشد" }, { status: 404 });
@@ -172,6 +172,21 @@ export async function POST(request: NextRequest) {
         approved: false,
       },
     });
+
+    // اطلاع‌رسانی به ادمین: نظر جدیدی در انتظار بررسی است
+    try {
+      await prisma.adminNotification.create({
+        data: {
+          type: "review",
+          title: "نظر جدید در انتظار تأیید",
+          body: `${user.name || "کاربر"} نظری با امتیاز ${ratingNum} برای «${product.name}» ثبت کرد.`,
+          productId: product.id,
+          reviewId: review.id,
+        },
+      });
+    } catch {
+      // شکست در ثبت اعلان نباید باعث شکستِ ثبت نظر شود
+    }
 
     return Response.json({
       success: true,

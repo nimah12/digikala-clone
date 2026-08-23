@@ -85,6 +85,15 @@ export default function AdminProductsPage() {
       } else {
         setStatus("ready");
       }
+
+      // باز کردن خودکار محصول از طریق اعلان (مثلاً نظر جدید)
+      const focusParam = new URLSearchParams(window.location.search).get("focus");
+      if (focusParam && Number.isInteger(Number(focusParam))) {
+        const fid = Number(focusParam);
+        setCategoryFilter("");
+        await loadProducts("", "");
+        setEditPanelId(fid);
+      }
     });
   }, []);
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserSync } from "@/lib/user";
+import { pushEvent } from "@/lib/notifications";
 
 function StarButton({
   value,
@@ -141,6 +142,11 @@ export default function ReviewForm({ productId }: { productId: number }) {
         return;
       }
       setDone(true);
+      pushEvent({
+        type: "info",
+        title: "نظر شما ثبت شد",
+        description: "پس از بررسی و تأیید ادمین در صفحه‌ی محصول نمایش داده می‌شود.",
+      });
       // صفحه‌ی محصول را رفرش کن تا دیدگاه جدید و امتیاز به‌روز دیده شود
       router.refresh();
     } catch {

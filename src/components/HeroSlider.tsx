@@ -351,7 +351,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
                 {/* عکس محصول شناور */}
                 <div
-                  className={`flex items-center justify-center pb-2 md:pb-0 ${i === current ? "hero-pop" : "opacity-0"}`}
+                  className={`flex items-center justify-center -mt-4 md:mt-0 ${i === current ? "hero-pop" : "opacity-0"}`}
                   style={{ animationDelay: "150ms" }}
                 >
                   <div className="relative">
@@ -368,7 +368,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                       <>
                         <Link
                           href={s.href}
-                          className="hero-float relative block w-40 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2.5 md:p-3.5 shadow-2xl ring-1 ring-white/40"
+                          className="hero-float relative block w-28 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2 md:p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
                           <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -401,11 +401,11 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                           </span>
                         </Link>
 
-                        {/* چیپ‌های شناور */}
-                        <span className="hero-float-delayed absolute -top-3 md:-top-4 -right-3 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[10px] md:text-[11px] font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                        {/* چیپ‌های شناور — فقط دسکتاپ */}
+                        <span className="hidden md:flex hero-float-delayed absolute -top-4 -right-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg items-center gap-1.5">
                           <span className="text-dk-green">✓</span> ضمانت اصالت
                         </span>
-                        <span className="hero-float-delayed absolute -bottom-3 md:-bottom-4 -left-3 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[10px] md:text-[11px] font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                        <span className="hidden md:flex hero-float-delayed absolute -bottom-4 -left-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg items-center gap-1.5">
                           <span className="text-dk-red">🚚</span> ارسال رایگان
                         </span>
                       </>
@@ -424,13 +424,13 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
         })}
 
         {/* کان‌داون پایان تخفیف‌ها */}
-        <div className="absolute top-4 left-4 md:top-6 md:left-10 z-10">
+        <div className="absolute top-2 left-2 md:top-6 md:left-10 z-10">
           <div
             suppressHydrationWarning
-            className="hero-slide-up flex items-center gap-1.5 bg-black/25 backdrop-blur rounded-2xl px-3.5 py-2.5 border border-white/20 shadow-lg"
+            className="hero-slide-up flex items-center gap-1.5 bg-black/25 backdrop-blur rounded-2xl px-2.5 py-1.5 md:px-3.5 md:py-2.5 border border-white/20 shadow-lg"
             key={`cd-${current}`}
           >
-            <span className="text-white/80 text-[10px] font-bold ml-1">پایان تخفیف‌ها تا</span>
+            <span className="text-white/80 text-[8px] md:text-[10px] font-bold ml-1">پایان تخفیف‌ها تا</span>
             {[
               { v: pad2(countdown.h), l: "ساعت" },
               { v: pad2(countdown.m), l: "دقیقه" },
@@ -439,7 +439,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   {idx > 0 && <span className="text-white/40 font-black">:</span>}
                   <span
                     suppressHydrationWarning
-                    className="min-w-8 text-center bg-white/15 text-white text-sm font-black rounded-lg px-1.5 py-1 tabular-nums"
+                    className="min-w-6 md:min-w-8 text-center bg-white/15 text-white text-xs md:text-sm font-black rounded-lg px-1 md:px-1.5 py-0.5 md:py-1 tabular-nums"
                   >
                     {unit.v}
                   </span>

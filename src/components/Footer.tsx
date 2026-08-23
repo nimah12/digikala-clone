@@ -11,8 +11,8 @@ export default function Footer() {
         color: "var(--text)",
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-0">
+      <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 md:gap-0">
           {FOOTER_LINKS.map((col, i) => (
             <div
               key={col.title}
@@ -46,7 +46,7 @@ export default function Footer() {
               دیجی‌کلون، اولین و بزرگ‌ترین فروشگاه اینترنتی نمونه ایرانی، با
               ده‌ها هزار کالای دیجیتال، خدمات پس از فروش و ضمانت اصالت کالا.
             </p>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-3 md:mt-4 flex flex-col gap-2">
               <a
                 href="mailto:nima.hasani.dev@gmail.com"
                 className="inline-flex items-center gap-2 text-xs hover:text-dk-red transition-colors"
@@ -87,7 +87,7 @@ export default function Footer() {
           </div>
         </div>
         <div
-          className="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3"
+          className="mt-6 md:mt-8 pt-5 md:pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3"
           style={{ borderColor: "var(--border)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>

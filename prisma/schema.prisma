@@ -143,6 +143,21 @@ model Review {
   @@index([userId])
 }
 
+// اعلان‌های پنل ادمین (مثلاً وقتی کاربری نظر ثبت می‌کند)
+model AdminNotification {
+  id        Int      @id @default(autoincrement())
+  type      String   @default("review")
+  title     String
+  body      String?
+  productId Int?
+  reviewId  Int?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+}
+
 model Vendor {
   id        Int     @id @default(autoincrement())
   productId Int

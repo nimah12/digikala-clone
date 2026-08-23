@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AdminNotificationBell from "@/components/AdminNotificationBell";
 
 const NAV_ITEMS = [
   {
@@ -172,6 +173,9 @@ export default function AdminLayout({
         </aside>
 
         <main className="flex-1 min-w-0">
+          <div className="flex justify-end mb-4">
+            <AdminNotificationBell />
+          </div>
           <div className="flex md:hidden flex-wrap gap-2 mb-4">
             {NAV_ITEMS.map((item) => {
               const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { readAuthToken } from "@/lib/auth";
+import { blockIfDemo } from "@/lib/admin";
 
 export async function GET(request: NextRequest) {
   const userId = readAuthToken(request);
@@ -27,6 +28,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const demoBlock = await blockIfDemo(request);
+  if (demoBlock) return demoBlock;
   try {
     const body = await request.json();
     const {

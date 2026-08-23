@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { readAuthToken } from "@/lib/auth";
+import { blockIfDemo } from "@/lib/admin";
 
 // وضعیت سفارشی که «به پایان رسیده» است و خریدار اجازه‌ی ثبت دیدگاه دارد
 const COMPLETED_STATUS = "delivered";
@@ -58,6 +59,8 @@ export async function GET(request: NextRequest) {
 
 // ثبت امتیاز و دیدگاه — فقط برای خریدارِ سفارش تحویل‌شده
 export async function POST(request: NextRequest) {
+  const demoBlock = await blockIfDemo(request);
+  if (demoBlock) return demoBlock;
   const userId = readAuthToken(request);
   if (!userId) {
     return Response.json({ success: false, error: "ابتدا وارد حساب شوید" }, { status: 401 });

@@ -157,7 +157,7 @@ export default function ReviewForm({ productId }: { productId: number }) {
           دیدگاه شما ثبت شد، ممنون! ✓
         </p>
         <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-          نظر شما در همین بخش نمایش داده می‌شود.
+          نظر شما پس از بررسی و تأیید توسط ادمین در همین بخش نمایش داده می‌شود.
         </p>
       </div>
     );

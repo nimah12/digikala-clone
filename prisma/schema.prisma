@@ -136,6 +136,8 @@ model Review {
   title     String
   text      String
   verified  Boolean @default(true)
+  // نظرات تا زمانی که ادمین تأییدشان نکرده، در صفحه‌ی محصول نمایش داده نمی‌شوند
+  approved  Boolean @default(false)
 
   @@index([productId])
   @@index([userId])

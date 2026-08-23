@@ -7,6 +7,21 @@ function parseProductId(id: string) {
   return Number.isInteger(productId) ? productId : null;
 }
 
+// میانگین امتیاز محصول را فقط بر اساس نظراتِ تأییدشده بازحساب می‌کند
+async function recomputeProductRating(productId: number) {
+  const agg = await prisma.review.aggregate({
+    where: { productId, approved: true },
+    _avg: { rating: true },
+    _count: { _all: true },
+  });
+  const rating =
+    agg._count._all > 0 ? Math.round((agg._avg.rating ?? 0) * 10) / 10 : 0;
+  await prisma.product.update({
+    where: { id: productId },
+    data: { rating, ratingCount: agg._count._all },
+  });
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -86,12 +101,20 @@ export async function PATCH(
     }
     data.author = author;
   }
+  if (typeof body.approved === "boolean") {
+    data.approved = body.approved;
+  }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "no fields to update" }, { status: 400 });
   }
 
   const updated = await prisma.review.update({ where: { id: reviewId }, data });
+
+  // اگر وضعیت تأیید یا امتیاز تغییر کرده، میانگین محصول را بازحساب کن
+  if ("approved" in data || "rating" in data) {
+    await recomputeProductRating(productId);
+  }
 
   return NextResponse.json({ review: updated });
 }
@@ -123,6 +146,9 @@ export async function DELETE(
   }
 
   await prisma.review.delete({ where: { id: reviewId } });
+
+  // میانگین محصول را پس از حذف نظر بازحساب کن
+  await recomputeProductRating(productId);
 
   return NextResponse.json({ ok: true });
 }

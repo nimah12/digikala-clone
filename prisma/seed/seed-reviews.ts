@@ -77,12 +77,13 @@ async function main() {
           productId: product.id,
           author: t.author,
           date: `${1403 - (i % 2)}/${String(1 + (product.id % 12)).padStart(2, "0")}/${String(1 + i * 7).padStart(2, "0")}`,
-          rating: t.rating,
-          title: t.title,
-          text: t.text,
-          verified: t.verified,
-        },
-      });
+            rating: t.rating,
+            title: t.title,
+            text: t.text,
+            verified: t.verified,
+            approved: true,
+          },
+        });
       count++;
     }
   }

@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     const product = await prisma.product.findUnique({
       where: { id: productIdToReview },
-      select: { id: true, rating: true, ratingCount: true },
+      select: { id: true },
     });
     if (!product) {
       return Response.json({ success: false, error: "محصول یافت نشد" }, { status: 404 });
@@ -166,28 +166,16 @@ export async function POST(request: NextRequest) {
                 ? "خرید معمولی"
                 : "راضی نبودم",
         text: comment?.trim() || "بدون توضیح",
-        // چون فقط خریدارِ سفارش تحویل‌شده می‌تواند دیدگاه ثبت کند، همیشه تأییدشده است
+        // چون فقط خریدارِ سفارش تحویل‌شده می‌تواند دیدگاه ثبت کند، خریدش تأیید شده است
         verified: true,
+        // اما نمایشِ نظر در صفحه‌ی محصول منوط به تأیید ادمین است
+        approved: false,
       },
-    });
-
-    // به‌روزرسانی میانگین امتیاز محصول
-    const productAgg = await prisma.product.update({
-      where: { id: product.id },
-      data: {
-        rating: {
-          set:
-            Math.round(((product.rating * product.ratingCount + ratingNum) / (product.ratingCount + 1)) * 10) / 10,
-        },
-        ratingCount: { increment: 1 },
-      },
-      select: { rating: true, ratingCount: true },
     });
 
     return Response.json({
       success: true,
-      review,
-      product: { id: product.id, rating: productAgg.rating, ratingCount: productAgg.ratingCount },
+      review: { id: review.id, approved: review.approved },
     });
   } catch (e: unknown) {
     console.error("REVIEW ERROR:", e);

@@ -403,12 +403,13 @@ async function main() {
             productId: product.id,
             author: pickAuthor(catSlug, product.id + i),
             date: `۱۴۰۳/${String(1 + (product.id % 12)).padStart(2, '0')}/${String(1 + i * 8).padStart(2, '0')}`,
-            rating: t.rating,
-            title: t.title,
-            text: t.text,
-            verified: t.verified,
-          },
-        })
+              rating: t.rating,
+              title: t.title,
+              text: t.text,
+              verified: t.verified,
+              approved: true,
+            },
+          })
         reviewCount++
       }
     } else {

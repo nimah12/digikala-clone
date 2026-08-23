@@ -3,10 +3,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { clearCurrentUser, useUserSync } from "@/lib/user";
+import { clearCurrentUser, isDemoUser, useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
 import { pushEvent } from "@/lib/notifications";
 import Icon from "@/components/Icon";
+import AdminFeaturesCard from "@/components/AdminFeaturesCard";
 
 export default function DashboardPage() {
   const user = useUserSync();
@@ -98,6 +99,21 @@ export default function DashboardPage() {
             نظرسنجی‌ها و اعلان‌های حساب
           </p>
         </Link>
+
+        {/* Admin features (demo user only) */}
+        {isDemoUser(user) && (
+          <Link
+            href="/admin"
+            className="group rounded-2xl border p-5 hover:shadow-lg transition-shadow"
+            style={{ background: "var(--panel)", borderColor: "var(--border)" }}
+          >
+            <div className="flex justify-center mb-3 text-dk-red"><Icon name="shield" size={28} /></div>
+            <h2 className="font-bold text-sm mb-1">پنل مدیریت (دمو)</h2>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              مشاهده قابلیت‌های پنل ادمین سایت (فقط‌خواندنی)
+            </p>
+          </Link>
+        )}
       </div>
 
       {/* Account info */}
@@ -128,6 +144,13 @@ export default function DashboardPage() {
           خروج از حساب
         </button>
       </div>
+
+      {/* قابلیت‌های پنل ادمین — فقط برای کاربر دمو */}
+      {isDemoUser(user) && (
+        <div className="mt-8">
+          <AdminFeaturesCard demo />
+        </div>
+      )}
     </div>
   );
 }

@@ -7,14 +7,6 @@ const DEMO_NAME = "کاربر دمو";
 const FALLBACK_DEMO_ID = 999999;
 
 export async function POST(_request: NextRequest) {
-  // در production دکمه‌ی «ورود دمو» غیرفعال است — فقط در dev/پیش‌نمایش در دسترس است
-  if (process.env.NODE_ENV === "production") {
-    return Response.json(
-      { success: false, error: "ورود دمو در محیط اصلی غیرفعال است" },
-      { status: 403 },
-    );
-  }
-
   let id = FALLBACK_DEMO_ID;
 
   try {

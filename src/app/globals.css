@@ -440,11 +440,11 @@ html[data-theme="dark"] .cat-tile {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(10px);
+    transform: translateY(-10px);
   }
 }
 .hero-float-delayed {
-  animation: hero-float-delayed 7s ease-in-out 1.2s infinite;
+  animation: hero-float-delayed 6s ease-in-out infinite;
   will-change: transform;
 }
 

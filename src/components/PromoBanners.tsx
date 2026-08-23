@@ -43,7 +43,7 @@ export default function PromoBanners() {
           <Link
             key={b.href}
             href={b.href}
-            className="promo-banner group relative overflow-hidden rounded-2xl p-5 min-h-[150px] flex items-center justify-between gap-3 hover:shadow-xl"
+            className="promo-banner group relative overflow-hidden rounded-2xl p-4 md:p-5 min-h-[120px] md:min-h-[150px] flex items-center justify-between gap-3 hover:shadow-xl"
             style={{
               background: `linear-gradient(135deg, ${b.bg} 0%, color-mix(in srgb, ${b.bg} 68%, #000000) 100%)`,
             }}
@@ -62,7 +62,7 @@ export default function PromoBanners() {
             </div>
 
             <span className="promo-icon relative z-10 text-white/95">
-              <Icon name={b.icon} size={54} strokeWidth={1.4} />
+              <Icon name={b.icon} size={44} strokeWidth={1.4} />
             </span>
 
             {/* دایره‌های تزئینی */}

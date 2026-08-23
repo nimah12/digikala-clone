@@ -104,12 +104,12 @@ export default function Header({ menuGroups }: HeaderProps) {
               <SearchBox />
             </div>
 
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Theme toggle */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Theme toggle — hidden on mobile to save space */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
+              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg hover:bg-[var(--hover)] transition-colors"
               aria-label={theme === "dark" ? "حالت روز" : "حالت شب"}
               title={theme === "dark" ? "حالت روز" : "حالت شب"}
             >
@@ -134,7 +134,7 @@ export default function Header({ menuGroups }: HeaderProps) {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen((o) => !o)}
-                  className="inline-flex items-center gap-1 h-8 sm:h-10 px-1.5 sm:px-3 rounded-lg text-sm font-bold hover:shadow-md transition-shadow"
+                  className="inline-flex items-center gap-1 h-8 sm:h-10 px-1 sm:px-3 rounded-lg text-sm font-bold hover:shadow-md transition-shadow"
                   style={{ background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)" }}
                   title={userName}
                 >

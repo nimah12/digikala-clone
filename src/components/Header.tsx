@@ -104,7 +104,7 @@ export default function Header({ menuGroups }: HeaderProps) {
               <SearchBox />
             </div>
 
-          <div className="flex items-center gap-2.5 sm:gap-1.5 shrink-0">
+          <div className="flex-1 sm:flex-none flex items-center justify-around sm:justify-end gap-2 sm:gap-1.5">
             {/* Theme toggle — hidden on mobile to save space */}
             <button
               type="button"

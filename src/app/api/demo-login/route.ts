@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { signAuthToken } from "@/lib/auth";
+import { DEMO_ROLE } from "@/lib/admin";
 
 const DEMO_EMAIL = "demo@digikala-clone.local";
 const DEMO_NAME = "کاربر دمو";
@@ -18,10 +19,12 @@ export async function POST(_request: NextRequest) {
 
   try {
     const { prisma } = await import("@/lib/prisma");
+    // حساب دمو فقط «مشاهده» دارد (نقش demo) — نه دسترسی ادمین کامل.
+    // در پنل مدیریت فقط خواندن مجاز است و هرگونه تغییری مسدود می‌شود.
     const user = await prisma.user.upsert({
       where: { email: DEMO_EMAIL },
-      update: {},
-      create: { email: DEMO_EMAIL, name: DEMO_NAME, password: null },
+      update: { role: DEMO_ROLE },
+      create: { email: DEMO_EMAIL, name: DEMO_NAME, password: null, role: DEMO_ROLE },
     });
     id = user.id;
   } catch (e) {

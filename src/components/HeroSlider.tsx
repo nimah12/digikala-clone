@@ -401,11 +401,11 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                           </span>
                         </Link>
 
-                        {/* چیپ‌های شناور — فقط دسکتاپ */}
-                        <span className="hidden md:flex hero-float-delayed absolute -top-4 -right-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg items-center gap-1.5">
+                        {/* چیپ‌های شناور — موبایل کوچک، دسکتاپ بزرگ */}
+                        <span className="hero-float-delayed absolute -top-2 -right-2 md:-top-4 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1">
                           <span className="text-dk-green">✓</span> ضمانت اصالت
                         </span>
-                        <span className="hidden md:flex hero-float-delayed absolute -bottom-4 -left-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg items-center gap-1.5">
+                        <span className="hero-float-delayed absolute -bottom-2 -left-2 md:-bottom-4 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg flex items-center gap-1">
                           <span className="text-dk-red">🚚</span> ارسال رایگان
                         </span>
                       </>

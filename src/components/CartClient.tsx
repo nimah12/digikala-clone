@@ -137,11 +137,11 @@ export default function CartClient() {
             return (
             <div
               key={key}
-              className="rounded-2xl border p-4 flex items-center gap-4"
+              className="rounded-2xl border p-3 sm:p-4 flex gap-3 sm:gap-4"
               style={{ background: "var(--panel)", borderColor: "var(--border)" }}
             >
               <Link href={`/product/${product!.slug}`} className="shrink-0">
-                <div className="relative w-20 h-20 rounded-xl overflow-hidden" style={{ background: "var(--bg)" }}>
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden" style={{ background: "var(--bg)" }}>
                   <Image
                     src={product!.imageUrl || "/images/placeholder.svg"}
                     alt={product!.name}
@@ -152,76 +152,81 @@ export default function CartClient() {
                 </div>
               </Link>
 
-              <div className="flex-1 min-w-0">
-                <Link href={`/product/${product!.slug}`} className="block text-sm font-bold mb-1 truncate hover:text-dk-red transition-colors">
-                  {product!.name}
-                </Link>
-                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                  {product!.category.name}
-                </span>
-                {(colorName || sizeName) && (
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {colorName && (
-                      <span
-                        className="w-3 h-3 rounded-full inline-block"
-                        style={{ background: colorHex, border: "1px solid var(--border)" }}
-                      />
-                    )}
-                    <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-                      {[colorName, sizeName ? formatSizeName(sizeName) : null]
-                        .filter(Boolean)
-                        .join(" • ")}
+              <div className="flex-1 min-w-0 flex flex-col">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <Link href={`/product/${product!.slug}`} className="block text-sm font-bold mb-1 truncate hover:text-dk-red transition-colors">
+                      {product!.name}
+                    </Link>
+                    <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      {product!.category.name}
                     </span>
+                    {(colorName || sizeName) && (
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {colorName && (
+                          <span
+                            className="w-3 h-3 rounded-full inline-block"
+                            style={{ background: colorHex, border: "1px solid var(--border)" }}
+                          />
+                        )}
+                        <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                          {[colorName, sizeName ? formatSizeName(sizeName) : null]
+                            .filter(Boolean)
+                            .join(" • ")}
+                        </span>
+                      </div>
+                    )}
+                    <div className="text-[10px] mt-1 font-bold" style={{ color: product!.stock > 0 ? "#2ab57d" : "#ef4050" }}>
+                      موجودی: {product!.stock.toLocaleString("fa-IR")} عدد
+                    </div>
                   </div>
-                )}
-                <div className="text-[10px] mt-1 font-bold" style={{ color: product!.stock > 0 ? "#2ab57d" : "#ef4050" }}>
-                  موجودی: {product!.stock.toLocaleString("fa-IR")} عدد
+
+                  <button
+                    type="button"
+                    onClick={() => remove(key)}
+                    className="shrink-0 w-8 h-8 rounded-lg hover:bg-dk-red/10 hover:text-dk-red transition-colors flex items-center justify-center"
+                    style={{ color: "var(--text-secondary)" }}
+                    aria-label="حذف از سبد"
+                    title="حذف از سبد"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateQty(key, 1)}
+                      disabled={qty >= product!.stock}
+                      className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
+                      style={{ borderColor: "var(--border)", color: "var(--text)" }}
+                      aria-label="افزایش تعداد"
+                    >
+                      +
+                    </button>
+                    <span className="w-8 text-center text-sm font-bold digits">{qty.toLocaleString("fa-IR")}</span>
+                    <button
+                      type="button"
+                      onClick={() => updateQty(key, -1)}
+                      disabled={qty <= 1}
+                      className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
+                      style={{ borderColor: "var(--border)", color: "var(--text)" }}
+                      aria-label="کاهش تعداد"
+                    >
+                      −
+                    </button>
+                  </div>
+
+                  <div className="text-left shrink-0">
+                    <div className="text-sm font-bold digits">{formatPrice(product!.price * qty)}</div>
+                    <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>تومان</div>
+                  </div>
                 </div>
               </div>
-
-              {/* Quantity controls */}
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => updateQty(key, 1)}
-                  disabled={qty >= product!.stock}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
-                  style={{ borderColor: "var(--border)", color: "var(--text)" }}
-                  aria-label="افزایش تعداد"
-                >
-                  +
-                </button>
-                <span className="w-8 text-center text-sm font-bold digits">{qty.toLocaleString("fa-IR")}</span>
-                <button
-                  type="button"
-                  onClick={() => updateQty(key, -1)}
-                  disabled={qty <= 1}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-[var(--hover)] transition-colors disabled:opacity-40"
-                  style={{ borderColor: "var(--border)", color: "var(--text)" }}
-                  aria-label="کاهش تعداد"
-                >
-                  −
-                </button>
-              </div>
-
-              <div className="text-left shrink-0 w-28">
-                <div className="text-sm font-bold digits">{formatPrice(product!.price * qty)}</div>
-                <div className="text-[11px]" style={{ color: "var(--text-secondary)" }}>تومان</div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => remove(key)}
-                className="shrink-0 w-9 h-9 rounded-lg hover:bg-dk-red/10 hover:text-dk-red transition-colors flex items-center justify-center"
-                style={{ color: "var(--text-secondary)" }}
-                aria-label="حذف از سبد"
-                title="حذف از سبد"
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-                  <path d="M3 6h18" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
             </div>
             );
           })}

@@ -152,7 +152,7 @@ export default function Header({ menuGroups }: HeaderProps) {
 
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 sm:left-0 top-full mt-1 w-[min(12rem,calc(100vw-2rem))] sm:w-52 rounded-2xl border shadow-xl overflow-hidden z-50"
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-[calc(100vw-1rem)] max-w-[13rem] sm:left-0 sm:translate-x-0 sm:w-52 rounded-2xl border shadow-xl overflow-hidden z-50"
                     style={{ background: "var(--panel)", borderColor: "var(--border)" }}
                   >
                     <div className="px-4 py-3 border-b text-sm font-bold" style={{ borderColor: "var(--border)" }}>

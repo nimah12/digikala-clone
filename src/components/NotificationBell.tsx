@@ -47,7 +47,7 @@ export default function NotificationBell() {
   const unreadEvents = events.filter((e) => e.unread);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="" ref={ref}>
       <button
         type="button"
         onClick={handleClick}
@@ -68,7 +68,7 @@ export default function NotificationBell() {
 
       {open && (
         <div
-          className="absolute right-0 sm:left-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-[20rem] sm:w-80 rounded-2xl border shadow-xl overflow-hidden z-50"
+          className="absolute right-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-[20rem] sm:w-80 rounded-2xl border shadow-xl overflow-hidden z-50"
           style={{ background: "var(--panel)", borderColor: "var(--border)" }}
         >
           <div className="px-4 py-3 border-b font-bold text-sm flex items-center justify-between" style={{ borderColor: "var(--border)" }}>

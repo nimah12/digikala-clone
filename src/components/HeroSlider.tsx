@@ -277,8 +277,8 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
               <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 items-center">
                 {/* متن */}
-                  <div className="space-y-3 sm:space-y-4 md:space-y-5 py-4 sm:py-8 md:py-10 text-center md:text-right">
-                  <div className={i === current ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
+                  <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 py-4 sm:py-8 md:py-10 text-center md:text-right">
+                  <div className={`${i === current ? "hero-slide-up" : "opacity-0"} order-1`} style={{ animationDelay: "0ms" }}>
                     <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       {s.badge}
@@ -286,7 +286,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
 
                   <h2
-                    className={`text-white text-xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
+                    className={`text-white text-xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] order-2 ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "90ms" }}
@@ -295,7 +295,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </h2>
 
                   <p
-                    className={`text-white/85 text-xs sm:text-sm md:text-base leading-6 sm:leading-7 max-w-md mx-auto md:mx-0 ${
+                    className={`text-white/85 text-xs sm:text-sm md:text-base leading-6 sm:leading-7 max-w-md mx-auto md:mx-0 order-4 md:order-3 ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "180ms" }}
@@ -305,7 +305,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
                   {/* دکمه‌ها */}
                   <div
-                    className={`flex items-center justify-center md:justify-start gap-3 pt-1 ${
+                    className={`flex items-center justify-center md:justify-start gap-3 pt-1 order-3 md:order-4 ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "270ms" }}
@@ -337,7 +337,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
 
                   <p
-                    className={`text-white/70 text-xs flex items-center justify-center md:justify-start gap-1.5 ${
+                    className={`text-white/70 text-xs flex items-center justify-center md:justify-start gap-1.5 order-5 ${
                       i === current ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "360ms" }}

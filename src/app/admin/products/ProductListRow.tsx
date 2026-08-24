@@ -69,7 +69,7 @@ export default function ProductListRow({
           <img
             src={product.imageUrl}
             alt={product.name}
-            style={{ width: 80, height: 80, objectFit: "contain" }}
+            style={{ width: 80, height: 80, objectFit: "contain", flexShrink: 0 }}
           />
         ) : (
           <div
@@ -88,7 +88,7 @@ export default function ProductListRow({
             بدون عکس
           </div>
         )}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <a
             href={`/product/${product.slug}`}
             target="_blank"
@@ -137,6 +137,7 @@ export default function ProductListRow({
                 const file = e.target.files?.[0];
                 if (file) onUploadImage(file);
               }}
+              style={{ minWidth: 0, maxWidth: 180 }}
             />
             {uploading && (
               <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>

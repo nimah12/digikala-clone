@@ -95,9 +95,9 @@ export default function AdminMenuPreviewPage() {
             سینک زنده با پنل ادمین — ساختار فعلی
           </div>
 
-          <div className="flex max-h-[560px]">
+          <div className="flex flex-col md:flex-row md:max-h-[560px]">
             {/* Group rail */}
-            <div className="w-48 shrink-0 py-2 overflow-y-auto" style={{ background: "color-mix(in srgb, var(--bg) 55%, transparent)", borderLeft: "1px solid var(--border)" }}>
+            <div className="w-full md:w-48 md:shrink-0 py-2 md:overflow-y-auto border-b md:border-b-0 md:border-l" style={{ background: "color-mix(in srgb, var(--bg) 55%, transparent)", borderColor: "var(--border)" }}>
               {groups.map((g, i) => {
                 const isActive = i === activeGroup;
                 return (
@@ -127,7 +127,7 @@ export default function AdminMenuPreviewPage() {
             </div>
 
             {/* Category panel */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-4 md:p-6 md:overflow-y-auto min-h-0">
               {active && (
                 <>
                   <h3 className="text-base font-extrabold mb-4">

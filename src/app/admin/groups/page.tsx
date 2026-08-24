@@ -259,7 +259,7 @@ export default function AdminGroupsPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
+      <div className="rounded-2xl border overflow-x-auto" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
         {groups.length === 0 ? (
           <p className="text-sm py-16 text-center" style={{ color: "var(--text-secondary)" }}>
             هنوز گروهی تعریف نشده. با «+ گروه جدید» اولین گروه مگامنو را بساز.

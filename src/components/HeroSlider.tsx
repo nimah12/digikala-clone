@@ -175,6 +175,37 @@ function LiveGoldPanel({ items }: { items: GoldItem[] }) {
   );
 }
 
+function HeroButtons({ slide }: { slide: HeroSlide }) {
+  return (
+    <>
+      <Link
+        href={slide.href}
+        className="group inline-flex items-center gap-2 bg-white text-gray-900 text-xs sm:text-sm font-extrabold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-[1.04] active:scale-95 overflow-hidden relative"
+      >
+        <span className="hero-shine absolute inset-0 bg-gradient-to-l from-transparent via-white/60 to-transparent pointer-events-none" />
+        <span className="relative">مشاهده محصولات</span>
+        <svg
+          className="relative w-4 h-4 transition-transform group-hover:-translate-x-1"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 24 24"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </Link>
+      <Link
+        href={slide.secondaryHref ?? slide.href}
+        className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-white text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full border border-white/25 hover:bg-white/20 transition-all hover:scale-[1.04] active:scale-95"
+      >
+        جزئیات بیشتر
+      </Link>
+    </>
+  );
+}
+
 export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlide[] }) {
   const [slides, setSlides] = useState(initialSlides);
   const [current, setCurrent] = useState(0);
@@ -239,12 +270,13 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
         {slides.map((s, i) => {
           const t = THEMES[s.theme];
           const p = s.product;
+          const active = i === current;
           return (
             <div
               key={s.id}
-              aria-hidden={i !== current}
+              aria-hidden={!active}
               className={`w-full min-h-[260px] md:min-h-[480px] flex items-center overflow-hidden transition-opacity duration-700 ${
-                i === current ? "opacity-100 relative" : "opacity-0 absolute pointer-events-none"
+                active ? "opacity-100 relative" : "opacity-0 absolute pointer-events-none"
               }`}
               style={{ background: t.bg, inset: 0 }}
             >
@@ -275,10 +307,11 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                 }}
               />
 
-              <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 items-center">
+              {/* ===================== نسخه دسکتاپ ===================== */}
+              <div className="hidden md:flex relative w-full max-w-7xl mx-auto px-6 md:px-12 gap-10 items-center">
                 {/* متن */}
-                  <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 py-4 sm:py-8 md:py-10 text-center md:text-right order-2 md:order-1">
-                  <div className={`${i === current ? "hero-slide-up" : "opacity-0"} order-1`} style={{ animationDelay: "0ms" }}>
+                <div className="flex flex-col gap-5 py-10 text-right">
+                  <div className={active ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
                     <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       {s.badge}
@@ -286,8 +319,8 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
 
                   <h2
-                    className={`text-white text-xl sm:text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] order-2 ${
-                      i === current ? "hero-slide-up" : "opacity-0"
+                    className={`text-white text-4xl md:text-5xl font-black leading-[1.25] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 min-h-[2.6em] ${
+                      active ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "90ms" }}
                   >
@@ -295,8 +328,8 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </h2>
 
                   <p
-                    className={`text-white/85 text-xs sm:text-sm md:text-base leading-6 sm:leading-7 max-w-md mx-auto md:mx-0 order-4 md:order-3 ${
-                      i === current ? "hero-slide-up" : "opacity-0"
+                    className={`text-white/85 text-sm md:text-base leading-7 max-w-md ${
+                      active ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "180ms" }}
                   >
@@ -305,40 +338,17 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
                   {/* دکمه‌ها */}
                   <div
-                    className={`flex items-center justify-center md:justify-start gap-3 pt-1 order-3 md:order-4 ${
-                      i === current ? "hero-slide-up" : "opacity-0"
+                    className={`flex items-center justify-start gap-3 pt-1 ${
+                      active ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "270ms" }}
                   >
-                    <Link
-                      href={s.href}
-                      className="group inline-flex items-center gap-2 bg-white text-gray-900 text-xs sm:text-sm font-extrabold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-[1.04] active:scale-95 overflow-hidden relative"
-                    >
-                      <span className="hero-shine absolute inset-0 bg-gradient-to-l from-transparent via-white/60 to-transparent pointer-events-none" />
-                      <span className="relative">مشاهده محصولات</span>
-                      <svg
-                        className="relative w-4 h-4 transition-transform group-hover:-translate-x-1"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </Link>
-                    <Link
-                      href={s.secondaryHref ?? s.href}
-                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-white text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full border border-white/25 hover:bg-white/20 transition-all hover:scale-[1.04] active:scale-95"
-                    >
-                      جزئیات بیشتر
-                    </Link>
+                    <HeroButtons slide={s} />
                   </div>
 
                   <p
-                    className={`text-white/70 text-xs flex items-center justify-center md:justify-start gap-1.5 order-5 ${
-                      i === current ? "hero-slide-up" : "opacity-0"
+                    className={`text-white/70 text-xs flex items-center justify-start gap-1.5 ${
+                      active ? "hero-slide-up" : "opacity-0"
                     }`}
                     style={{ animationDelay: "360ms" }}
                   >
@@ -351,7 +361,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
                 {/* عکس محصول شناور */}
                 <div
-                  className={`flex items-center justify-center -mt-4 md:mt-0 order-1 md:order-2 ${i === current ? "hero-pop" : "opacity-0"}`}
+                  className={`flex items-center justify-center ${active ? "hero-pop" : "opacity-0"}`}
                   style={{ animationDelay: "150ms" }}
                 >
                   <div className="relative">
@@ -361,56 +371,56 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                       <>
                         {/* هاله درخشان */}
                         <div
-                          className="absolute -inset-8 rounded-full blur-3xl opacity-50"
+                          className="absolute inset-0 rounded-full blur-3xl opacity-50"
                           style={{ background: t.glow }}
                         />
                     {p?.imageUrl ? (
                       <>
                         <Link
                           href={s.href}
-                          className="hero-float relative block w-24 sm:w-52 md:w-64 lg:w-72 bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl p-2 md:p-3.5 shadow-2xl ring-1 ring-white/40"
+                          className="hero-float relative block w-64 lg:w-72 bg-white/95 backdrop-blur rounded-3xl p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
-                          <div className="relative overflow-hidden rounded-xl md:rounded-2xl">
+                          <div className="relative overflow-hidden rounded-2xl">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={p.imageUrl}
                               alt={p.name}
-                              className={`w-full aspect-square object-contain ${i === current ? "hero-kenburns" : ""}`}
+                              className={`w-full aspect-square object-contain ${active ? "hero-kenburns" : ""}`}
                             />
                           </div>
-                          <div className="flex items-center justify-between gap-2 mt-2.5 md:mt-3 px-1">
+                          <div className="flex items-center justify-between gap-2 mt-3 px-1">
                             <div className="min-w-0">
-                              <p className="text-[10px] md:text-[11px] text-gray-500 truncate">{p.name}</p>
-                              <p className="text-xs md:text-sm font-extrabold text-gray-900 whitespace-nowrap">
+                              <p className="text-[11px] text-gray-500 truncate">{p.name}</p>
+                              <p className="text-sm font-extrabold text-gray-900 whitespace-nowrap">
                                 {formatPrice(p.price)}
-                                <span className="text-[9px] md:text-[10px] font-medium text-gray-400"> تومان</span>
+                                <span className="text-[10px] font-medium text-gray-400"> تومان</span>
                               </p>
                               {p.originalPrice && p.originalPrice > p.price && (
-                                <p className="text-[9px] md:text-[10px] text-gray-400 line-through whitespace-nowrap">
+                                <p className="text-[10px] text-gray-400 line-through whitespace-nowrap">
                                   {formatPrice(p.originalPrice)} تومان
                                 </p>
                               )}
                             </div>
-                            <span className="shrink-0 bg-dk-red text-white text-[10px] md:text-[11px] font-extrabold px-2 md:px-2.5 py-1 rounded-lg shadow-md">
+                            <span className="shrink-0 bg-dk-red text-white text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-md">
                               ٪{p.discountPercent.toLocaleString("fa-IR")}
                             </span>
                           </div>
                           {/* درخشش روی کارت */}
-                          <span className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden pointer-events-none">
+                          <span className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
                             <span className="hero-shine absolute inset-y-0 w-1/2 bg-gradient-to-l from-transparent via-white/50 to-transparent" />
                           </span>
                         </Link>
 
-                        {/* چیپ‌های شناور — موبایل کوچک، دسکتاپ بزرگ */}
-                        <span className="hero-float-delayed absolute -top-2 -right-2 md:-top-4 md:-right-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-1">
+                        {/* چیپ‌های شناور */}
+                        <span className="hero-float-delayed absolute -top-4 -right-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
                           <span className="text-dk-green">✓</span> ضمانت اصالت
                         </span>
-                        <span className="hero-float-delayed absolute -bottom-2 -left-2 md:-bottom-4 md:-left-5 bg-white/95 backdrop-blur text-gray-800 text-[8px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-1">
+                        <span className="hero-float-delayed absolute -bottom-4 -left-5 bg-white/95 backdrop-blur text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
                           <span className="text-dk-red">🚚</span> ارسال رایگان
                         </span>
                       </>
                     ) : (
-                      <div className="w-40 sm:w-52 md:w-64 lg:w-72 aspect-square rounded-2xl md:rounded-3xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-xs md:text-sm">
+                      <div className="w-64 lg:w-72 aspect-square rounded-3xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-sm">
                         {s.badge}
                       </div>
                     )}
@@ -419,12 +429,117 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                   </div>
                 </div>
               </div>
+
+              {/* ===================== نسخه موبایل ===================== */}
+              <div className="md:hidden relative w-full max-w-7xl mx-auto px-4 pt-12 pb-5 flex flex-col items-center text-center gap-3">
+                {/* برچسب */}
+                <div className={active ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
+                  <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-[11px] font-bold px-3 py-1.5 rounded-full border border-white/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    {s.badge}
+                  </span>
+                </div>
+
+                {/* عنوان */}
+                <h2
+                  className={`text-white text-2xl font-black leading-[1.3] drop-shadow-[0_4px_18px_rgba(0,0,0,0.25)] line-clamp-2 ${
+                    active ? "hero-slide-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: "90ms" }}
+                >
+                  {s.title}
+                </h2>
+
+                {/* محصول — کارت کامل با عکس تمام‌قد */}
+                <div
+                  className={`w-full flex justify-center mt-1 ${active ? "hero-pop" : "opacity-0"}`}
+                  style={{ animationDelay: "150ms" }}
+                >
+                  <div className="relative w-full max-w-[260px]">
+                    {s.goldItems?.length ? (
+                      <LiveGoldPanel items={s.goldItems} />
+                    ) : p?.imageUrl ? (
+                      <Link
+                        href={s.href}
+                        className="hero-float relative block w-full bg-white/95 backdrop-blur rounded-2xl p-3 shadow-2xl ring-1 ring-white/40"
+                      >
+                        <div className="relative overflow-hidden rounded-xl bg-white">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            className={`w-full aspect-square object-contain ${active ? "hero-kenburns" : ""}`}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 mt-2.5 px-1 text-right">
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-gray-500 truncate">{p.name}</p>
+                            <p className="text-xs font-extrabold text-gray-900 whitespace-nowrap">
+                              {formatPrice(p.price)}
+                              <span className="text-[9px] font-medium text-gray-400"> تومان</span>
+                            </p>
+                            {p.originalPrice && p.originalPrice > p.price && (
+                              <p className="text-[9px] text-gray-400 line-through whitespace-nowrap">
+                                {formatPrice(p.originalPrice)} تومان
+                              </p>
+                            )}
+                          </div>
+                          <span className="shrink-0 bg-dk-red text-white text-[10px] font-extrabold px-2 py-1 rounded-lg shadow-md">
+                            ٪{p.discountPercent.toLocaleString("fa-IR")}
+                          </span>
+                        </div>
+                        {/* درخشش روی کارت */}
+                        <span className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                          <span className="hero-shine absolute inset-y-0 w-1/2 bg-gradient-to-l from-transparent via-white/50 to-transparent" />
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="w-full aspect-square rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white/50 text-xs">
+                        {s.badge}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* توضیح */}
+                <p
+                  className={`text-white/85 text-xs leading-6 max-w-sm mx-auto ${
+                    active ? "hero-slide-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: "180ms" }}
+                >
+                  {s.subtitle}
+                </p>
+
+                {/* دکمه‌ها */}
+                <div
+                  className={`flex items-center justify-center gap-3 pt-1 ${
+                    active ? "hero-slide-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: "270ms" }}
+                >
+                  <HeroButtons slide={s} />
+                </div>
+
+                {/* آمار */}
+                <p
+                  className={`text-white/70 text-xs flex items-center justify-center gap-1.5 ${
+                    active ? "hero-slide-up" : "opacity-0"
+                  }`}
+                  style={{ animationDelay: "360ms" }}
+                >
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  {s.stats}
+                </p>
+              </div>
             </div>
           );
         })}
 
         {/* کان‌داون پایان تخفیف‌ها */}
-        <div className="absolute top-2 left-2 md:top-6 md:left-10 z-10">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 md:top-6 md:left-10 md:translate-x-0 z-10">
           <div
             suppressHydrationWarning
             className="hero-slide-up flex items-center gap-1.5 bg-black/25 backdrop-blur rounded-2xl px-2.5 py-1.5 md:px-3.5 md:py-2.5 border border-white/20 shadow-lg"
@@ -436,15 +551,15 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
               { v: pad2(countdown.m), l: "دقیقه" },
               { v: pad2(countdown.s), l: "ثانیه" },
             ].map((unit, idx) => (                <span key={unit.l} className="flex items-center gap-1.5">
-                  {idx > 0 && <span className="text-white/40 font-black">:</span>}
-                  <span
-                    suppressHydrationWarning
-                    className="min-w-6 md:min-w-8 text-center bg-white/15 text-white text-xs md:text-sm font-black rounded-lg px-1 md:px-1.5 py-0.5 md:py-1 tabular-nums"
-                  >
-                    {unit.v}
-                  </span>
-                  <span className="text-white/60 text-[9px]">{unit.l}</span>
-                </span>
+                   {idx > 0 && <span className="text-white/40 font-black">:</span>}
+                   <span
+                     suppressHydrationWarning
+                     className="min-w-6 md:min-w-8 text-center bg-white/15 text-white text-xs md:text-sm font-black rounded-lg px-1 md:px-1.5 py-0.5 md:py-1 tabular-nums"
+                   >
+                     {unit.v}
+                   </span>
+                   <span className="text-white/60 text-[9px]">{unit.l}</span>
+                 </span>
             ))}
           </div>
         </div>

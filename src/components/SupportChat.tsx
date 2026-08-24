@@ -210,7 +210,7 @@ export default function SupportChat() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 left-5 z-50 w-14 h-14 rounded-full bg-dk-red text-white shadow-xl hover:bg-dk-red-dark transition-all flex items-center justify-center"
+        className="fixed bottom-5 end-5 z-50 w-14 h-14 rounded-full bg-dk-red text-white shadow-xl hover:bg-dk-red-dark transition-all flex items-center justify-center"
         aria-label={open ? "بستن پشتیبانی" : "پشتیبانی آنلاین"}
         title="پشتیبانی آنلاین"
       >
@@ -229,7 +229,7 @@ export default function SupportChat() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed bottom-24 left-5 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border shadow-2xl overflow-hidden"
+          className="fixed bottom-24 end-5 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border shadow-2xl overflow-hidden"
           style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }}
         >
           {/* Header */}

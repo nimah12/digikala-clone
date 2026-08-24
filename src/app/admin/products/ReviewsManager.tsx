@@ -172,7 +172,7 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                 </div>
               ) : (
                  <div>
-                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                      <strong>{r.author}</strong>
                      <span style={{ color: "var(--text-muted)" }}>
                        امتیاز: {r.rating.toLocaleString("fa-IR")}
@@ -205,7 +205,7 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                    </div>
                    <div style={{ fontWeight: 600, marginBottom: 4 }}>{r.title}</div>
                    <p style={{ color: "var(--text-secondary)", marginBottom: 6 }}>{r.text}</p>
-                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                      {!r.approved && (
                        <button
                          type="button"

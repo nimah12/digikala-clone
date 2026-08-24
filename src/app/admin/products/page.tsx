@@ -342,7 +342,7 @@ export default function AdminProductsPage() {
         </p>
       )}
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0, 1fr)" }}>
         {products.length === 0 && (
           <p>
             {searchQuery.trim()

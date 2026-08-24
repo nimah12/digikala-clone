@@ -277,7 +277,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
               <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 items-center">
                 {/* متن */}
-                  <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 py-4 sm:py-8 md:py-10 text-center md:text-right">
+                  <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 py-4 sm:py-8 md:py-10 text-center md:text-right order-2 md:order-1">
                   <div className={`${i === current ? "hero-slide-up" : "opacity-0"} order-1`} style={{ animationDelay: "0ms" }}>
                     <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -351,7 +351,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
 
                 {/* عکس محصول شناور */}
                 <div
-                  className={`flex items-center justify-center -mt-4 md:mt-0 ${i === current ? "hero-pop" : "opacity-0"}`}
+                  className={`flex items-center justify-center -mt-4 md:mt-0 order-1 md:order-2 ${i === current ? "hero-pop" : "opacity-0"}`}
                   style={{ animationDelay: "150ms" }}
                 >
                   <div className="relative">

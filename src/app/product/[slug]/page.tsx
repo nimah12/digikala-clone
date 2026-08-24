@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: Props) {
       slug: { not: product.slug },
     },
     include: { category: true },
-    take: 4,
+    take: 10,
   });
 
   return (
@@ -114,9 +114,11 @@ export default async function ProductPage({ params }: Props) {
       {related.length > 0 && (
         <section className="mt-10">
           <h2 className="text-lg font-extrabold mb-4">محصولات مشابه</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="flex gap-3 overflow-x-auto scroll-row pb-2 snap-x snap-mandatory">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <div key={p.id} className="shrink-0 w-[44%] sm:w-48 snap-start">
+                <ProductCard product={p} />
+              </div>
             ))}
           </div>
         </section>

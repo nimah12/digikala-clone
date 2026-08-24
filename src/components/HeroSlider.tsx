@@ -261,8 +261,16 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
     <section
       ref={sectionRef}
       className="relative overflow-hidden rounded-3xl shadow-2xl"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => {
+        if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches) {
+          setPaused(true);
+        }
+      }}
+      onMouseLeave={() => {
+        if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches) {
+          setPaused(false);
+        }
+      }}
       aria-label="بنرهای تبلیغاتی"
     >
       {/* لایه‌ها */}
@@ -431,7 +439,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
               </div>
 
               {/* ===================== نسخه موبایل ===================== */}
-              <div className="md:hidden relative w-full max-w-7xl mx-auto px-4 pt-12 pb-5 flex flex-col items-center text-center gap-3">
+              <div className="md:hidden relative w-full max-w-7xl mx-auto px-4 pt-16 pb-12 flex flex-col items-center text-center gap-3">
                 {/* برچسب */}
                 <div className={active ? "hero-slide-up" : "opacity-0"} style={{ animationDelay: "0ms" }}>
                   <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur text-white text-[11px] font-bold px-3 py-1.5 rounded-full border border-white/20">

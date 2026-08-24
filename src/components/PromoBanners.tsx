@@ -48,12 +48,10 @@ export default function PromoBanners() {
               background: `linear-gradient(135deg, ${b.bg} 0%, color-mix(in srgb, ${b.bg} 68%, #000000) 100%)`,
             }}
           >
-            {/* برچسب گوشه */}
-            <span className="absolute top-3 right-3 z-10 text-[10px] font-black text-white/95 bg-white/20 backdrop-blur px-2.5 py-1 rounded-full">
-              {b.chip}
-            </span>
-
-            <div className="relative z-10">
+            <div className="relative z-10 flex-1 min-w-0">
+              <span className="inline-flex items-center text-[10px] font-black text-white/95 bg-white/20 backdrop-blur px-2.5 py-1 rounded-full mb-2">
+                {b.chip}
+              </span>
               <h3 className="text-white text-lg font-extrabold leading-7 drop-shadow-sm">{b.title}</h3>
               <p className="text-white/80 text-xs mt-1.5">{b.subtitle}</p>
               <span className="inline-flex items-center gap-1 mt-3 bg-white/20 backdrop-blur text-white text-[11px] font-bold px-3 py-1.5 rounded-lg group-hover:bg-white/35 group-hover:gap-2 transition-all">
@@ -61,7 +59,7 @@ export default function PromoBanners() {
               </span>
             </div>
 
-            <span className="promo-icon relative z-10 text-white/95">
+            <span className="promo-icon relative z-10 text-white/95 shrink-0">
               <Icon name={b.icon} size={44} strokeWidth={1.4} />
             </span>
 

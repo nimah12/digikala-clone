@@ -68,7 +68,7 @@ export default function NotificationBell() {
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-[20rem] sm:w-80 rounded-2xl border shadow-xl overflow-hidden z-50"
+          className="absolute right-2 top-full mt-1 w-[calc(100vw-2rem)] max-w-[18rem] sm:w-80 sm:right-0 rounded-2xl border shadow-xl overflow-hidden z-50"
           style={{ background: "var(--panel)", borderColor: "var(--border)" }}
         >
           <div className="px-4 py-3 border-b font-bold text-sm flex items-center justify-between" style={{ borderColor: "var(--border)" }}>

@@ -104,7 +104,7 @@ export default function Header({ menuGroups }: HeaderProps) {
               <SearchBox />
             </div>
 
-          <div className="flex-1 sm:flex-none relative flex items-center justify-around sm:justify-end gap-2 sm:gap-1.5">
+          <div className="flex-1 sm:flex-none flex items-center justify-around sm:justify-end gap-2 sm:gap-1.5">
             {/* Theme toggle — hidden on mobile to save space */}
             <button
               type="button"
@@ -152,7 +152,7 @@ export default function Header({ menuGroups }: HeaderProps) {
 
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 sm:left-0 top-full mt-1 w-44 sm:w-52 rounded-2xl border shadow-xl overflow-hidden z-50"
+                    className="absolute right-0 sm:left-0 top-full mt-1 w-[min(12rem,calc(100vw-2rem))] sm:w-52 rounded-2xl border shadow-xl overflow-hidden z-50"
                     style={{ background: "var(--panel)", borderColor: "var(--border)" }}
                   >
                     <div className="px-4 py-3 border-b text-sm font-bold" style={{ borderColor: "var(--border)" }}>

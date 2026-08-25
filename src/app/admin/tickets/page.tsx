@@ -26,6 +26,10 @@ function maskName(_name: string): string {
   return "***";
 }
 
+function maskSubject(_subject: string): string {
+  return "***";
+}
+
 const STATUS_LABELS: Record<string, string> = {
   open: "باز",
   answered: "پاسخ داده شده",
@@ -209,6 +213,7 @@ export default function AdminTicketsPage() {
                 {tickets.map((t) => {
                   const displayName = isDemo ? maskName(t.name) : t.name;
                   const displayEmail = isDemo ? maskEmail(t.email) : t.email;
+                  const displaySubject = isDemo ? maskSubject(t.subject) : t.subject;
                   return (
                     <Fragment key={t.id}>
                     <tr className="border-b last:border-b-0 align-top" style={{ borderColor: "var(--border)" }}>
@@ -230,7 +235,7 @@ export default function AdminTicketsPage() {
                           {displayEmail}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-xs font-bold max-w-[220px] truncate">{t.subject}</td>
+                      <td className="px-4 py-3 text-xs font-bold max-w-[220px] truncate">{displaySubject}</td>
                       <td className="px-4 py-3">
                         <span
                           className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full text-white"

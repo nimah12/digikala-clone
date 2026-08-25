@@ -87,7 +87,7 @@ export default function ProductRow({
       ) : (
         <div ref={scrollRef} className="scroll-row flex gap-4">
           {products.map((product) => (
-            <div key={product.id} className="w-44 sm:w-48 shrink-0">
+            <div key={product.id} className="w-36 sm:w-44 md:w-48 shrink-0">
               <ProductCard product={product} />
             </div>
           ))}

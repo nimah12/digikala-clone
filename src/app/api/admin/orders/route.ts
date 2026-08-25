@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin, maskEmail, maskPhone, maskName, maskAddress } from "@/lib/admin";
 
 export const ORDER_STATUSES = [
   "pending",
@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const isDemo = auth.user.role === "demo";
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
   const q = searchParams.get("q")?.trim();
@@ -56,6 +57,24 @@ export async function GET(request: Request) {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  if (isDemo) {
+    return NextResponse.json({
+      orders: orders.map((o) => ({
+        ...o,
+        receiverName: maskName(o.receiverName),
+        phone: maskPhone(o.phone),
+        address: maskAddress(o.address),
+        user: o.user
+          ? {
+              ...o.user,
+              name: maskName(o.user.name ?? ""),
+              email: maskEmail(o.user.email),
+            }
+          : null,
+      })),
+    });
+  }
 
   return NextResponse.json({ orders });
 }

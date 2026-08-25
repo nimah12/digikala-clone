@@ -13,6 +13,25 @@ type UserRow = {
   _count: { orders: number };
 };
 
+function maskName(_name: string): string {
+  return "***";
+}
+
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length >= 11 && digits.startsWith("09")) {
+    return `${digits.slice(0, 3)}*** ${digits.slice(6, 9)} ${digits.slice(9)}`;
+  }
+  return "09*** ****";
+}
+
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const masked = local.length > 2 ? `${local.slice(0, 2)}***` : "***";
+  return `${masked}@${domain}`;
+}
+
 export default function AdminUsersPage() {
   const [status, setStatus] = useState<"loading" | "denied" | "ready">("loading");
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -20,6 +39,7 @@ export default function AdminUsersPage() {
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<number | null>(null);
   const [meId, setMeId] = useState<number | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   function authHeaders(): HeadersInit {
     const token = localStorage.getItem("dk-token") || "";
@@ -60,6 +80,7 @@ export default function AdminUsersPage() {
       }
       const me = await res.json();
       setMeId(me.user?.id ?? null);
+      setIsDemo(me.user?.role === "demo");
       await loadUsers("");
     });
   }, [loadUsers]);
@@ -172,20 +193,24 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} className="border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-                    <td className="px-4 py-3">
-                      <div className="font-bold">
-                        {u.name || "—"}
-                        {u.id === meId && (
-                          <span className="text-[10px] font-bold text-white bg-dk-red rounded-md px-1.5 py-0.5 ml-1">شما</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--text-secondary)" }}>
-                      <div dir="ltr">{u.email}</div>
-                      {u.phone && <div dir="ltr" className="text-[11px]">{u.phone}</div>}
-                    </td>
+                {users.map((u) => {
+                  const displayEmail = isDemo ? maskEmail(u.email) : u.email;
+                  const displayPhone = u.phone ? (isDemo ? maskPhone(u.phone) : u.phone) : null;
+                  const displayName = isDemo ? maskName(u.name ?? "") : u.name;
+                  return (
+                    <tr key={u.id} className="border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+                      <td className="px-4 py-3">
+                        <div className="font-bold">
+                          {displayName || "—"}
+                          {u.id === meId && (
+                            <span className="text-[10px] font-bold text-white bg-dk-red rounded-md px-1.5 py-0.5 ml-1">شما</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--text-secondary)" }}>
+                        <div dir="ltr">{displayEmail}</div>
+                        {displayPhone && <div dir="ltr" className="text-[11px]">{displayPhone}</div>}
+                      </td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--text-secondary)" }}>
                       {new Date(u.createdAt).toLocaleDateString("fa-IR")}
                     </td>
@@ -224,9 +249,10 @@ export default function AdminUsersPage() {
                           </button>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
+</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

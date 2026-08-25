@@ -31,6 +31,29 @@ type Order = {
   items: OrderItem[];
 };
 
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const masked = local.length > 2 ? `${local.slice(0, 2)}***` : "***";
+  return `${masked}@${domain}`;
+}
+
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length >= 11 && digits.startsWith("09")) {
+    return `${digits.slice(0, 3)}*** ${digits.slice(6, 9)} ${digits.slice(9)}`;
+  }
+  return "09*** ****";
+}
+
+function maskName(_name: string): string {
+  return "***";
+}
+
+function maskAddress(_address: string): string {
+  return "***";
+}
+
 const STATUS_LABELS: Record<string, string> = {
   pending: "در انتظار تایید",
   processing: "در حال آماده‌سازی",
@@ -57,6 +80,7 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   function authHeaders(): HeadersInit {
     const token = localStorage.getItem("dk-token") || "";
@@ -96,6 +120,8 @@ export default function AdminOrdersPage() {
         setStatus("denied");
         return;
       }
+      const me = await res.json();
+      setIsDemo(me.user?.role === "demo");
       await loadOrders("all", "");
     });
   }, [loadOrders]);
@@ -143,33 +169,37 @@ export default function AdminOrdersPage() {
   }
 
   // خروجی اکسل (فایل .xls با جدول HTML — پشتیبانی کامل فارسی و اعداد)
-  function exportExcel() {
+function exportExcel() {
     if (!orders.length) return;
     const esc = (s: string) =>
-      String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      String(s ?? "").replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
     const head = ["شماره", "تاریخ", "گیرنده", "تلفن", "آدرس", "اقلام", "مبلغ (تومان)", "وضعیت"]
       .map((h) => `<th style="background:#ef4050;color:#fff;padding:8px;border:1px solid #ddd;text-align:right">${h}</th>`)
       .join("");
     const body = orders
       .map(
-        (o) =>
-          `<tr>` +
-          [
-            o.id,
-            formatDate(o.createdAt),
-            o.receiverName,
-            o.phone,
-            o.address,
-            o.items.map((i) => `${i.productName ?? i.product?.name ?? "?"} ×${i.quantity}`).join(" | "),
-            o.total.toLocaleString("fa-IR"),
-            STATUS_LABELS[o.status] ?? o.status,
-          ]
-            .map(
-              (c) =>
-                `<td style="padding:8px;border:1px solid #ddd;text-align:right;vertical-align:top">${esc(String(c))}</td>`,
-            )
-            .join("") +
-          `</tr>`,
+        (o) => {
+          const displayReceiverName = isDemo ? maskName(o.receiverName) : o.receiverName;
+          const displayPhone = isDemo ? maskPhone(o.phone) : o.phone;
+          const displayAddress = isDemo ? maskAddress(o.address) : o.address;
+          return `<tr>` +
+            [
+              o.id,
+              formatDate(o.createdAt),
+              displayReceiverName,
+              displayPhone,
+              displayAddress,
+              o.items.map((i) => `${i.productName ?? i.product?.name ?? "?"} ×${i.quantity}`).join(" | "),
+              o.total.toLocaleString("fa-IR"),
+              STATUS_LABELS[o.status] ?? o.status,
+            ]
+              .map(
+                (c) =>
+                  `<td style="padding:8px;border:1px solid #ddd;text-align:right;vertical-align:top">${esc(String(c))}</td>`,
+              )
+              .join("") +
+            `</tr>`;
+        },
       )
       .join("");
     const html =
@@ -312,8 +342,13 @@ export default function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((o) => (
-                  <Fragment key={o.id}>
+                {orders.map((o) => {
+                  const displayReceiverName = isDemo ? maskName(o.receiverName) : o.receiverName;
+                  const displayPhone = isDemo ? maskPhone(o.phone) : o.phone;
+                  const displayAddress = isDemo ? maskAddress(o.address) : o.address;
+                  const displayUserName = o.user?.name ? (isDemo ? maskName(o.user.name) : o.user.name) : (o.user?.email ? (isDemo ? maskEmail(o.user.email) : o.user.email) : "—");
+                  return (
+                    <Fragment key={o.id}>
                   <tr className="border-b last:border-b-0 align-top" style={{ borderColor: "var(--border)" }}>
                       <td className="px-4 py-3">
                         <button
@@ -329,12 +364,12 @@ export default function AdminOrdersPage() {
                         {formatDate(o.createdAt)}
                       </td>
                       <td className="px-4 py-3 font-bold">
-                        {o.receiverName}
+                        {displayReceiverName}
                         <div className="text-[11px] font-normal" style={{ color: "var(--text-secondary)" }}>
-                          {o.user?.name ?? o.user?.email ?? "—"}
+                          {displayUserName}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-xs" dir="ltr">{o.phone}</td>
+                      <td className="px-4 py-3 text-xs" dir="ltr">{displayPhone}</td>
                       <td className="px-4 py-3">
                         {o.items.reduce((s, it) => s + it.quantity, 0).toLocaleString("fa-IR")}
                       </td>
@@ -431,14 +466,15 @@ export default function AdminOrdersPage() {
                             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs pt-1" style={{ color: "var(--text-secondary)" }}>
                               <span>روش ارسال: {o.shippingName}</span>
                               <span>هزینه ارسال: {formatPrice(o.shippingPrice)}</span>
-                              <span className="w-full truncate">آدرس: {o.address}</span>
+                              <span className="w-full truncate">آدرس: {displayAddress}</span>
                             </div>
                           </div>
                         </td>
                       </tr>
                     )}
                   </Fragment>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

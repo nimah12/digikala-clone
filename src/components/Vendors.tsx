@@ -36,8 +36,8 @@ export default async function Vendors({ productId }: { productId: number }) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-bold truncate">{v.name}</div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="text-sm font-bold truncate sm:pr-4">{v.name}</div>
                 {/* Rating */}
                 <div className="flex items-center gap-1 shrink-0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9a825" aria-hidden="true">

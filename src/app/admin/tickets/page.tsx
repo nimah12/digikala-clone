@@ -15,6 +15,17 @@ type Ticket = {
   userId: number | null;
 };
 
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const masked = local.length > 2 ? `${local.slice(0, 2)}***` : "***";
+  return `${masked}@${domain}`;
+}
+
+function maskName(_name: string): string {
+  return "***";
+}
+
 const STATUS_LABELS: Record<string, string> = {
   open: "باز",
   answered: "پاسخ داده شده",
@@ -35,6 +46,7 @@ export default function AdminTicketsPage() {
   const [savingId, setSavingId] = useState<number | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<number, string>>({});
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   function authHeaders(): HeadersInit {
     return { Authorization: `Bearer ${localStorage.getItem("dk-token") ?? ""}` };
@@ -67,7 +79,15 @@ export default function AdminTicketsPage() {
       setStatus("denied");
       return;
     }
-    loadTickets("all");
+    fetch("/api/admin/me", { headers: authHeaders() }).then(async (res) => {
+      if (!res.ok) {
+        setStatus("denied");
+        return;
+      }
+      const me = await res.json();
+      setIsDemo(me.user?.role === "demo");
+      loadTickets("all");
+    });
   }, [loadTickets]);
 
   async function updateTicket(ticketId: number, patch: { status?: string; reply?: string }) {
@@ -186,8 +206,11 @@ export default function AdminTicketsPage() {
                 </tr>
               </thead>
               <tbody>
-                {tickets.map((t) => (
-                  <Fragment key={t.id}>
+                {tickets.map((t) => {
+                  const displayName = isDemo ? maskName(t.name) : t.name;
+                  const displayEmail = isDemo ? maskEmail(t.email) : t.email;
+                  return (
+                    <Fragment key={t.id}>
                     <tr className="border-b last:border-b-0 align-top" style={{ borderColor: "var(--border)" }}>
                       <td className="px-4 py-3">
                         <button
@@ -202,9 +225,9 @@ export default function AdminTicketsPage() {
                         {formatDate(t.createdAt)}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-xs font-bold">{t.name}</div>
+                        <div className="text-xs font-bold">{displayName}</div>
                         <div className="text-[11px] digits" dir="ltr" style={{ color: "var(--text-muted)" }}>
-                          {t.email}
+                          {displayEmail}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-xs font-bold max-w-[220px] truncate">{t.subject}</td>
@@ -268,7 +291,8 @@ export default function AdminTicketsPage() {
                       </tr>
                     )}
                   </Fragment>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

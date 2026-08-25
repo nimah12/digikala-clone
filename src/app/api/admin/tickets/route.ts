@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin, maskEmail, maskName } from "@/lib/admin";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -8,11 +8,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const isDemo = auth.user.role === "demo";
   const status = request.nextUrl.searchParams.get("status");
   const tickets = await prisma.supportTicket.findMany({
     where: status && status !== "all" ? { status } : undefined,
     orderBy: { createdAt: "desc" },
   });
+
+  if (isDemo) {
+    return NextResponse.json({
+      tickets: tickets.map((t) => ({
+        ...t,
+        name: maskName(t.name),
+        email: maskEmail(t.email),
+      })),
+    });
+  }
+
   return NextResponse.json({ tickets });
 }
 

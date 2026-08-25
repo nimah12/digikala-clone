@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import AdminNotificationBell from "@/components/AdminNotificationBell";
 
@@ -120,6 +121,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isDemo, setIsDemo] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("dk-token");
+    if (!token) return;
+    fetch("/api/admin/me", { headers: { Authorization: `Bearer ${token}` } }).then(async (res) => {
+      if (!res.ok) return;
+      const me = await res.json();
+      setIsDemo(me.user?.role === "demo");
+    });
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -173,7 +185,16 @@ export default function AdminLayout({
         </aside>
 
         <main className="flex-1 min-w-0">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end items-center gap-3 mb-4">
+            {isDemo && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-500 border border-amber-500/30" title="حساب نمایشی — اطلاعات حساس مخفی است">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                حالت نمایشی
+              </span>
+            )}
             <AdminNotificationBell />
           </div>
           <div className="flex md:hidden flex-wrap gap-2 mb-4">

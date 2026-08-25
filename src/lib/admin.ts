@@ -10,6 +10,41 @@ type AdminUser = {
   role: string;
 };
 
+/**
+ * Masks email for demo users: us***@domain.com
+ */
+export function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const masked = local.length > 2 ? `${local.slice(0, 2)}***` : "***";
+  return `${masked}@${domain}`;
+}
+
+/**
+ * Masks Iranian phone numbers for demo users: 09*** *** ****
+ */
+export function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length >= 11 && digits.startsWith("09")) {
+    return `${digits.slice(0, 3)}*** ${digits.slice(6, 9)} ${digits.slice(9)}`;
+  }
+  return "09*** *** ****";
+}
+
+/**
+ * Masks name for demo users
+ */
+export function maskName(_name: string): string {
+  return "***";
+}
+
+/**
+ * Masks address for demo users
+ */
+export function maskAddress(_address: string): string {
+  return "***";
+}
+
 type AdminCheckResult =
   | { user: AdminUser }
   | { error: "unauthorized"; status: 401 }

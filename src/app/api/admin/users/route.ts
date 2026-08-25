@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin, maskEmail, maskPhone } from "@/lib/admin";
 
 const ROLES = ["user", "admin"] as const;
 
@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const isDemo = auth.user.role === "demo";
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
 
@@ -34,6 +35,16 @@ export async function GET(request: Request) {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  if (isDemo) {
+    return NextResponse.json({
+      users: users.map((u) => ({
+        ...u,
+        email: maskEmail(u.email),
+        phone: u.phone ? maskPhone(u.phone) : null,
+      })),
+    });
+  }
 
   return NextResponse.json({ users });
 }

@@ -69,15 +69,10 @@ export async function POST(request: NextRequest) {
     }
     const productById = new Map(products.map((p) => [p.id, p]));
 
-    // هر ردیف از سبد خرید (نه هر محصولِ یکتا) به یک OrderItem تبدیل می‌شود؛
-    // این‌طوری همان محصول با رنگ‌های مختلف، ردیف‌های جداگانه در سفارش باقی می‌ماند.
-    // name/slug/imageUrl به‌عنوان snapshot ذخیره می‌شوند تا پس از حذف کامل محصول،
-    // تاریخچه سفارش همچنان قابل نمایش باشد.
     const itemsData = (productIds as number[])
       .map((pid, i) => {
         const p = productById.get(pid);
         if (!p) return null;
-        // محصول ناموجود قابل خرید نیست
         if (p.stock <= 0) return null;
         const quantity = Math.min(
           Array.isArray(quantities) ? quantities[i] || 1 : 1,
@@ -110,8 +105,6 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         userId: user.id,
-        // پرداخت در این دمو همیشه موفق است؛ سفارش در انتظار تایید ادمین قرار می‌گیرد
-        // و موجودی/فروش فقط پس از تایید (pending → processing) کسر/ثبت می‌شود
         status: "pending",
         total,
         shippingName,
@@ -122,6 +115,22 @@ export async function POST(request: NextRequest) {
         items: { create: itemsData },
       },
     });
+
+    // Create admin notification for new order
+    try {
+      const firstProductId = itemsData[0]?.productId;
+      await prisma.adminNotification.create({
+        data: {
+          type: "order",
+          title: "سفارش جدید دریافت شد",
+          body: `${user.name || user.email} سفارشی به مبلغ ${total.toLocaleString("fa-IR")} تومان ثبت کرد.`,
+          productId: firstProductId,
+          orderId: order.id,
+        },
+      });
+    } catch {
+      // Notification failure shouldn't affect order creation
+    }
 
     return Response.json({ success: true, orderId: order.id });
   } catch (e: unknown) {

@@ -10,6 +10,7 @@ type AdminNotification = {
   body: string | null;
   productId: number | null;
   reviewId: number | null;
+  orderId: number | null;
   read: boolean;
   createdAt: string;
 };
@@ -98,7 +99,9 @@ export default function AdminNotificationBell() {
 
   function openNotification(n: AdminNotification) {
     setOpen(false);
-    if (n.productId) {
+    if (n.orderId) {
+      router.push(`/admin/orders?focus=${n.orderId}`);
+    } else if (n.productId) {
       router.push(`/admin/products?focus=${n.productId}`);
     }
     if (!n.read) markRead(n.id);

@@ -45,6 +45,13 @@ export function maskAddress(_address: string): string {
   return "***";
 }
 
+/**
+ * Masks ticket subject for demo users
+ */
+export function maskSubject(_subject: string): string {
+  return "***";
+}
+
 type AdminCheckResult =
   | { user: AdminUser }
   | { error: "unauthorized"; status: 401 }

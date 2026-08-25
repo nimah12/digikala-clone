@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, maskEmail, maskName } from "@/lib/admin";
+import { requireAdmin, maskEmail, maskName, maskSubject } from "@/lib/admin";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         ...t,
         name: maskName(t.name),
         email: maskEmail(t.email),
+        subject: maskSubject(t.subject),
       })),
     });
   }

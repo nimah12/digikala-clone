@@ -8,13 +8,12 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
-        // دامنه‌ی عمومی Backblaze B2 (custom domain یا f00x.backblazeb2.com) از env خونده می‌شود
+        // فقط برای سازگاری با مدیاهای قدیمی که هنوز URL ورسل‌بلاب دارند در دیتابیس
         protocol: "https",
-        hostname: new URL(
-          process.env.B2_PUBLIC_URL || "https://placeholder.invalid"
-        ).hostname,
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
+    // آپلودهای جدید از مسیر same-origin (/api/media) سرو می‌شوند و به remotePattern نیازی ندارند
   },
 };
 

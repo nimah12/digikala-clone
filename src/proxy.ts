@@ -1,10 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// origin دامنه‌ی عمومی Backblaze B2 (برای CSP)؛ در صورت نبود env مقدار بی‌اثر می‌گذاریم
-const B2_ORIGIN = process.env.B2_PUBLIC_URL
-  ? new URL(process.env.B2_PUBLIC_URL).origin
-  : "";
-
 // Security headers برای همه‌ی صفحات سایت
 const SECURITY_HEADERS: Record<string, string> = {
   // جلوگیری از کلیک‌جکینگ (قرار گرفتن سایت داخل iframe سایت‌های دیگر)
@@ -18,14 +13,15 @@ const SECURITY_HEADERS: Record<string, string> = {
   // محافظت اولیه از XSS در مرورگرهای قدیمی
   "X-XSS-Protection": "0",
   // سیاست امنیت محتوا
-  // دامنه‌ی B2_PUBLIC_URL (custom domain یا f00x.backblazeb2.com) به‌جای دامنه‌ی Vercel Blob
+  // مدیای جدید از مسیر same-origin سرو می‌شود (/api/media)؛
+  // دامنه‌های ورسل‌بلاب فقط برای سازگاری با رکوردهای قدیمی دیتابیس نگه داشته شده‌اند
   "Content-Security-Policy": [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${B2_ORIGIN}`,
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob: ${B2_ORIGIN}`,
+    "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com",
     "font-src 'self' data:",
-    `connect-src 'self' ${B2_ORIGIN}`,
+    "connect-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

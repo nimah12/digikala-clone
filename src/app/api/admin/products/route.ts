@@ -153,7 +153,8 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (imageUrl && !imageUrl.startsWith("http")) {
+  // URL معتبر: مطلق http(s) یا نسبی از مسیر پراکسی داخلی مدیا (/api/media/...)
+  if (imageUrl && !/^https?:\/\//.test(imageUrl) && !imageUrl.startsWith("/api/media/")) {
     return NextResponse.json({ error: "invalid imageUrl" }, { status: 400 });
   }
 

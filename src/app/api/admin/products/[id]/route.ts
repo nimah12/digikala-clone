@@ -55,7 +55,12 @@ export async function PATCH(
   const data: Record<string, unknown> = {};
 
   if (body.imageUrl !== undefined) {
-    if (body.imageUrl !== null && !body.imageUrl.startsWith("http")) {
+    // URL معتبر: مطلق http(s) یا نسبی از مسیر پراکسی داخلی مدیا (/api/media/...)
+    const isValidUrl =
+      body.imageUrl === null ||
+      /^https?:\/\//.test(body.imageUrl) ||
+      body.imageUrl.startsWith("/api/media/");
+    if (!isValidUrl) {
       return NextResponse.json({ error: "invalid imageUrl" }, { status: 400 });
     }
     data.imageUrl = body.imageUrl || null;

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { put } from "@/lib/b2";
 import { requireAdmin } from "@/lib/admin";
 import { optimizeImage, percentSaved } from "@/lib/media-optimizer";
 

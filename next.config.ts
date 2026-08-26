@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
+        // دامنه‌ی عمومی Backblaze B2 (custom domain یا f00x.backblazeb2.com) از env خونده می‌شود
         protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
+        hostname: new URL(
+          process.env.B2_PUBLIC_URL || "https://placeholder.invalid"
+        ).hostname,
       },
     ],
   },

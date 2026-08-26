@@ -1,0 +1,213 @@
+diff --git a/.env.example b/.env.example
+index d39d6e0..b5e16f0 100644
+--- a/.env.example
++++ b/.env.example
+@@ -11,3 +11,19 @@ AUTH_SECRET="change-me"
+ 
+ # کلید API نوسان (ناواسان) برای قیمت لحظه‌ای طلا و سکه — روزی ۳ درخواست (هر ۸ ساعت)
+ NAVASAN_API_KEY=""
++
++# --- Backblaze B2 (جایگزین Vercel Blob برای ذخیره‌ی عکس/ویدیو، بدون نیاز به کارت اعتباری) ---
++# اندپوینت S3-compatible مخصوص اکانتت (تو داشبورد B2 کنار باکت نشون داده می‌شه)
++# مثال: https://s3.us-west-004.backblazeb2.com
++B2_ENDPOINT=""
++# بخش region از همون endpoint (مثال بالا: us-west-004)
++B2_REGION=""
++# keyID و applicationKey که موقع ساخت Application Key می‌گیری
++B2_ACCESS_KEY_ID=""
++B2_SECRET_ACCESS_KEY=""
++# نام باکتی که ساختی (مثلاً digikala-clone-media)
++B2_BUCKET_NAME=""
++# دامنه‌ی عمومی برای دسترسی به فایل‌ها: یا آدرس friendly URL پیش‌فرض B2
++# (https://f004.backblazeb2.com/file/BUCKET_NAME) یا یک custom domain متصل‌شده
++# نکته: بخش "/file/BUCKET_NAME" را هم داخل همین مقدار بگذار (بدون اسلش انتهایی)
++B2_PUBLIC_URL=""
+diff --git a/next.config.ts b/next.config.ts
+index 47b9ebf..145d000 100644
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
+     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+     remotePatterns: [
+       {
++        // دامنه‌ی عمومی Backblaze B2 (custom domain یا f00x.backblazeb2.com) از env خونده می‌شود
+         protocol: "https",
+-        hostname: "*.public.blob.vercel-storage.com",
++        hostname: new URL(
++          process.env.B2_PUBLIC_URL || "https://placeholder.invalid"
++        ).hostname,
+       },
+     ],
+   },
+diff --git a/package.json b/package.json
+index 1f5737f..3e666b0 100644
+--- a/package.json
++++ b/package.json
+@@ -14,9 +14,9 @@
+     "seed": "npx tsx prisma/seed/seed.ts"
+   },
+   "dependencies": {
++    "@aws-sdk/client-s3": "^3.1118.0",
+     "@prisma/adapter-pg": "^7.9.1",
+     "@prisma/client": "^7.9.1",
+-    "@vercel/blob": "^2.7.0",
+     "dotenv": "^17.4.2",
+     "lucide-react": "^1.31.0",
+     "next": "^16.3.1",
+diff --git a/src/app/api/admin/products/[id]/media/route.ts b/src/app/api/admin/products/[id]/media/route.ts
+index d11c9a3..2872158 100644
+--- a/src/app/api/admin/products/[id]/media/route.ts
++++ b/src/app/api/admin/products/[id]/media/route.ts
+@@ -1,5 +1,5 @@
+ import { NextResponse } from "next/server";
+-import { put, del } from "@vercel/blob";
++import { put, del } from "@/lib/b2";
+ import { prisma } from "@/lib/prisma";
+ import { requireAdmin } from "@/lib/admin";
+ import { optimizeImage } from "@/lib/media-optimizer";
+diff --git a/src/app/api/admin/upload/route.ts b/src/app/api/admin/upload/route.ts
+index ab6f7f8..365c0e1 100644
+--- a/src/app/api/admin/upload/route.ts
++++ b/src/app/api/admin/upload/route.ts
+@@ -1,5 +1,5 @@
+ import { NextResponse } from "next/server";
+-import { put } from "@vercel/blob";
++import { put } from "@/lib/b2";
+ import { requireAdmin } from "@/lib/admin";
+ import { optimizeImage, percentSaved } from "@/lib/media-optimizer";
+ 
+diff --git a/src/lib/b2.ts b/src/lib/b2.ts
+new file mode 100644
+index 0000000..c44427e
+--- /dev/null
++++ b/src/lib/b2.ts
+@@ -0,0 +1,96 @@
++import {
++  S3Client,
++  PutObjectCommand,
++  DeleteObjectCommand,
++} from "@aws-sdk/client-s3";
++
++// کلاینت S3-compatible برای Backblaze B2.
++// برخلاف R2، اینجا region واقعاً معنا داره و باید مطابق endpoint ست بشه
++// (مثلاً endpoint: https://s3.us-west-004.backblazeb2.com -> region: us-west-004)
++const b2 = new S3Client({
++  region: requireEnv("B2_REGION") || "us-west-004",
++  endpoint: requireEnv("B2_ENDPOINT"),
++  credentials: {
++    accessKeyId: requireEnv("B2_ACCESS_KEY_ID"),
++    secretAccessKey: requireEnv("B2_SECRET_ACCESS_KEY"),
++  },
++});
++
++function requireEnv(name: string): string {
++  const value = process.env[name];
++  if (!value) {
++    // در build-time بعضی مسیرها import می‌شن بدون این‌که واقعاً صدا زده بشن؛
++    // پرتاب خطا رو به زمان صدا زدن واقعی موکول می‌کنیم، نه import.
++    return "";
++  }
++  return value;
++}
++
++function bucketName(): string {
++  const bucket = process.env.B2_BUCKET_NAME;
++  if (!bucket) throw new Error("B2_BUCKET_NAME تنظیم نشده است");
++  return bucket;
++}
++
++function publicBaseUrl(): string {
++  const base = process.env.B2_PUBLIC_URL;
++  if (!base) throw new Error("B2_PUBLIC_URL تنظیم نشده است");
++  return base.replace(/\/$/, "");
++}
++
++type PutOptions = {
++  access?: "public"; // برای سازگاری با امضای قبلی @vercel/blob؛ در B2 عمومی‌بودن از طریق تنظیمات باکت/دامنه کنترل می‌شود
++  contentType?: string;
++};
++
++type PutResult = {
++  url: string;
++};
++
++/**
++ * جایگزین put از @vercel/blob. همون امضا رو حفظ می‌کنه تا فراخوانی‌های
++ * موجود در route ها بدون تغییر ساختاری کار کنن.
++ */
++export async function put(
++  key: string,
++  body: Buffer | File | Blob,
++  options: PutOptions = {}
++): Promise<PutResult> {
++  let uploadBody: Buffer;
++  if (body instanceof Buffer) {
++    uploadBody = body;
++  } else {
++    uploadBody = Buffer.from(await (body as Blob).arrayBuffer());
++  }
++
++  await b2.send(
++    new PutObjectCommand({
++      Bucket: bucketName(),
++      Key: key,
++      Body: uploadBody,
++      ContentType: options.contentType,
++    })
++  );
++
++  return { url: `${publicBaseUrl()}/${key}` };
++}
++
++/**
++ * جایگزین del از @vercel/blob. ورودی همون URL کامل فایل است؛
++ * از روی B2_PUBLIC_URL کلید (path) استخراج می‌شود.
++ */
++export async function del(url: string): Promise<void> {
++  const base = publicBaseUrl();
++  if (!url.startsWith(base)) {
++    // اگر URL مربوط به دامنه‌ی B2 فعلی نیست (مثلاً فایل قدیمی از Vercel Blob)، نادیده بگیر
++    throw new Error(`URL خارج از دامنه‌ی B2 است: ${url}`);
++  }
++  const key = url.slice(base.length + 1);
++
++  await b2.send(
++    new DeleteObjectCommand({
++      Bucket: bucketName(),
++      Key: key,
++    })
++  );
++}
+diff --git a/src/proxy.ts b/src/proxy.ts
+index f19ccef..95dde4e 100644
+--- a/src/proxy.ts
++++ b/src/proxy.ts
+@@ -1,5 +1,10 @@
+ import { NextResponse, type NextRequest } from "next/server";
+ 
++// origin دامنه‌ی عمومی Backblaze B2 (برای CSP)؛ در صورت نبود env مقدار بی‌اثر می‌گذاریم
++const B2_ORIGIN = process.env.B2_PUBLIC_URL
++  ? new URL(process.env.B2_PUBLIC_URL).origin
++  : "";
++
+ // Security headers برای همه‌ی صفحات سایت
+ const SECURITY_HEADERS: Record<string, string> = {
+   // جلوگیری از کلیک‌جکینگ (قرار گرفتن سایت داخل iframe سایت‌های دیگر)
+@@ -13,13 +18,14 @@ const SECURITY_HEADERS: Record<string, string> = {
+   // محافظت اولیه از XSS در مرورگرهای قدیمی
+   "X-XSS-Protection": "0",
+   // سیاست امنیت محتوا
++  // دامنه‌ی B2_PUBLIC_URL (custom domain یا f00x.backblazeb2.com) به‌جای دامنه‌ی Vercel Blob
+   "Content-Security-Policy": [
+     "default-src 'self'",
+-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.public.blob.vercel-storage.com",
++    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${B2_ORIGIN}`,
+     "style-src 'self' 'unsafe-inline'",
+-    "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com https://*.vercel-storage.com",
++    `img-src 'self' data: blob: ${B2_ORIGIN}`,
+     "font-src 'self' data:",
+-    "connect-src 'self' https://*.public.blob.vercel-storage.com",
++    `connect-src 'self' ${B2_ORIGIN}`,
+     "frame-ancestors 'none'",
+     "base-uri 'self'",
+     "form-action 'self'",

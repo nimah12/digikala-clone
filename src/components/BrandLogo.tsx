@@ -142,6 +142,7 @@ const MARKS: Partial<Record<BrandLogoName, ReactNode>> = {
 // می‌گیرن تا متن کامل داخل کادر جا بشه
 const VIEWBOX: Partial<Record<BrandLogoName, string>> = {
   apple: "0 0 814 1000",
+  lenovo: "0 0 28 16",
 };
 
 export default function BrandLogo({

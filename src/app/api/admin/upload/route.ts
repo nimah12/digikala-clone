@@ -52,7 +52,7 @@ async function uploadToB2(
 
   const signedRequest = await client.sign(originUrl, {
     method: "PUT",
-    body: bytes,
+    body: bytes as BodyInit,
     headers: {
       "Content-Type": contentType,
       "Content-Length": String(bytes.byteLength),

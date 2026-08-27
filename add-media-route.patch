@@ -1,0 +1,85 @@
+diff --git a/src/app/api/media/[...path]/route.ts b/src/app/api/media/[...path]/route.ts
+new file mode 100644
+index 0000000..6d72151
+--- /dev/null
++++ b/src/app/api/media/[...path]/route.ts
+@@ -0,0 +1,79 @@
++import { NextResponse } from "next/server";
++import { GetObjectCommand } from "@aws-sdk/client-s3";
++import { b2, bucketName } from "@/lib/b2";
++
++// این route جایگزین دسترسی مستقیم و عمومی به باکت B2 است.
++// چون باکت B2 روی Private مونده (برای اجتناب از نیاز به کارت اعتباری جهت فعال‌سازی Public)،
++// فایل‌ها اینجا با کلیدهای سرور (که هرگز به کلاینت داده نمی‌شن) از B2 خونده و مستقیم استریم می‌شن.
++//
++// پشتیبانی از Range requests ضروریه چون <video> مرورگر بدون جواب 206/Partial Content
++// اصلاً متادیتای ویدیو رو نمی‌گیره و پخش نمی‌کنه (برخلاف <img> که با 200 ساده هم کار می‌کنه).
++
++const CACHE_CONTROL =
++  "public, max-age=31536000, s-maxage=31536000, immutable";
++
++export async function GET(
++  request: Request,
++  { params }: { params: Promise<{ path: string[] }> }
++) {
++  const { path } = await params;
++  const key = path.join("/");
++
++  // جلوگیری از path traversal؛ کلیدهای ما همیشه توسط سرور ساخته می‌شن
++  // (پوشه‌ی مجاز + timestamp + نام امن‌شده) پس هرگز نباید ".." داشته باشن
++  if (key.includes("..") || key.startsWith("/")) {
++    return NextResponse.json({ error: "invalid path" }, { status: 400 });
++  }
++
++  const rangeHeader = request.headers.get("range") ?? undefined;
++
++  try {
++    const result = await b2.send(
++      new GetObjectCommand({
++        Bucket: bucketName(),
++        Key: key,
++        // اگه مرورگر Range خواسته بود (مثلاً موقع seek کردن ویدیو)، همون بازه رو از B2 می‌خوایم
++        ...(rangeHeader ? { Range: rangeHeader } : {}),
++      })
++    );
++
++    if (!result.Body) {
++      return NextResponse.json({ error: "not found" }, { status: 404 });
++    }
++
++    const webStream = result.Body.transformToWebStream();
++    const isPartial = Boolean(rangeHeader && result.ContentRange);
++
++    return new Response(webStream, {
++      // وقتی جواب بخشی از فایله (Range) باید 206 برگردونیم، نه 200؛
++      // بدون این، مرورگر جواب رو نامعتبر می‌دونه و ویدیو رو رد می‌کنه
++      status: isPartial ? 206 : 200,
++      headers: {
++        "Content-Type": result.ContentType || "application/octet-stream",
++        // به مرورگر می‌گه که این سرور از Range پشتیبانی می‌کنه؛
++        // بدون این هدر، خیلی از مرورگرها اصلاً Range request نمی‌فرستن
++        "Accept-Ranges": "bytes",
++        ...(result.ContentLength
++          ? { "Content-Length": String(result.ContentLength) }
++          : {}),
++        ...(result.ContentRange
++          ? { "Content-Range": result.ContentRange }
++          : {}),
++        "Cache-Control": CACHE_CONTROL,
++      },
++    });
++  } catch (err: unknown) {
++    const code = (err as { name?: string; Code?: string })?.name;
++    if (code === "NoSuchKey" || code === "NotFound") {
++      return NextResponse.json({ error: "not found" }, { status: 404 });
++    }
++    if (code === "InvalidRange") {
++      return NextResponse.json({ error: "invalid range" }, { status: 416 });
++    }
++    console.error("[api/media] fetch failed:", err);
++    return NextResponse.json(
++      { error: "failed to fetch media" },
++      { status: 500 }
++    );
++  }
++}

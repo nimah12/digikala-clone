@@ -41,11 +41,21 @@ async function uploadToB2(
   const bucket = process.env.B2_BUCKET_NAME!;
   const originUrl = `${endpoint}/${bucket}/${key}`;
 
+  // B2 (مثل S3) برای PUT مستقیم، هدر Content-Length رو صریحاً لازم داره.
+  // چون بعضی از ران‌تایم‌های fetch (از جمله Node runtime روی Vercel) این هدر رو
+  // موقع ارسال واقعی نادیده می‌گیرن/بازنویسی می‌کنن، body رو به یه Uint8Array
+  // با طول مشخص تبدیل می‌کنیم و طولش رو صریحاً بین هدرهایی که امضا می‌شن می‌ذاریم.
+  const bytes =
+    body instanceof Blob
+      ? new Uint8Array(await body.arrayBuffer())
+      : new Uint8Array(body.buffer, body.byteOffset, body.byteLength);
+
   const signedRequest = await client.sign(originUrl, {
     method: "PUT",
-    body: body as BodyInit,
+    body: bytes,
     headers: {
       "Content-Type": contentType,
+      "Content-Length": String(bytes.byteLength),
     },
   });
 

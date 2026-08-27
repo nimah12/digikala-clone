@@ -81,6 +81,8 @@ export default function VendorsManager({ productId }: { productId: number }) {
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 امتیاز:
                 <input
+                  id={`vendor-rating-${v.id}`}
+                  name={`vendor-rating-${v.id}`}
                   type="number"
                   min={0}
                   max={5}

@@ -142,6 +142,8 @@ export default function SizeManager({ productId }: { productId: number }) {
       >
         <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>سایز عددی از</span>
         <input
+          id="size-range-from"
+          name="size-range-from"
           type="number"
           step={0.5}
           value={rangeFrom}
@@ -151,6 +153,8 @@ export default function SizeManager({ productId }: { productId: number }) {
         />
         <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>تا</span>
         <input
+          id="size-range-to"
+          name="size-range-to"
           type="number"
           step={0.5}
           value={rangeTo}
@@ -160,6 +164,8 @@ export default function SizeManager({ productId }: { productId: number }) {
         />
         <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>گام</span>
         <input
+          id="size-range-step"
+          name="size-range-step"
           type="number"
           step={0.5}
           min={0.5}
@@ -170,6 +176,8 @@ export default function SizeManager({ productId }: { productId: number }) {
         />
         <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>موجودی هر کدوم</span>
         <input
+          id="size-range-stock"
+          name="size-range-stock"
           type="number"
           min={0}
           value={rangeStock}
@@ -226,6 +234,8 @@ export default function SizeManager({ productId }: { productId: number }) {
         }}
       >
         <input
+          id="size-name"
+          name="size-name"
           type="text"
           placeholder="اسم سایز (مثلاً S یا XL یا ۳۸)"
           value={name}
@@ -239,6 +249,8 @@ export default function SizeManager({ productId }: { productId: number }) {
           }}
         />
         <input
+          id="size-stock"
+          name="size-stock"
           type="number"
           min={0}
           placeholder="موجودی"

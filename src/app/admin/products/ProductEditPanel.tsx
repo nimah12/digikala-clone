@@ -122,6 +122,8 @@ export default function ProductEditPanel({
           {/* اطلاعات پایه */}
           <div style={{ display: "grid", gap: 8, marginBottom: 18 }}>
             <input
+              id="product-name"
+              name="product-name"
               type="text"
               placeholder="اسم محصول"
               value={form.name}
@@ -130,6 +132,8 @@ export default function ProductEditPanel({
             />
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <input
+                id="product-slug"
+                name="product-slug"
                 type="text"
                 dir="ltr"
                 placeholder="slug (فقط انگلیسی و خط تیره)"
@@ -138,6 +142,8 @@ export default function ProductEditPanel({
                 style={{ flex: 1, minWidth: 200, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
+                id="product-image"
+                name="product-image"
                 type="text"
                 dir="ltr"
                 placeholder="عکس (url)"
@@ -147,6 +153,8 @@ export default function ProductEditPanel({
               />
             </div>
             <textarea
+              id="product-description"
+              name="product-description"
               placeholder="توضیحات"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -155,6 +163,8 @@ export default function ProductEditPanel({
             />
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <input
+                id="product-price"
+                name="product-price"
                 type="number"
                 placeholder="قیمت اصلی (تومان)"
                 value={form.price}
@@ -162,6 +172,8 @@ export default function ProductEditPanel({
                 style={{ width: 160, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
+                id="product-stock"
+                name="product-stock"
                 type="number"
                 placeholder="موجودی"
                 value={form.stock}
@@ -169,6 +181,8 @@ export default function ProductEditPanel({
                 style={{ width: 110, padding: "8px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
               />
               <input
+                id="product-discount"
+                name="product-discount"
                 type="number"
                 placeholder="٪ تخفیف"
                 value={form.discountPercent}

@@ -66,6 +66,8 @@ export default function GalleryManager({ productId }: { productId: number }) {
     >
       <div style={{ marginBottom: 10 }}>
         <input
+          id="gallery-files"
+          name="gallery-files"
           type="file"
           accept="image/*,video/*"
           multiple

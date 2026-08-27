@@ -78,6 +78,8 @@ export default function ColorManager({ productId }: { productId: number }) {
         }}
       >
         <input
+          id="color-name"
+          name="color-name"
           type="text"
           placeholder="اسم رنگ (مثلاً مشکی)"
           value={name}
@@ -91,12 +93,16 @@ export default function ColorManager({ productId }: { productId: number }) {
           }}
         />
         <input
+          id="color-hex"
+          name="color-hex"
           type="color"
           value={hex}
           onChange={(e) => setHex(e.target.value)}
           style={{ width: 40, height: 32, padding: 0, border: "1px solid var(--border)", borderRadius: 6 }}
         />
         <input
+          id="color-stock"
+          name="color-stock"
           type="number"
           min={0}
           placeholder="موجودی"

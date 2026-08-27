@@ -130,6 +130,8 @@ export default function ProductListRow({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <input
+              id={`product-image-${product.id}`}
+              name={`product-image-${product.id}`}
               type="file"
               accept="image/*"
               disabled={uploading}

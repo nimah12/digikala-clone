@@ -16,7 +16,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
     "default-src 'self'",
     "media-src 'self' https://digikala-clone-media.nimah12.workers.dev",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.public.blob.vercel-storage.com",
+    "script-src 'self' 'unsafe-inline' https://*.public.blob.vercel-storage.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://digikala-clone-media.nimah12.workers.dev",
     "font-src 'self' data:",

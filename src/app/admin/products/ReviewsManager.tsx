@@ -114,6 +114,8 @@ export default function ReviewsManager({ productId }: { productId: number }) {
               {editingId === r.id ? (
                 <div style={{ display: "grid", gap: 6 }}>
                   <input
+                    id={`review-title-${r.id}`}
+                    name={`review-title-${r.id}`}
                     type="text"
                     value={editForm.title}
                     onChange={(e) =>
@@ -122,6 +124,8 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                     style={{ padding: "6px 8px", borderRadius: 4, border: "1px solid var(--border)" }}
                   />
                   <textarea
+                    id={`review-text-${r.id}`}
+                    name={`review-text-${r.id}`}
                     value={editForm.text}
                     onChange={(e) =>
                       setEditForm((f) => ({ ...f, text: e.target.value }))
@@ -131,6 +135,8 @@ export default function ReviewsManager({ productId }: { productId: number }) {
                   />
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <input
+                      id={`review-rating-${r.id}`}
+                      name={`review-rating-${r.id}`}
                       type="number"
                       min={1}
                       max={5}

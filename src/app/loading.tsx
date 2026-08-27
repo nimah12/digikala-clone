@@ -35,10 +35,10 @@ export default function Loading() {
         fill="none"
         role="img"
         aria-label="در حال بارگذاری"
-        style={{ color: "#131316" }}
+        style={{ color: "var(--text)" }}
       >
         <style>{`
-          svg { color: #131316; --rate: 1; }
+          svg { color: var(--text); --rate: 1; }
           .vol { --dur: 3.4s; }
           .vol-ghost, .vol-line { stroke: currentColor; fill: none; stroke-linecap: round; }
           .vol-ghost { stroke-width: .8; opacity: .14; }

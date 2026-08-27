@@ -27,7 +27,7 @@ const BRANDS: {
     q: "samsung",
     logo: "samsung",
     color: "#dcebfa",
-    tileBg: "#ffffff",
+    tileBg: "#111113",
   },
   {
     name: "شیائومی",
@@ -43,7 +43,7 @@ const BRANDS: {
     q: "lenovo",
     logo: "lenovo",
     color: "#e6eef7",
-    tileBg: "#ffffff",
+    tileBg: "#111113",
   },
   { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef", tileBg: "#ffffff" },
   {

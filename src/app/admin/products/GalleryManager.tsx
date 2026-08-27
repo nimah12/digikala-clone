@@ -82,7 +82,7 @@ export default function GalleryManager({ productId }: { productId: number }) {
           </span>
         )}
         <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-          می‌تونی چند عکس (حداکثر ۵ مگابایت هر کدام) و ویدیو (حداکثر ۱۰۰ مگابایت هر کدام) هم‌زمان انتخاب کنی.
+          می‌تونی چند عکس (حداکثر ۵ مگابایت هر کدام) و ویدیو (حداکثر ۲۰۰ مگابایت هر کدام) هم‌زمان انتخاب کنی.
         </p>
       </div>
 

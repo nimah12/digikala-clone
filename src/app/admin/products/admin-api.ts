@@ -89,15 +89,82 @@ export async function uploadProductMedia(
   productId: number,
   files: FileList,
 ): Promise<{ media: MediaItem[]; skipped: { name: string; reason: string }[] }> {
-  const formData = new FormData();
-  Array.from(files).forEach((f) => formData.append("files", f));
-  const res = await fetch(`/api/admin/products/${productId}/media`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: formData,
-  });
-  if (!res.ok) throw new Error("آپلود گالری ناموفق بود");
-  return res.json();
+  const all = Array.from(files);
+  const images = all.filter((f) => f.type.startsWith("image/"));
+  const videos = all.filter((f) => f.type.startsWith("video/"));
+
+  const media: MediaItem[] = [];
+  const skipped: { name: string; reason: string }[] = [];
+
+  if (images.length > 0) {
+    const formData = new FormData();
+    images.forEach((f) => formData.append("files", f));
+    const res = await fetch(`/api/admin/products/${productId}/media`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: formData,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(text || "آپلود عکس‌های گالری ناموفق بود");
+    }
+    const data = await res.json();
+    media.push(...(data.media || []));
+    if (data.skipped && data.skipped.length > 0) {
+      skipped.push(...data.skipped);
+    }
+  }
+
+  for (const file of videos) {
+    const presignRes = await fetch("/api/admin/upload/presign", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+        size: file.size,
+        folder: `products/${productId}/media`,
+      }),
+    });
+    if (!presignRes.ok) {
+      skipped.push({ name: file.name, reason: "presign failed" });
+      continue;
+    }
+    const presignData = await presignRes.json();
+
+    const uploadRes = await fetch(presignData.uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+    if (!uploadRes.ok) {
+      skipped.push({ name: file.name, reason: "upload to cdn failed" });
+      continue;
+    }
+
+    const commitRes = await fetch(`/api/admin/products/${productId}/media`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        items: [
+          {
+            url: presignData.finalUrl,
+            type: "video",
+          },
+        ],
+      }),
+    });
+    if (!commitRes.ok) {
+      skipped.push({ name: file.name, reason: "commit failed" });
+      continue;
+    }
+    const commitData = await commitRes.json();
+    media.push(...(commitData.media || []));
+  }
+
+  return { media, skipped };
 }
 
 export async function deleteMedia(productId: number, mediaId: number) {
@@ -327,4 +394,3 @@ export async function setReviewApproved(
 }
 
 export { errorMessage };
-

@@ -55,6 +55,36 @@ export async function POST(
     return NextResponse.json({ error: "product not found" }, { status: 404 });
   }
 
+  const contentType = request.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json().catch(() => null);
+    const items = Array.isArray(body?.items) ? body.items : [];
+
+    const lastMedia = await prisma.productMedia.findFirst({
+      where: { productId },
+      orderBy: { order: "desc" },
+    });
+    let nextOrder = (lastMedia?.order ?? -1) + 1;
+
+    const created = [];
+    for (const item of items) {
+      if (!item.url || !item.type) continue;
+      const record = await prisma.productMedia.create({
+        data: {
+          productId,
+          url: item.url,
+          type: item.type,
+          order: nextOrder,
+        },
+      });
+      nextOrder += 1;
+      created.push(record);
+    }
+
+    return NextResponse.json({ media: created, skipped: [] });
+  }
+
   const formData = await request.formData();
   const files = formData.getAll("files").filter((f) => f instanceof File) as File[];
 

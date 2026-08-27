@@ -211,6 +211,8 @@ export default function AdminProductsPage() {
           style={{ position: "relative", flex: 1, minWidth: 220, display: "flex", gap: 8 }}
         >
           <input
+            id="admin-product-search"
+            name="admin-product-search"
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}

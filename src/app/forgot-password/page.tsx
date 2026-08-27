@@ -79,6 +79,8 @@ export default function ForgotPasswordPage() {
           <div>
             <label className="block text-xs font-bold mb-1.5">ایمیل یا شماره موبایل</label>
             <input
+              id="forgot-identifier"
+              name="forgot-identifier"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}

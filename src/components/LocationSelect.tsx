@@ -9,6 +9,8 @@ type Props = {
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  id?: string;
+  name?: string;
 };
 
 export default function LocationSelect({
@@ -17,6 +19,8 @@ export default function LocationSelect({
   options,
   value,
   onChange,
+  id,
+  name,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -38,6 +42,8 @@ export default function LocationSelect({
     <div className="relative" ref={ref}>
       <label className="block text-xs font-bold mb-1.5">{label}</label>
       <button
+        id={id}
+        name={name}
         type="button"
         onClick={() => {
           setQuery("");

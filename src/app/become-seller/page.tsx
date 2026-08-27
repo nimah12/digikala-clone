@@ -56,6 +56,8 @@ export default function BecomeSellerPage() {
             <div>
               <label className="block text-xs font-bold mb-1.5">نام فروشگاه</label>
               <input
+                id="seller-name"
+                name="seller-name"
                 type="text"
                 required
                 placeholder="نام فروشگاه یا برند شما"
@@ -66,6 +68,8 @@ export default function BecomeSellerPage() {
             <div>
               <label className="block text-xs font-bold mb-1.5">شماره تماس</label>
               <input
+                id="seller-phone"
+                name="seller-phone"
                 type="tel"
                 required
                 dir="ltr"
@@ -78,6 +82,8 @@ export default function BecomeSellerPage() {
           <div>
             <label className="block text-xs font-bold mb-1.5">دسته کالایی</label>
             <select
+              id="seller-category"
+              name="seller-category"
               className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
               style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
             >

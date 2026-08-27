@@ -132,6 +132,8 @@ export default function TrackOrderPage() {
 
         <form onSubmit={track} className="flex gap-3">
           <input
+            id="track-code"
+            name="track-code"
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}

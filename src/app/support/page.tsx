@@ -89,6 +89,8 @@ export default function SupportPage() {
           <div>
             <label className="block text-xs font-bold mb-1.5">نام و نام خانوادگی</label>
             <input
+              id="support-name"
+              name="support-name"
               type="text"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
@@ -99,6 +101,8 @@ export default function SupportPage() {
           <div>
             <label className="block text-xs font-bold mb-1.5">ایمیل</label>
             <input
+              id="support-email"
+              name="support-email"
               type="email"
               dir="ltr"
               value={form.email}
@@ -112,6 +116,8 @@ export default function SupportPage() {
         <div>
           <label className="block text-xs font-bold mb-1.5">موضوع</label>
           <input
+            id="support-subject"
+            name="support-subject"
             type="text"
             value={form.subject}
             onChange={(e) => set("subject", e.target.value)}
@@ -123,6 +129,8 @@ export default function SupportPage() {
         <div>
           <label className="block text-xs font-bold mb-1.5">متن پیام</label>
           <textarea
+            id="support-message"
+            name="support-message"
             rows={5}
             value={form.message}
             onChange={(e) => set("message", e.target.value)}

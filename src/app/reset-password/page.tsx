@@ -117,18 +117,20 @@ function ResetPasswordForm() {
         className="rounded-2xl border p-6 space-y-4"
         style={{ background: "var(--panel)", borderColor: "var(--border)" }}
       >
-        <div>
-          <label className="block text-xs font-bold mb-1.5">رمز عبور جدید</label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              dir="ltr"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="حداقل ۶ کاراکتر با حرف بزرگ و علامت"
-              className="w-full pl-10"
-              style={inputStyle}
-            />
+          <div>
+            <label className="block text-xs font-bold mb-1.5">رمز عبور جدید</label>
+            <div className="relative">
+              <input
+                id="reset-password"
+                name="reset-password"
+                type={showPassword ? "text" : "password"}
+                dir="ltr"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="حداقل ۶ کاراکتر با حرف بزرگ و علامت"
+                className="w-full pl-10"
+                style={inputStyle}
+              />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
@@ -140,18 +142,20 @@ function ResetPasswordForm() {
             </button>
           </div>
         </div>
-        <div>
-          <label className="block text-xs font-bold mb-1.5">تکرار رمز عبور</label>
-          <div className="relative">
-            <input
-              type={showConfirm ? "text" : "password"}
-              dir="ltr"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="تکرار رمز عبور"
-              className="w-full pl-10"
-              style={inputStyle}
-            />
+          <div>
+            <label className="block text-xs font-bold mb-1.5">تکرار رمز عبور</label>
+            <div className="relative">
+              <input
+                id="reset-confirm"
+                name="reset-confirm"
+                type={showConfirm ? "text" : "password"}
+                dir="ltr"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="تکرار رمز عبور"
+                className="w-full pl-10"
+                style={inputStyle}
+              />
             <button
               type="button"
               onClick={() => setShowConfirm((v) => !v)}

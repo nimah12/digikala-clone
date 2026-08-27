@@ -154,6 +154,8 @@ export default function AdminUsersPage() {
 
       <div className="flex gap-2 mb-4">
         <input
+          id="admin-user-search"
+          name="admin-user-search"
           type="text"
           dir="ltr"
           value={q}

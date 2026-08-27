@@ -491,6 +491,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 از اطلاعات سفارش قبلی خود استفاده کنید
               </label>
               <select
+                id="checkout-prev-receiver"
+                name="checkout-prev-receiver"
                 value=""
                 onChange={(e) => {
                   const idx = Number(e.target.value);
@@ -523,6 +525,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 نام و نام خانوادگی
               </label>
               <input
+                id="checkout-name"
+                name="checkout-name"
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -541,6 +545,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 شماره موبایل
               </label>
               <input
+                id="checkout-phone"
+                name="checkout-phone"
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -557,6 +563,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <LocationSelect
+                id="checkout-province"
+                name="checkout-province"
                 label="استان"
                 placeholder="انتخاب استان"
                 options={getProvinceNames()}
@@ -566,6 +574,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 }
               />
               <LocationSelect
+                id="checkout-city"
+                name="checkout-city"
                 label="شهرستان"
                 placeholder={form.province ? "انتخاب شهرستان" : "ابتدا استان"}
                 options={form.province ? getCities(form.province) : []}
@@ -578,6 +588,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 آدرس کامل
               </label>
               <textarea
+                id="checkout-address"
+                name="checkout-address"
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 rows={3}
@@ -699,6 +711,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                 شماره کارت
               </label>
               <input
+                id="checkout-card-number"
+                name="checkout-card-number"
                 type="text"
                 inputMode="numeric"
                 dir="ltr"
@@ -739,6 +753,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                   <Icon name="refresh" size={16} />
                 </button>
                 <input
+                  id="checkout-captcha"
+                  name="checkout-captcha"
                   type="text"
                   inputMode="numeric"
                   dir="ltr"
@@ -756,6 +772,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                   تاریخ انقضا
                 </label>
                 <input
+                  id="checkout-expiry"
+                  name="checkout-expiry"
                   type="text"
                   inputMode="numeric"
                   dir="ltr"
@@ -771,6 +789,8 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
                   رمز دوم (CVV2)
                 </label>
                 <input
+                  id="checkout-cvv2"
+                  name="checkout-cvv2"
                   type="password"
                   inputMode="numeric"
                   dir="ltr"

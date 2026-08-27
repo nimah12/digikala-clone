@@ -284,6 +284,8 @@ function exportExcel() {
 
       <div className="flex flex-wrap gap-2 mb-4">
         <input
+          id="admin-order-search"
+          name="admin-order-search"
           type="text"
           dir="ltr"
           value={q}

@@ -474,29 +474,29 @@ function ArticleForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold mb-1">شناسه (slug)</label>
-          <input dir="ltr" value={form.id} disabled={!isNew} onChange={(e) => set("id", e.target.value)} placeholder="my-article" style={{ ...inputStyle, opacity: isNew ? 1 : 0.6 }} />
+          <input id="article-id" name="article-id" dir="ltr" value={form.id} disabled={!isNew} onChange={(e) => set("id", e.target.value)} placeholder="my-article" style={{ ...inputStyle, opacity: isNew ? 1 : 0.6 }} />
         </div>
         <div>
           <label className="block text-xs font-bold mb-1">عنوان</label>
-          <input value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="عنوان مقاله" style={inputStyle} />
+          <input id="article-title" name="article-title" value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="عنوان مقاله" style={inputStyle} />
         </div>
         <div>
           <label className="block text-xs font-bold mb-1">خلاصه (excerpt)</label>
-          <input value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} placeholder="یک خط خلاصه" style={inputStyle} />
+          <input id="article-excerpt" name="article-excerpt" value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} placeholder="یک خط خلاصه" style={inputStyle} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-bold mb-1">دسته</label>
-            <input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="بررسی موبایل" style={inputStyle} />
+            <input id="article-category" name="article-category" value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="بررسی موبایل" style={inputStyle} />
           </div>
           <div>
             <label className="block text-xs font-bold mb-1">تاریخ</label>
-            <input value={form.date} onChange={(e) => set("date", e.target.value)} placeholder="۱۴۰۳/۰۵/۱۲" style={inputStyle} />
+            <input id="article-date" name="article-date" value={form.date} onChange={(e) => set("date", e.target.value)} placeholder="۱۴۰۳/۰۵/۱۲" style={inputStyle} />
           </div>
         </div>
         <div>
           <label className="block text-xs font-bold mb-1">زمان مطالعه</label>
-          <input value={form.readTime} onChange={(e) => set("readTime", e.target.value)} placeholder="۵ دقیقه" style={inputStyle} />
+          <input id="article-readTime" name="article-readTime" value={form.readTime} onChange={(e) => set("readTime", e.target.value)} placeholder="۵ دقیقه" style={inputStyle} />
         </div>
         <div className="flex items-center gap-2 pt-6">
           <input
@@ -526,6 +526,8 @@ function ArticleForm({
           </div>
           <div className="flex flex-col gap-2">
             <input
+              id="article-image-file"
+              name="article-image-file"
               ref={fileRef}
               type="file"
               accept="image/*"
@@ -551,7 +553,7 @@ function ArticleForm({
         </div>
         <div className="mt-2">
           <label className="block text-xs font-bold mb-1">یا آدرس تصویر (اختیاری)</label>
-          <input dir="ltr" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="/images/articles/... یا لینک" style={inputStyle} />
+          <input id="article-image-url" name="article-image-url" dir="ltr" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="/images/articles/... یا لینک" style={inputStyle} />
         </div>
       </div>
 
@@ -565,6 +567,8 @@ function ArticleForm({
         {/* جستجو */}
         <div className="relative">
           <input
+            id="article-search"
+            name="article-search"
             value={searchQ}
             onChange={(e) => setSearchQ(e.target.value)}
             placeholder="جستجوی محصول... (مثلاً آیفون)"
@@ -656,6 +660,8 @@ function ArticleForm({
               + پاراگراف
             </button>
             <input
+              id="article-block-image"
+              name="article-block-image"
               ref={blockFileRef}
               type="file"
               accept="image/*"
@@ -676,6 +682,8 @@ function ArticleForm({
               {uploadingBlockImage ? "در حال آپلود..." : "+ تصویر"}
             </button>
             <input
+              id="article-block-video"
+              name="article-block-video"
               ref={blockVideoRef}
               type="file"
               accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska"

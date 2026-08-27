@@ -116,6 +116,8 @@ export default function LoginPage() {
           <div>
             <label className="block text-xs font-bold mb-1.5">ایمیل یا شماره موبایل</label>
             <input
+              id="login-identifier"
+              name="login-identifier"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
@@ -130,6 +132,8 @@ export default function LoginPage() {
             <label className="block text-xs font-bold mb-1.5">رمز عبور</label>
             <div className="relative">
               <input
+                id="login-password"
+                name="login-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

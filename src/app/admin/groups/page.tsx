@@ -220,6 +220,8 @@ export default function AdminGroupsPage() {
           <div>
             <div className="text-xs font-bold mb-1">عنوان گروه</div>
             <input
+              id="group-new-title"
+              name="group-new-title"
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -234,6 +236,8 @@ export default function AdminGroupsPage() {
           <div>
             <div className="text-xs font-bold mb-1">ترتیب</div>
             <input
+              id="group-new-order"
+              name="group-new-order"
               type="number"
               value={newOrder}
               onChange={(e) => setNewOrder(e.target.value)}
@@ -320,7 +324,7 @@ export default function AdminGroupsPage() {
             <div className="space-y-3">
               <div>
                 <div className="text-xs font-bold mb-1">عنوان</div>
-                <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+                <input id="group-edit-title" name="group-edit-title" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">آیکون (همه آیکون‌های Lucide)</div>
@@ -328,7 +332,7 @@ export default function AdminGroupsPage() {
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">ترتیب</div>
-                <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
+                <input id="group-edit-order" name="group-edit-order" type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
               </div>
               {error && <p className="text-xs text-dk-red">{error}</p>}
               <div className="flex gap-2 pt-1">

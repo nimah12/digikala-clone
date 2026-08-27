@@ -388,6 +388,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">اسم</div>
             <input
+              id="category-new-name"
+              name="category-new-name"
               type="text"
               value={newName}
               onChange={(e) => {
@@ -401,6 +403,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">slug</div>
             <input
+              id="category-new-slug"
+              name="category-new-slug"
               type="text"
               value={newSlug}
               onChange={(e) => {
@@ -457,6 +461,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">اسم محصول</div>
             <input
+              id="category-prod-name"
+              name="category-prod-name"
               type="text"
               value={prodName}
               onChange={(e) => {
@@ -469,6 +475,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">slug</div>
             <input
+              id="category-prod-slug"
+              name="category-prod-slug"
               type="text"
               value={prodSlug}
               onChange={(e) => {
@@ -481,6 +489,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">قیمت اصلی (تومان)</div>
             <input
+              id="category-prod-price"
+              name="category-prod-price"
               type="number"
               value={prodPrice}
               onChange={(e) => setProdPrice(e.target.value)}
@@ -490,6 +500,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">موجودی</div>
             <input
+              id="category-prod-stock"
+              name="category-prod-stock"
               type="number"
               value={prodStock}
               onChange={(e) => setProdStock(e.target.value)}
@@ -499,6 +511,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">تخفیف ٪</div>
             <input
+              id="category-prod-discount"
+              name="category-prod-discount"
               type="number"
               value={prodDiscount}
               onChange={(e) => setProdDiscount(e.target.value)}
@@ -511,6 +525,8 @@ export default function AdminCategoriesPage() {
           <div>
             <div className="text-xs mb-1">عکس (url)</div>
             <input
+              id="category-prod-image"
+              name="category-prod-image"
               type="text"
               value={prodImage}
               onChange={(e) => setProdImage(e.target.value)}
@@ -522,6 +538,8 @@ export default function AdminCategoriesPage() {
             <div>
               <div className="text-xs mb-1">ساب‌دسته</div>
               <select
+                id="category-prod-subcategory"
+                name="category-prod-subcategory"
                 value={prodSubcategory}
                 onChange={(e) => setProdSubcategory(e.target.value)}
                 style={{ ...inputStyle, width: 180 }}
@@ -539,6 +557,8 @@ export default function AdminCategoriesPage() {
         <div className="mt-2">
           <div className="text-xs mb-1">توضیحات</div>
           <input
+            id="category-prod-description"
+            name="category-prod-description"
             type="text"
             value={prodDescription}
             onChange={(e) => setProdDescription(e.target.value)}
@@ -555,6 +575,8 @@ export default function AdminCategoriesPage() {
               افزودن بازه‌ی عددی:
             </span>
             <input
+              id="category-prod-size-from"
+              name="category-prod-size-from"
               type="number"
               step={0.5}
               value={prodSizeFrom}
@@ -564,6 +586,8 @@ export default function AdminCategoriesPage() {
             />
             <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>تا</span>
             <input
+              id="category-prod-size-to"
+              name="category-prod-size-to"
               type="number"
               step={0.5}
               value={prodSizeTo}
@@ -573,6 +597,8 @@ export default function AdminCategoriesPage() {
             />
             <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>گام</span>
             <input
+              id="category-prod-size-step"
+              name="category-prod-size-step"
               type="number"
               step={0.5}
               min={0.5}
@@ -583,6 +609,8 @@ export default function AdminCategoriesPage() {
             />
             <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>موجودی هر کدوم</span>
             <input
+              id="category-prod-size-stock"
+              name="category-prod-size-stock"
               type="number"
               min={0}
               value={prodSizeStock}
@@ -620,6 +648,8 @@ export default function AdminCategoriesPage() {
               {prodSizes.map((row, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <input
+                    id={`category-prod-size-name-${i}`}
+                    name={`category-prod-size-name-${i}`}
                     type="text"
                     placeholder="سایز (مثلاً XL)"
                     value={row.name}
@@ -627,6 +657,8 @@ export default function AdminCategoriesPage() {
                     style={{ ...inputStyle, width: 120 }}
                   />
                   <input
+                    id={`category-prod-size-stock-${i}`}
+                    name={`category-prod-size-stock-${i}`}
                     type="number"
                     min={0}
                     placeholder="موجودی"
@@ -874,20 +906,20 @@ export default function AdminCategoriesPage() {
                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
               <div>
-                <div className="text-xs font-bold mb-1">slug</div>
-                <input type="text" dir="ltr" value={editSlug} onChange={(e) => setEditSlug(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+                <div className="text-xs font-bold mb-1">اسم</div>
+                <input id="category-edit-name" name="category-edit-name" type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
               <div>
-                <div className="text-xs font-bold mb-1">آیکون (همه آیکون‌های Lucide)</div>
-                <IconPicker value={editIcon} onChange={setEditIcon} />
+                <div className="text-xs font-bold mb-1">slug</div>
+                <input id="category-edit-slug" name="category-edit-slug" type="text" dir="ltr" value={editSlug} onChange={(e) => setEditSlug(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">ترتیب</div>
-                <input type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
+                <input id="category-edit-order" name="category-edit-order" type="number" value={editOrder} onChange={(e) => setEditOrder(e.target.value)} style={{ ...inputStyle, width: 80 }} />
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">گروه منو (فقط برای دسته‌ی اصلی)</div>
-                <select value={editGroupId} onChange={(e) => setEditGroupId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+                <select id="category-edit-group" name="category-edit-group" value={editGroupId} onChange={(e) => setEditGroupId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
                   <option value="">بدون گروه</option>
                   {groups.map((g) => (
                     <option key={g.id} value={String(g.id)}>{g.title}</option>
@@ -896,7 +928,7 @@ export default function AdminCategoriesPage() {
               </div>
               <div>
                 <div className="text-xs font-bold mb-1">والد (ساب‌دسته بودن)</div>
-                <select value={editParentId} onChange={(e) => setEditParentId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+                <select id="category-edit-parent" name="category-edit-parent" value={editParentId} onChange={(e) => setEditParentId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
                   <option value="">دسته‌ی اصلی (ریشه)</option>
                   {tree.map((r) => (
                     <option key={r.id} value={String(r.id)}>— {r.name}</option>

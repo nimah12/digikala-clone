@@ -170,25 +170,25 @@ export default function ProfilePage() {
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold mb-1.5">نام و نام خانوادگی</label>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                  <input id="profile-name" name="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)}
                     className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
                     style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold mb-1.5">ایمیل</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr"
+                  <input id="profile-email" name="profile-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr"
                     className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 text-left"
                     style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold mb-1.5">شماره موبایل</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                  <input id="profile-phone" name="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                     className="w-full h-11 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50 text-left"
                     style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold mb-1.5">آدرس</label>
-                  <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="نشانی پستی"
+                  <textarea id="profile-address" name="profile-address" value={address} onChange={(e) => setAddress(e.target.value)} rows={3} placeholder="نشانی پستی"
                     className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
                     style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                 </div>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-xs font-bold mb-1.5">رمز فعلی</label>
                   <div className="relative">
-                    <input type={showOldPass ? "text" : "password"} value={oldPass} onChange={(e) => setOldPass(e.target.value)}
+                    <input id="profile-old-password" name="profile-old-password" type={showOldPass ? "text" : "password"} value={oldPass} onChange={(e) => setOldPass(e.target.value)}
                       className="w-full h-11 pl-10 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
                       style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                     <button
@@ -228,7 +228,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-xs font-bold mb-1.5">رمز جدید</label>
                   <div className="relative">
-                    <input type={showNewPass ? "text" : "password"} value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="حداقل ۶ کاراکتر با @ و حرف بزرگ"
+                    <input id="profile-new-password" name="profile-new-password" type={showNewPass ? "text" : "password"} value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="حداقل ۶ کاراکتر با @ و حرف بزرگ"
                       className="w-full h-11 pl-10 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-dk-red/50"
                       style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }} />
                     <button

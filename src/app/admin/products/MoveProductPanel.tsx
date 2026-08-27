@@ -112,6 +112,8 @@ export default function MoveProductPanel({
       </div>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <select
+          id="move-category"
+          name="move-category"
           value={categorySlug}
           onChange={(e) => {
             setCategorySlug(e.target.value);
@@ -127,6 +129,8 @@ export default function MoveProductPanel({
           ))}
         </select>
         <select
+          id="move-subcategory"
+          name="move-subcategory"
           value={subcategorySlug}
           onChange={(e) => setSubcategorySlug(e.target.value)}
           style={selectStyle}

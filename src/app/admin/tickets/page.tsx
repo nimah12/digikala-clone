@@ -275,6 +275,8 @@ export default function AdminTicketsPage() {
                             )}
                             <div className="text-xs font-bold mb-1.5">پاسخ جدید</div>
                             <textarea
+                              id={`ticket-reply-${t.id}`}
+                              name={`ticket-reply-${t.id}`}
                               rows={3}
                               value={replyDrafts[t.id] ?? ""}
                               onChange={(e) => setReplyDrafts((d) => ({ ...d, [t.id]: e.target.value }))}

@@ -185,6 +185,8 @@ export default function RegisterPage() {
               نام و نام خانوادگی
             </label>
             <input
+              id="register-name"
+              name="register-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -202,6 +204,8 @@ export default function RegisterPage() {
             <div>
               <label className="block text-xs font-bold mb-1.5">ایمیل</label>
               <input
+                id="register-email"
+                name="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -221,6 +225,8 @@ export default function RegisterPage() {
                 شماره موبایل
               </label>
               <input
+                id="register-phone"
+                name="register-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -240,6 +246,8 @@ export default function RegisterPage() {
             <label className="block text-xs font-bold mb-1.5">رمز عبور</label>
             <div className="relative">
               <input
+                id="register-password"
+                name="register-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -285,6 +293,8 @@ export default function RegisterPage() {
               {hydrated ? captchaNum : "•"}
             </span>
             <input
+              id="register-captcha"
+              name="register-captcha"
               type="text"
               value={captcha}
               onChange={(e) => setCaptcha(e.target.value)}

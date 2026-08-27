@@ -1,0 +1,11 @@
+--- a/src/app/api/admin/upload/route.ts
++++ b/src/app/api/admin/upload/route.ts
+@@ -43,7 +43,7 @@
+ 
+   const signedRequest = await client.sign(originUrl, {
+     method: "PUT",
+-    body,
++    body: body as BodyInit,
+     headers: {
+       "Content-Type": contentType,
+     },

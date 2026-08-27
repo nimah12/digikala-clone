@@ -19,7 +19,7 @@ const SECURITY_HEADERS: Record<string, string> = {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://digikala-clone-media.nimah12.workers.dev",
     "font-src 'self' data:",
-    "connect-src 'self' https://*.public.blob.vercel-storage.com https://digikala-clone-media.nimah12.workers.dev",
+    "connect-src 'self' https://*.public.blob.vercel-storage.com https://digikala-clone-media.nimah12.workers.dev https://*.backblazeb2.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

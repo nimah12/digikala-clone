@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server";
+import { AwsClient } from "aws4fetch";
 import { requireAdmin } from "@/lib/admin";
-
-// این route برای فایل‌های بزرگ (مخصوصاً ویدیو) استفاده می‌شه.
-// برخلاف /api/admin/upload که خودش فایل رو می‌گیره و به B2 می‌فرسته،
-// این route فقط یه آدرس آپلود مستقیم از سمت مرورگر برمی‌گردونه.
-// از اونجایی که Worker/CDN (digikala-clone-media.nimah12.workers.dev)
-// از قبل در CSP و connect-src مجاز هست، مرورگر می‌تونه مستقیماً
-// فایل رو به اون آدرس آپلود کنه بدون اینکه فایل از سرور Vercel رد بشه.
-// این کار محدودیت ۴.۵ مگابایتی body سرورلس Vercel رو دور می‌زنه.
 
 const CDN_BASE_URL =
   process.env.B2_CDN_BASE_URL ??
   "https://digikala-clone-media.nimah12.workers.dev";
 
-// پسوندهای ویدئویی مجاز (هم‌راستا با /api/admin/upload)
 const VIDEO_TYPES = [
   "video/mp4",
   "video/webm",
@@ -23,6 +15,7 @@ const VIDEO_TYPES = [
 ];
 
 const MAX_VIDEO_SIZE = 200 * 1024 * 1024; // 200MB
+const PRESIGN_EXPIRES_SECONDS = 60 * 15; // 15 دقیقه
 
 export async function POST(request: Request) {
   const auth = await requireAdmin(request);
@@ -69,11 +62,29 @@ export async function POST(request: Request) {
   const ext = fileName.match(/\.([a-zA-Z0-9]+)$/)?.[1]?.toLowerCase() || "mp4";
   const key = `${safeFolder}/${Date.now()}-${safeName}.${ext}`;
 
-  const uploadUrl = `${CDN_BASE_URL}/${key}`;
+  const client = new AwsClient({
+    accessKeyId: process.env.B2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.B2_SECRET_ACCESS_KEY!,
+    service: "s3",
+    region: process.env.B2_REGION!,
+  });
+
+  const endpoint = process.env.B2_ENDPOINT!;
+  const bucket = process.env.B2_BUCKET_NAME!;
+  const originUrl = new URL(`${endpoint}/${bucket}/${key}`);
+  originUrl.searchParams.set("X-Amz-Expires", String(PRESIGN_EXPIRES_SECONDS));
+
+  const signedRequest = await client.sign(originUrl.toString(), {
+    method: "PUT",
+    aws: { signQuery: true },
+    headers: {
+      "Content-Type": contentType,
+    },
+  });
 
   return NextResponse.json({
-    uploadUrl,
+    uploadUrl: signedRequest.url,
     contentType,
-    finalUrl: uploadUrl,
+    finalUrl: `${CDN_BASE_URL}/${key}`,
   });
 }

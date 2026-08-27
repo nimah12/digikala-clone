@@ -11,6 +11,7 @@ const BRANDS: {
   q: string;
   logo: BrandLogoName;
   color: string;
+  tileBg: string;
 }[] = [
   {
     name: "اپل",
@@ -18,6 +19,7 @@ const BRANDS: {
     q: "iphone",
     logo: "apple",
     color: "#e8f0f9",
+    tileBg: "#111113",
   },
   {
     name: "سامسونگ",
@@ -25,6 +27,7 @@ const BRANDS: {
     q: "samsung",
     logo: "samsung",
     color: "#dcebfa",
+    tileBg: "#ffffff",
   },
   {
     name: "شیائومی",
@@ -32,6 +35,7 @@ const BRANDS: {
     q: "xiaomi",
     logo: "xiaomi",
     color: "#fdeeda",
+    tileBg: "#ffffff",
   },
   {
     name: "لنوو",
@@ -39,14 +43,16 @@ const BRANDS: {
     q: "lenovo",
     logo: "lenovo",
     color: "#e6eef7",
+    tileBg: "#ffffff",
   },
-  { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef" },
+  { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef", tileBg: "#ffffff" },
   {
     name: "آدیداس",
     slug: "adidas",
     q: "adidas",
     logo: "adidas",
     color: "#e0f3e9",
+    tileBg: "#ffffff",
   },
   {
     name: "سونی",
@@ -54,23 +60,26 @@ const BRANDS: {
     q: "sony",
     logo: "sony",
     color: "#f7e3f0",
+    tileBg: "#111113",
   },
-  { name: "بوش", slug: "bosch", q: "bosch", logo: "bosch", color: "#fdeeda" },
+  { name: "بوش", slug: "bosch", q: "bosch", logo: "bosch", color: "#fdeeda", tileBg: "#ffffff" },
   {
     name: "جی‌بی‌ال",
     slug: "jbl",
     q: "jbl",
     logo: "jbl",
     color: "#fdeeda",
+    tileBg: "#ffffff",
   },
-  { name: "ایسوس", slug: "asus", q: "asus", logo: "asus", color: "#e6eef7" },
-  { name: "تفال", slug: "tefal", q: "tefal", logo: "tefal", color: "#f3e6f8" },
+  { name: "ایسوس", slug: "asus", q: "asus", logo: "asus", color: "#e6eef7", tileBg: "#ffffff" },
+  { name: "تفال", slug: "tefal", q: "tefal", logo: "tefal", color: "#f3e6f8", tileBg: "#ffffff" },
   {
     name: "پاناسونیک",
     slug: "panasonic",
     q: "panasonic",
     logo: "panasonic",
     color: "#e2eef7",
+    tileBg: "#ffffff",
   },
 ];
 
@@ -170,7 +179,7 @@ export default function PopularBrands() {
                 className="brand-tile brand-item w-[92px] h-[92px] rounded-2xl flex items-center justify-center border shadow-sm"
                 style={
                   {
-                    background: "#111113",
+                    background: brand.tileBg,
                     borderColor: "var(--border)",
                     animationDelay: `${i * 60}ms`,
                     "--glow": brand.color,

@@ -43,7 +43,7 @@ async function uploadToB2(
 
   const signedRequest = await client.sign(originUrl, {
     method: "PUT",
-    body,
+    body: body as BodyInit,
     headers: {
       "Content-Type": contentType,
     },

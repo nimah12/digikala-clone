@@ -73,6 +73,8 @@ export default function IconPicker({ value, onChange }: Props) {
   return (
     <div>
       <input
+        id="icon-picker-search"
+        name="icon-picker-search"
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}

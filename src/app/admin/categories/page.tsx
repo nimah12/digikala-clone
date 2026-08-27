@@ -903,10 +903,6 @@ export default function AdminCategoriesPage() {
             <div className="space-y-3">
               <div>
                 <div className="text-xs font-bold mb-1">اسم</div>
-                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
-              </div>
-              <div>
-                <div className="text-xs font-bold mb-1">اسم</div>
                 <input id="category-edit-name" name="category-edit-name" type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
               </div>
               <div>

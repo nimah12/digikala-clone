@@ -436,6 +436,8 @@ export default function SupportChat() {
           {/* Input */}
           <div className="flex items-center gap-2 p-3 border-t" style={{ borderColor: "var(--border)" }}>
             <input
+              id="support-chat-input"
+              name="support-chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}

@@ -71,6 +71,8 @@ export default function LocationSelect({
         >
           <div className="p-2 border-b" style={{ borderColor: "var(--border)" }}>
             <input
+              id={`${id}-query`}
+              name={`${name}-query`}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

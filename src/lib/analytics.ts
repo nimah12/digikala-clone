@@ -27,17 +27,24 @@ export function pushEvent(
   window.dataLayer.push({ event, ...data });
 }
 
+function pushEcommerce(event: string, ecommerce: Record<string, unknown>): void {
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  // GA4 expects the ecommerce object to be cleared before each event
+  // so items from previous events are not appended/duplicated.
+  window.dataLayer.push({ ecommerce: null });
+  window.dataLayer.push({ event, ecommerce });
+}
+
 export function trackPageView(data: Record<string, unknown> = {}): void {
   pushEvent("pageview", data);
 }
 
 export function trackAddToCart(item: EcommerceItem): void {
-  pushEvent("add_to_cart", {
-    ecommerce: {
-      currency: CURRENCY,
-      value: (item.price ?? 0) * (item.quantity ?? 1),
-      items: [item],
-    },
+  pushEcommerce("add_to_cart", {
+    currency: CURRENCY,
+    value: (item.price ?? 0) * (item.quantity ?? 1),
+    items: [item],
   });
 }
 
@@ -45,12 +52,10 @@ export function trackBeginCheckout(
   value: number,
   items: EcommerceItem[],
 ): void {
-  pushEvent("begin_checkout", {
-    ecommerce: {
-      currency: CURRENCY,
-      value,
-      items,
-    },
+  pushEcommerce("begin_checkout", {
+    currency: CURRENCY,
+    value,
+    items,
   });
 }
 
@@ -60,13 +65,11 @@ export function trackPurchase(params: {
   shipping?: number;
   items: EcommerceItem[];
 }): void {
-  pushEvent("purchase", {
-    ecommerce: {
-      transaction_id: params.transaction_id,
-      currency: CURRENCY,
-      value: params.value,
-      shipping: params.shipping ?? 0,
-      items: params.items,
-    },
+  pushEcommerce("purchase", {
+    transaction_id: params.transaction_id,
+    currency: CURRENCY,
+    value: params.value,
+    shipping: params.shipping ?? 0,
+    items: params.items,
   });
 }

@@ -45,14 +45,14 @@ const BRANDS: {
     color: "#e6eef7",
     tileBg: "#111113",
   },
-  { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef", tileBg: "#ffffff" },
+  { name: "نایک", slug: "nike", q: "nike", logo: "nike", color: "#e8e8ef", tileBg: "#111113" },
   {
     name: "آدیداس",
     slug: "adidas",
     q: "adidas",
     logo: "adidas",
     color: "#e0f3e9",
-    tileBg: "#ffffff",
+    tileBg: "#111113",
   },
   {
     name: "سونی",
@@ -71,7 +71,7 @@ const BRANDS: {
     color: "#fdeeda",
     tileBg: "#ffffff",
   },
-  { name: "ایسوس", slug: "asus", q: "asus", logo: "asus", color: "#e6eef7", tileBg: "#ffffff" },
+  { name: "ایسوس", slug: "asus", q: "asus", logo: "asus", color: "#e6eef7", tileBg: "#111113" },
   { name: "تفال", slug: "tefal", q: "tefal", logo: "tefal", color: "#f3e6f8", tileBg: "#ffffff" },
   {
     name: "پاناسونیک",

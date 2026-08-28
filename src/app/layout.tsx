@@ -7,6 +7,11 @@ import SupportChat from "@/components/SupportChat";
 import Toast from "@/components/Toast";
 import { ThemeProvider } from "@/lib/theme";
 import { getMegaMenu } from "@/lib/menu-server";
+import {
+  GoogleTagManager,
+  GoogleTagManagerNoScript,
+} from "@/components/analytics/GoogleTagManager";
+import { RoutePageViewTracker } from "@/components/analytics/RoutePageViewTracker";
 
 const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
@@ -39,14 +44,17 @@ export default async function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("dk-theme");document.documentElement.dataset.theme=t==="dark"?"dark":"light";}catch(e){document.documentElement.dataset.theme="light";}})();`,
           }}
         />
+        <GoogleTagManager />
       </head>
       <body className="min-h-screen flex flex-col">
+        <GoogleTagManagerNoScript />
         <ThemeProvider>
           <Header menuGroups={menuGroups} />
           <main className="flex-1">{children}</main>
           <Footer />
           <SupportChat />
           <Toast />
+          <RoutePageViewTracker />
         </ThemeProvider>
       </body>
     </html>

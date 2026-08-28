@@ -1,0 +1,5 @@
+﻿323a085 fix(proxy): update CSP to allow media worker domain
+18ed93b refactor(api): cast bytes to BodyInit for B2 upload compatibility
+b369c67 docs: add fix-content-length.patch
+31da4d3 chore: add fix-body-type.patch
+0085afe feat(media): implement media route endpoint

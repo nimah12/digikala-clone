@@ -6,6 +6,7 @@ import PriceBadge from "./PriceBadge";
 import Icon from "./Icon";
 import { addToCart } from "@/lib/cart-client";
 import { formatSizeName } from "@/lib/format";
+import { trackAddToCart, type EcommerceItem } from "@/lib/analytics";
 
 type ColorOption = {
   id: number;
@@ -89,6 +90,23 @@ export default function ProductInfoColumn({
     setColorError("");
     setSizeError("");
     addToCart(productId, selectedColor ?? undefined, selectedSize ?? undefined);
+
+    const variant = [
+      selectedColor?.name,
+      selectedSize ? formatSizeName(selectedSize.name) : null,
+    ]
+      .filter(Boolean)
+      .join(" / ");
+    const item: EcommerceItem = {
+      item_id: productId,
+      item_name: name,
+      price,
+      quantity: 1,
+      item_category: categoryName,
+      item_variant: variant || undefined,
+    };
+    trackAddToCart(item);
+
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   }

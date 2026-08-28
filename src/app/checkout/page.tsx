@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import CheckoutForm from "@/components/CheckoutForm";
@@ -8,6 +8,7 @@ import { useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
 import { useCartItems } from "@/lib/cart-client";
 import { formatPrice, formatSizeName } from "@/lib/format";
+import { trackBeginCheckout, type EcommerceItem } from "@/lib/analytics";
 import Icon from "@/components/Icon";
 
 type CartProduct = {
@@ -35,6 +36,45 @@ export default function CheckoutPage() {
       .catch(() => setProducts([]));
   }, [hydrated, items]);
 
+  const productById = new Map(products.map((p) => [p.id, p]));
+
+  const subtotal = items.reduce((sum, item) => {
+    const p = productById.get(item.id);
+    return sum + (p ? p.price * item.qty : 0);
+  }, 0);
+
+  const ecommerceItems = useMemo<EcommerceItem[]>(() => {
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const list: EcommerceItem[] = [];
+    items.forEach((item, idx) => {
+      const p = byId.get(item.id);
+      if (!p) return;
+      const variant = [
+        item.colorName,
+        item.sizeName ? formatSizeName(item.sizeName) : null,
+      ]
+        .filter(Boolean)
+        .join(" / ");
+      list.push({
+        item_id: item.id,
+        item_name: p.name,
+        price: p.price,
+        quantity: item.qty || 1,
+        item_variant: variant || undefined,
+        index: idx,
+      });
+    });
+    return list;
+  }, [items, products]);
+
+  const beginCheckoutFired = useRef(false);
+  useEffect(() => {
+    if (beginCheckoutFired.current) return;
+    if (!hydrated || !user || items.length === 0 || products.length === 0) return;
+    beginCheckoutFired.current = true;
+    trackBeginCheckout(subtotal, ecommerceItems);
+  }, [hydrated, user, items, products, subtotal, ecommerceItems]);
+
   if (!hydrated) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
@@ -42,13 +82,6 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
-  const productById = new Map(products.map((p) => [p.id, p]));
-
-  const subtotal = items.reduce((sum, item) => {
-    const p = productById.get(item.id);
-    return sum + (p ? p.price * item.qty : 0);
-  }, 0);
 
   if (items.length === 0) {
     return (
@@ -126,7 +159,7 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Checkout form */}
         <div className="lg:col-span-2">
-          <CheckoutForm subtotal={subtotal} />
+          <CheckoutForm subtotal={subtotal} ecommerceItems={ecommerceItems} />
         </div>
 
         {/* Order summary */}

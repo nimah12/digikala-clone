@@ -7,6 +7,7 @@ import { getCurrentUser, isDemoUser } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
 import { getProvinceNames, getCities } from "@/lib/provinces";
 import { pushEvent } from "@/lib/notifications";
+import { trackPurchase, type EcommerceItem } from "@/lib/analytics";
 import { showToast } from "./Toast";
 import Icon, { type IconName } from "./Icon";
 import LocationSelect from "./LocationSelect";
@@ -100,7 +101,13 @@ function parseReceiverAddress(raw: string): { province: string; city: string; ad
   };
 }
 
-export default function CheckoutForm({ subtotal }: { subtotal: number }) {
+export default function CheckoutForm({
+  subtotal,
+  ecommerceItems,
+}: {
+  subtotal: number;
+  ecommerceItems: EcommerceItem[];
+}) {
   const hydrated = useHydrated();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [shipping, setShipping] = useState<ShippingMethod>(SHIPPING_METHODS[1]);
@@ -296,6 +303,12 @@ export default function CheckoutForm({ subtotal }: { subtotal: number }) {
     setPaid(true);
     const orderId = await saveOrder();
     if (orderId) {
+      trackPurchase({
+        transaction_id: orderId,
+        value: total,
+        shipping: shippingPrice,
+        items: ecommerceItems,
+      });
       setTimeout(() => router.push(`/track-order?order=${orderId}`), 1200);
     } else {
       setPaid(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import type { CategoryOption, MoveResult, Product, TreeCategory } from "./types";
+import { SafeImg } from "@/components/SafeImage";
 import GalleryManager from "./GalleryManager";
 import ColorManager from "./ColorManager";
 import ProductEditPanel from "./ProductEditPanel";
@@ -65,8 +66,7 @@ export default function ProductListRow({
         }}
       >
         {product.imageUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <SafeImg
             src={product.imageUrl}
             alt={product.name}
             style={{ width: 80, height: 80, objectFit: "contain", flexShrink: 0 }}

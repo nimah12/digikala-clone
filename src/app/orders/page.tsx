@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
+import { SafeImg } from "@/components/SafeImage";
 import { formatPrice, formatSizeName } from "@/lib/format";
 import Icon from "@/components/Icon";
 import { getTimelineStatus, getElapsedMinutes, useNow } from "@/components/OrderTimeline";
@@ -112,8 +113,7 @@ export default function OrdersPage() {
                     const imageUrl = item.product?.imageUrl ?? item.productImageUrl ?? "/images/placeholder.svg";
                     const inner = (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <SafeImg
                           src={imageUrl}
                           alt={name}
                           className="w-10 h-10 rounded-lg object-cover"

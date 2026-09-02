@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { SafeImage } from "@/components/SafeImage";
 import type { Article } from "@/lib/articles";
 
 export default function ArticleCard({ article }: { article: Article }) {
@@ -10,7 +10,7 @@ export default function ArticleCard({ article }: { article: Article }) {
       style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }}
     >
       <div className="relative aspect-[16/9] overflow-hidden" style={{ background: "var(--bg)" }}>
-        <Image
+        <SafeImage
           src={article.image}
           alt={article.title}
           fill

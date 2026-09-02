@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
 import { markAllRead, useNotificationEvents } from "@/lib/notifications";
+import { SafeImg } from "@/components/SafeImage";
 import Icon from "@/components/Icon";
 
 type Category = "all" | "activity" | "order" | "discount" | "magnet" | "digicoin";
@@ -271,8 +272,7 @@ export default function NotificationsPage() {
 
               <div className="flex flex-col items-center gap-2 shrink-0">
                 {n.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <SafeImg
                     src={n.image}
                     alt={n.title}
                     className="w-12 h-12 rounded-lg object-cover"

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
+import { SafeImage } from "@/components/SafeImage";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getArticle, getArticles } from "@/lib/articles";
@@ -93,7 +93,7 @@ export default async function ArticlePage({ params }: Props) {
           className="relative aspect-[16/9]"
           style={{ background: "var(--bg)" }}
         >
-          <Image
+          <SafeImage
             src={article.image}
             alt={article.title}
             fill
@@ -127,7 +127,7 @@ export default async function ArticlePage({ params }: Props) {
               b.type === "img" ? (
                 <figure key={i} className="my-2">
                   <div className="relative aspect-[16/9] rounded-xl overflow-hidden" style={{ background: "var(--bg)" }}>
-                    <Image
+                    <SafeImage
                       src={b.src || ""}
                       alt="تصویر مقاله"
                       fill
@@ -189,7 +189,7 @@ export default async function ArticlePage({ params }: Props) {
                   className="relative aspect-[16/9] overflow-hidden"
                   style={{ background: "var(--bg)" }}
                 >
-                  <Image
+                  <SafeImage
                     src={a.image}
                     alt={a.title}
                     fill

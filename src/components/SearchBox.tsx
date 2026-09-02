@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/format";
 import { faNormalize } from "@/lib/normalize";
+import { SafeImg } from "./SafeImage";
 
 type Suggestion = {
   id: number;
@@ -227,8 +228,7 @@ export default function SearchBox() {
                     background: idx === safeActive ? "var(--bg)" : "transparent",
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <SafeImg
                     src={s.imageUrl || "/images/placeholder.svg"}
                     alt={s.name}
                     className="w-10 h-10 rounded-lg object-cover shrink-0"

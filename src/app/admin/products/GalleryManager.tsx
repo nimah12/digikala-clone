@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { deleteMedia, errorMessage, fetchMedia, uploadProductMedia } from "./admin-api";
 import type { MediaItem } from "./types";
+import { SafeImg } from "@/components/SafeImage";
 
 export default function GalleryManager({ productId }: { productId: number }) {
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -124,8 +125,7 @@ export default function GalleryManager({ productId }: { productId: number }) {
                   style={{ width: "100%", height: 90, objectFit: "cover" }}
                 />
               ) : (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
+                <SafeImg
                   src={m.url}
                   alt=""
                   style={{ width: "100%", height: 90, objectFit: "cover" }}

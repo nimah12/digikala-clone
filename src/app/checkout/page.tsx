@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { SafeImage } from "@/components/SafeImage";
 import CheckoutForm from "@/components/CheckoutForm";
 import { useUserSync } from "@/lib/user";
 import { useHydrated } from "@/lib/hydration";
@@ -172,7 +172,7 @@ export default function CheckoutPage() {
               return (
                 <div key={`${item.id}-${item.colorId ?? "none"}-${item.sizeId ?? "none"}`} className="flex items-center gap-3">
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0" style={{ background: "var(--bg)" }}>
-                    <Image src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} fill sizes="48px" className="object-cover" />
+                    <SafeImage src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} fill sizes="48px" className="object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-bold truncate">{p.name}</div>

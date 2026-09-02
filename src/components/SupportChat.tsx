@@ -5,6 +5,7 @@ import Link from "next/link";
 import Icon from "./Icon";
 import PriceBadge from "./PriceBadge";
 import { faNormalize } from "@/lib/normalize";
+import { SafeImg } from "./SafeImage";
 import {
   formatCooldown,
   getRetryAfterSeconds,
@@ -327,8 +328,7 @@ export default function SupportChat() {
                           className="flex items-center gap-2.5 p-2 rounded-xl border transition-colors hover:border-dk-red"
                           style={{ background: "var(--panel)", borderColor: "var(--border)" }}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-11 h-11 rounded-lg object-cover shrink-0" loading="lazy" />
+                          <SafeImg src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-11 h-11 rounded-lg object-cover shrink-0" loading="lazy" />
                           <div className="flex-1 min-w-0">
                             <div className="text-[11px] font-bold leading-4 line-clamp-1" style={{ color: "var(--text)" }}>
                               {p.name}

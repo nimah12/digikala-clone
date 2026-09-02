@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useCartItems } from "@/lib/cart-client";
 import { useHydrated } from "@/lib/hydration";
 import { formatPrice, formatSizeName } from "@/lib/format";
+import { SafeImage } from "./SafeImage";
 import Icon from "./Icon";
 
 type CartProduct = {
@@ -142,7 +142,7 @@ export default function CartClient() {
             >
               <Link href={`/product/${product!.slug}`} className="shrink-0">
                 <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden" style={{ background: "var(--bg)" }}>
-                  <Image
+                  <SafeImage
                     src={product!.imageUrl || "/images/placeholder.svg"}
                     alt={product!.name}
                     fill

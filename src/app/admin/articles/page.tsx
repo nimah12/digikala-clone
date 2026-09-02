@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SafeImg } from "@/components/SafeImage";
 
 type Article = {
   id: string;
@@ -516,8 +517,7 @@ function ArticleForm({
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-40 h-24 rounded-xl overflow-hidden border shrink-0" style={{ borderColor: "var(--border)", background: "var(--panel)" }}>
             {form.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.image} alt="پیش‌نمایش مقاله" className="w-full h-full object-cover" />
+              <SafeImg src={form.image} alt="پیش‌نمایش مقاله" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-[11px]" style={{ color: "var(--text-muted)" }}>
                 بدون تصویر
@@ -593,8 +593,7 @@ function ArticleForm({
                     onClick={() => togglePick(p)}
                     className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-dk-red/5 transition-colors text-right"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                    <SafeImg src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold truncate">{p.name}</div>
                       <div className="text-[10px] digits" style={{ color: "var(--text-muted)" }}>
@@ -623,8 +622,7 @@ function ArticleForm({
                 className="flex items-center gap-2 pl-2 rounded-lg border"
                 style={{ background: "var(--panel)", borderColor: "var(--border)" }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-8 h-8 rounded-l-lg object-cover" />
+                <SafeImg src={p.imageUrl || "/images/placeholder.svg"} alt={p.name} className="w-8 h-8 rounded-l-lg object-cover" />
                 <span className="text-[11px] font-bold max-w-[140px] truncate">{p.name}</span>
                 <button
                   type="button"
@@ -874,8 +872,7 @@ function BlockEditor({
       ) : (
         <figure className="wysiwyg-media aspect-[16/9]">
           {block.src ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={block.src} alt="تصویر داخل مقاله" />
+            <SafeImg src={block.src} alt="تصویر داخل مقاله" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-1.5" style={{ color: "var(--text-muted)" }}>
               <span className="text-2xl">🖼️</span>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import { SafeImg } from "./SafeImage";
 
 export type HeroProduct = {
   name: string;
@@ -132,8 +133,7 @@ function LiveGoldPanel({ items }: { items: GoldItem[] }) {
               href={`/product/${item.slug ?? "#"}`}
               className="shrink-0 w-28 sm:w-32 bg-white/10 hover:bg-white/20 transition-colors rounded-xl p-2 block group"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <SafeImg
                 src={item.imageUrl || "/images/placeholder.svg"}
                 alt={item.name}
                 loading="lazy"
@@ -389,8 +389,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                           className="hero-float relative block w-64 lg:w-72 bg-white/95 backdrop-blur rounded-3xl p-3.5 shadow-2xl ring-1 ring-white/40"
                         >
                           <div className="relative overflow-hidden rounded-2xl">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <SafeImg
                               src={p.imageUrl}
                               alt={p.name}
                               className={`w-full aspect-square object-contain ${active ? "hero-kenburns" : ""}`}
@@ -472,8 +471,7 @@ export default function HeroSlider({ slides: initialSlides }: { slides: HeroSlid
                         className="hero-float relative block w-full bg-white/95 backdrop-blur rounded-2xl p-3 shadow-2xl ring-1 ring-white/40"
                       >
                         <div className="relative overflow-hidden rounded-xl bg-white">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <SafeImg
                             src={p.imageUrl}
                             alt={p.name}
                             className={`w-full aspect-square object-contain ${active ? "hero-kenburns" : ""}`}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { SafeImg } from "@/components/SafeImage";
 import ProductCard from "@/components/ProductCard";
 
 export const dynamic = "force-dynamic";
@@ -71,8 +72,7 @@ export default async function CategoryPage({ params }: Props) {
               className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl border transition-colors hover:border-dk-red hover:text-dk-red"
               style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {s.imageUrl && <img src={s.imageUrl} alt={s.name} className="w-8 h-8 rounded-lg object-cover" />}
+              {s.imageUrl && <SafeImg src={s.imageUrl} alt={s.name} className="w-8 h-8 rounded-lg object-cover" />}
               {s.name}
             </Link>
           ))}

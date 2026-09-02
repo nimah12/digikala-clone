@@ -272,7 +272,7 @@ export default function ProductGallery({
         ) : (
           <>
             <Image
-              src={current.url}
+              src={resolveSrc(current.url)}
               alt={productName}
               fill
               priority
@@ -339,7 +339,7 @@ export default function ProductGallery({
                 </>
               ) : (
                 <Image
-                  src={item.url}
+                  src={resolveSrc(item.url)}
                   alt=""
                   fill
                   sizes="64px"
@@ -463,7 +463,7 @@ export default function ProductGallery({
                 }}
               >
                 <Image
-                  src={lightboxItem.url}
+                  src={resolveSrc(lightboxItem.url)}
                   alt={productName}
                   fill
                   draggable={false}

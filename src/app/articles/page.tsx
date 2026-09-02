@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { getArticles } from "@/lib/articles";
+import { SafeImage } from "@/components/SafeImage";
 
 export const metadata: Metadata = { title: "مقالات و اخبار" };
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function ArticlesPage() {
             style={{ background: "var(--panel)", borderColor: "var(--border)" }}
           >
             <div className="relative aspect-[16/9] overflow-hidden" style={{ background: "var(--bg)" }}>
-              <Image
+              <SafeImage
                 src={article.image}
                 alt={article.title}
                 fill

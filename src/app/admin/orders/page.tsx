@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatSizeName } from "@/lib/format";
+import { SafeImg } from "@/components/SafeImage";
 import { formatIranDate } from "@/lib/iran-time";
 
 type OrderItem = {
@@ -443,8 +444,7 @@ function exportExcel() {
                               const imageUrl = it.product?.imageUrl ?? it.productImageUrl ?? "";
                               return (
                                 <div key={it.id} className="flex items-center gap-3 rounded-xl border px-3 py-2" style={{ background: "var(--panel)", borderColor: "var(--border)" }}>
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                  <SafeImg src={imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
                                   {slug ? (
                                     <Link href={`/product/${slug}`} target="_blank" className="text-xs font-bold hover:text-dk-red transition-colors flex-1 min-w-0 truncate">
                                       {name}

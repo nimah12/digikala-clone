@@ -4,12 +4,19 @@
 // فایل‌های باقی‌مونده روی Vercel Blob رو دانلود و به Backblaze B2 آپلود می‌کنه.
 // مسیر (pathname) هر فایل حفظ می‌شه تا با ساختار فعلی Worker سازگار بمونه.
 
+import "dotenv/config";
 import { list } from "@vercel/blob";
 import {
   S3Client,
   PutObjectCommand,
   HeadObjectCommand,
 } from "@aws-sdk/client-s3";
+
+console.log(
+  "TOKEN:",
+  process.env.BLOB_READ_WRITE_TOKEN ? "پیدا شد" : "پیدا نشد",
+);
+console.log("STORE_ID:", process.env.BLOB_STORE_ID ? "پیدا شد" : "پیدا نشد");
 
 const b2 = new S3Client({
   endpoint: process.env.B2_ENDPOINT!,

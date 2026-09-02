@@ -66,7 +66,9 @@ async function migrate() {
             Bucket: BUCKET,
             Key: key,
             Body: buffer,
-            ContentType: blob.contentType || "application/octet-stream",
+            ContentType:
+              (blob as { contentType?: string }).contentType ||
+              "application/octet-stream",
           }),
         );
 

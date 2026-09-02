@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Category, Product } from "@prisma/client";
@@ -6,20 +9,36 @@ import Rating from "./Rating";
 
 export type ProductWithCategory = Product & { category: Category };
 
-export default function ProductCard({ product }: { product: ProductWithCategory }) {
+export default function ProductCard({
+  product,
+}: {
+  product: ProductWithCategory;
+}) {
+  const [imgSrc, setImgSrc] = useState(
+    product.imageUrl || "/images/placeholder.svg",
+  );
+
   return (
     <Link
       href={`/product/${product.slug}`}
       className="card-lift group block rounded-xl border overflow-hidden fade-in"
-      style={{ background: "var(--panel)", borderColor: "var(--border)", color: "var(--text)" }}
+      style={{
+        background: "var(--panel)",
+        borderColor: "var(--border)",
+        color: "var(--text)",
+      }}
     >
-      <div className="relative aspect-square overflow-hidden" style={{ background: "var(--bg)" }}>
+      <div
+        className="relative aspect-square overflow-hidden"
+        style={{ background: "var(--bg)" }}
+      >
         <Image
-          src={product.imageUrl || "/images/placeholder.svg"}
+          src={imgSrc}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          onError={() => setImgSrc("/images/placeholder.svg")}
         />
         {product.discountPercent > 0 && (
           <span className="absolute top-2 right-2 bg-dk-red text-white text-[11px] font-bold px-2 py-1 rounded-lg shadow-md pop-in">
@@ -28,7 +47,9 @@ export default function ProductCard({ product }: { product: ProductWithCategory 
         )}
         {/* Quick view hint on hover */}
         <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent pt-10 pb-2 flex justify-center">
-          <span className="text-[10px] font-bold text-white">مشاهده محصول ←</span>
+          <span className="text-[10px] font-bold text-white">
+            مشاهده محصول ←
+          </span>
         </div>
       </div>
       <div className="p-4 space-y-2.5">
